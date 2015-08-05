@@ -1,12 +1,8 @@
 package peerSimTest_v2;
 
 import java.io.Serializable;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
-
-import peerSimTest_v1.Config;
 
 public class SystemNodeP2P implements Serializable{
 	/**
@@ -25,9 +21,8 @@ public class SystemNodeP2P implements Serializable{
 	 * 	une talbe de routage
 	 * */
 	
-	
-	public SystemNodeP2P(int server, String path, int rang, int limit) {
-		// TODO Auto-generated constructor stub
+	public SystemNodeP2P(int server, String path, int rang, int limit)
+	{
 		this.server = server;
 		this.path = path;
 		this.limit = limit;
@@ -76,7 +71,7 @@ public class SystemNodeP2P implements Serializable{
 	 * Rendre le conteneur local
 	 * */
 	
-	public ArrayList<BFP2P> getContainerLocal()
+	public HashSet<BFP2P> getContainerLocal()
 	{
 		return this.containerLocal;
 	}
@@ -96,31 +91,24 @@ public class SystemNodeP2P implements Serializable{
 	 * Retourner null si réussit, sinon soit une chaîne de caractères soit un conteneur local
 	 * */
 	
-	public Object add(BFP2P bf)
+	public Object add(BFP2P bf) throws ErrorException
 	{	
-		int long0 = 0;
-		String prefix0 = new String();
-		
-		for (int i = 0; i < Config.numberOfFragment - rang; i++)
+		if (this.containerLocal.size() < this.limit)
 		{
-			if (bf.getFragment(i + rang).toInt() != 0)
-				break;
+			this.containerLocal.add(bf);
+			return null;
+		}
+		
+		int longestLength = (new LongestZero(bf, Config.sizeOfBF/Config.numberOfFragment)).getLongestLength();
+		
+		if (longestLength == 0)
+		{
 			
-			long0++;
-			prefix0 += "/" + bf.getFragment(i + rang);
 		}
-		
-		if (long0 == 0)
+		else // longestLength != 0
 		{
-			prefix0 = "/" + bf.getFragment(rang);
-			if (localRoute.containsKey(prefix0))
-			{
-				//send
-			}
-			else
-				
+			
 		}
-		
 		
 		
 		return null;
@@ -145,7 +133,7 @@ public class SystemNodeP2P implements Serializable{
 	{
 		
 		
-		return rep;
+		return null;
 	}
 	
 	/*
@@ -168,7 +156,7 @@ public class SystemNodeP2P implements Serializable{
 	
 	public Object remove(BFP2P bf)
 	{
-		
+		return null;
 	}
 	
 	/*
@@ -179,13 +167,13 @@ public class SystemNodeP2P implements Serializable{
 	
 	public boolean remove(FragmentP2P f)
 	{
-		
+		return true;
 
 	}
 
 	public String toString()
 	{
-		
+		return null;
 	}
 }
 
