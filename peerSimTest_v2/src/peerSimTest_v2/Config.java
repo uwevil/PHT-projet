@@ -18,9 +18,9 @@ public class Config {
 	private Hashtable<Integer, Long> timeCalcul = new Hashtable<Integer, Long>();
 	
 	public static int indexRand = 99999999;
-	public static int numberOfBF = 0;
 	public static int sizeOfBF = 512;
 	public static int numberOfFragment = 64;
+	public static int sizeOfFragment = sizeOfBF/numberOfFragment;
 	public static int gamma = 1000;
 	private NameToID translate = new NameToID(0);
 	private boolean end_OK = false;
@@ -55,7 +55,6 @@ public class Config {
 		nodeMatched = new ArrayList<String>();
 		indexHeight = new Hashtable<Integer, String>();
 		listAnswers = new Hashtable<Integer, Object>();
-		numberOfBF = 0;
 		date = (new SimpleDateFormat("dd/MM/yyyy/HH-mm-ss")).format(new Date());
 		time = 0;
 		totalFilterCreated = 0;

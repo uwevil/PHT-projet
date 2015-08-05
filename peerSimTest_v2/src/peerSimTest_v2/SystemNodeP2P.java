@@ -3,6 +3,7 @@ package peerSimTest_v2;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 
 public class SystemNodeP2P implements Serializable{
 	/**
@@ -99,17 +100,44 @@ public class SystemNodeP2P implements Serializable{
 			return null;
 		}
 		
-		int longestLength = (new LongestZero(bf, Config.sizeOfBF/Config.numberOfFragment)).getLongestLength();
+		this.containerLocal.add(bf);
 		
-		if (longestLength == 0)
-		{
-			
-		}
-		else // longestLength != 0
-		{
-			
-		}
+		Hashtable<String, HashSet<BFP2P>> htshsbf = new Hashtable<String, HashSet<BFP2P>>();
 		
+		Iterator<BFP2P> iterator = this.containerLocal.iterator();
+		while(iterator.hasNext())
+		{
+			BFP2P bf_tmp = iterator.next();
+			BFToPath bfToPath = new BFToPath(bf_tmp, Config.sizeOfFragment);
+			LongestZero longestZero = new LongestZero(bf_tmp, Config.sizeOfFragment);
+			
+			int longestLength = longestZero.getLongestLength();
+			String longestPrefix ;
+			
+			if (longestLength != 0)
+			{
+				longestPrefix = longestZero.getLongestPrefix();
+			}
+			else //longestLength == 0
+			{
+				longestPrefix = "/" + bf_tmp.getFragment(rang).toInt();
+			}
+			
+			if (htshsbf.containsKey(longestPrefix))
+			{
+				BFP2P bf_tmp2 = (new PathToBF(bfToPath.split(longestLength, Config.numberOfFragment), 
+								Config.sizeOfFragment)).convert();
+				htshsbf.get(longestPrefix).add(bf_tmp2);
+			}
+			else // !htshsbf.containsKey(longestPrefix)
+			{
+				BFP2P bf_tmp2 = (new PathToBF(bfToPath.split(longestLength, Config.numberOfFragment), 
+						Config.sizeOfFragment)).convert();
+				HashSet<BFP2P> hsbf = new HashSet<BFP2P>();
+				hsbf.add(bf_tmp2);
+				htshsbf.put(longestPrefix, hsbf);
+			}
+		}
 		
 		return null;
 	}
