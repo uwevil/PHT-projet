@@ -12,21 +12,19 @@ public class BFP2P implements Serializable
 	 */
 	private static final long serialVersionUID = 1L;
 	private BitSet bitset;
-	private int bitsPerElement;
 	private int bitSetSize;
 	
-	/* 
+	/** 
 	 * Créer un filtre vide avec la taille bitSetSize et la taille d'un fragment btsPerElement
 	 * */
 	
-	public BFP2P(int bitSetSize, int bitsPerElement)
+	public BFP2P(int bitSetSize)
 	{
 		this.bitset = new BitSet(bitSetSize);
 		this.bitSetSize = bitSetSize;
-		this.bitsPerElement = bitsPerElement;
 	}
 	
-	/* 
+	/** 
 	 * Créer un filtre à partir d'une chaîne de caractère : 0 et 1 et avec la taille d'un fragment bitsPerElement
 	 * lever Exception quand la chaîne contient les autres caractères.
 	 * */
@@ -34,9 +32,7 @@ public class BFP2P implements Serializable
 	public BFP2P(String chaineBits, int bitsPerElement) throws ErrorException
 	{
 		char[] chararray = chaineBits.toCharArray();
-	
-		this.bitsPerElement = bitsPerElement;
-		
+			
 		this.bitset = new BitSet(chararray.length);
 		this.bitSetSize = chararray.length;
 		for (int i = 0; i< this.bitSetSize; i++)
@@ -50,7 +46,7 @@ public class BFP2P implements Serializable
 		}
 	}
 	
-	/* 
+	/** 
 	 * Test l'égalité entre 2 filtres
 	 * */
 	
@@ -64,14 +60,13 @@ public class BFP2P implements Serializable
 		
 		if (this.bitSetSize != other.bitSetSize)
 			return false;
-		if (this.bitsPerElement != other.bitsPerElement)
-			return false;
+		
 		if (this.bitset != other.bitset && (this.bitset == null || !this.bitset.equals(other.bitset)))
 			return false;
 		return true;
 	}
 	
-	/* 
+	/** 
 	 * Ajout une chaîne de description sous forme: mot1,mot2,mot3... dans le filtre
 	 * */
 	
@@ -126,7 +121,7 @@ public class BFP2P implements Serializable
 	/* 
 	 * Ajout un mot dans le filtre
 	 * */
-	
+	/*
 	public void add(String a)
 	{
 		if (a.equals(""))
@@ -168,8 +163,9 @@ public class BFP2P implements Serializable
 			e.printStackTrace();
 		}
 	}
+	*/
 	
-	/*
+	/**
 	 *  Mettre le bit à la position 'index' une valeur 'v'
 	 **/
 	
@@ -187,7 +183,7 @@ public class BFP2P implements Serializable
 		return bitset.get(index);
 	}
 	
-	/* 
+	/** 
 	 * Rendre la taille du filtre
 	 * */
 	
@@ -196,7 +192,7 @@ public class BFP2P implements Serializable
 		return bitSetSize;
 	}
 	
-	/* 
+	/** 
 	 * Rendre la valeur du filtre sous forme un BitSet
 	 * */
 	
@@ -208,15 +204,6 @@ public class BFP2P implements Serializable
 			res.set(i, this.getBit(i));
 				
 		return res;
-	}
-	
-	/* 
-	 * Rendre la taille d'un fragment
-	 * */
-	
-	public int getBitsPerElement()
-	{
-		return this.bitsPerElement;
 	}
 	
 	public String toString()
@@ -231,7 +218,7 @@ public class BFP2P implements Serializable
 		return s;
 	}
 	
-	/* 
+	/** 
 	 * Test si le filtre contient un autre filtre
 	 * */
 	
@@ -245,8 +232,6 @@ public class BFP2P implements Serializable
 		
 		if (this.bitSetSize != other.bitSetSize)
 			return false;
-		if (this.bitsPerElement != other.bitsPerElement)
-			return false;
 		
 		for (int i = 0; i < bitSetSize; i++)
 			if (this.bitset.get(i) && !other.getBit(i))
@@ -254,21 +239,21 @@ public class BFP2P implements Serializable
 		return true;
 	}
 	
-	/* 
+	/** 
 	 * Rendre le fragment à la position 'index'
 	 * */
 	
-	public FragmentP2P getFragment(int index)
+	public FragmentP2P getFragment(int index, int sizeOfFragment)
 	{
-		if (index * this.bitsPerElement >= bitSetSize)
+		if (index * sizeOfFragment >= bitSetSize)
 		{
-			System.out.println("HEREEEEEE PROB " + index*this.bitsPerElement + " >= " + bitSetSize);
+			System.out.println("HEREEEEEE PROB " + index*sizeOfFragment + " >= " + bitSetSize);
 			return null;
 		}
 			
-		FragmentP2P f = new FragmentP2P(bitsPerElement);
+		FragmentP2P f = new FragmentP2P(sizeOfFragment);
 		int j = 0;
-		for (int i = index*bitsPerElement ; i < (index + 1)*bitsPerElement; i++)
+		for (int i = index*sizeOfFragment ; i < (index + 1)*sizeOfFragment; i++)
 			f.setBit(j++, this.getBit(i));
 		
 		return  f;

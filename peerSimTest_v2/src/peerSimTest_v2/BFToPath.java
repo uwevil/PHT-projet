@@ -26,7 +26,7 @@ public class BFToPath {
 		int numberOfFragment = bf.size()/sizeOfFragment;
 		
 		for (int i = 0; i < numberOfFragment; i++)
-			s += "/" + (bf.getFragment(i)).toInt();
+			s += "/" + (bf.getFragment(i, sizeOfFragment)).toInt();
 		
 		return s;
 	}
@@ -43,7 +43,7 @@ public class BFToPath {
 			
 			for (int i = start; i <= (stop >= bf.size()/sizeOfFragment ? bf.size()/sizeOfFragment - 1 : stop); i++)
 			{
-				s += "/" + bf.getFragment(i).toInt();
+				s += "/" + bf.getFragment(i, sizeOfFragment).toInt();
 			}
 			return s;
 		} catch (ErrorException e) {

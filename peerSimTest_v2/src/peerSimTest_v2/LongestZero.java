@@ -17,11 +17,11 @@ public class LongestZero {
 		
 		for (int i = 0; i < bf.size()/sizeOfFragment; i++)
 		{
-			if (bf.getFragment(i).toInt() != 0)
+			if (bf.getFragment(i, sizeOfFragment).toInt() != 0)
 				break;
 			
 			long0++;
-			prefix0 += "/" + bf.getFragment(i).toInt();
+			prefix0 += "/" + bf.getFragment(i, sizeOfFragment).toInt();
 		}
 		
 		longestLength = long0;
@@ -44,7 +44,7 @@ public class LongestZero {
 		int long0 = 0;
 		for (int i = 0; i < stop; i++)
 		{
-			if (bf.getFragment(i).toInt() != 0)
+			if (bf.getFragment(i, sizeOfFragment).toInt() != 0)
 				break;
 			
 			long0++;
@@ -73,11 +73,11 @@ public class LongestZero {
 		
 		for (int i = 0; i < stop; i++)
 		{
-			if (bf.getFragment(i).toInt() != 0)
+			if (bf.getFragment(i, sizeOfFragment).toInt() != 0)
 				break;
 			
 			long0++;
-			prefix0 += "/" + bf.getFragment(i).toInt();
+			prefix0 += "/" + bf.getFragment(i, sizeOfFragment).toInt();
 		}
 				
 		if (long0 == 0)
