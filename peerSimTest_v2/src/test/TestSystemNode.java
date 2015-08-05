@@ -16,19 +16,19 @@ public class TestSystemNode {
 		
 		BFP2P bf1 = (new PathToBF(s, 8)).convert();
 
-		SystemNodeP2P systemIndex = new SystemNodeP2P(0, "/23/21/211", 0);
+		SystemNodeP2P systemIndex = new SystemNodeP2P(0, "/12/1", 0);
 		
-		systemIndex.add("/23/21/211/0/0/0/0/0/0", 20);
-		systemIndex.add("/23/21/211/10", 23);
+		systemIndex.add("/0/0/0/0/0/0", 20);
+		systemIndex.add("/10", 23);
 		
 		Object o = systemIndex.add(bf1);
 		
-		System.out.println(systemIndex.getContainerLocal().toString());
+	//	System.out.println(systemIndex.getContainerLocal().toString());
 		
-		System.out.println((Message)o);
-		System.out.println((new BFToPath((BFP2P)(((Message)o).getData()), 8)).convert());
+	//	System.out.println((Message)o);
+	//	System.out.println((new BFToPath((BFP2P)(((Message)o).getData()), 8)).convert());
 		
-		/*
+		
 		Enumeration<String> enumeration = ((Hashtable<String, HashSet<BFP2P>>) o).keys();
 		
 		while (enumeration.hasMoreElements())
@@ -42,7 +42,7 @@ public class TestSystemNode {
 			System.out.println("   " 
 					+ (new BFToPath(iterator.next(), 8)).convert());
 		}
-		*/
+		
 	}
 
 }

@@ -76,23 +76,18 @@ public class SystemNodeP2P implements Serializable{
 		return this.limit;
 	}
 	
-	/**
-	 * Ajouter le filtre dans le nœud.
-	 * 
-	 * Retourner null si réussit, sinon soit une chaîne de caractères soit un conteneur local
+	/** Ajouter le filtre dans le nœud.
+	 * 	Retourner : soit un message, soit Hashtable< String, HashSet< BFP2P>>.
 	 * */
-	
 	public Object add(BFP2P bf) throws ErrorException
 	{	
 		LongestZero longestZero = new LongestZero(bf, Config.sizeOfFragment);
 		
 		int longestLength = longestZero.getLongestLength();
 		String longestPrefix ;
-		
+				
 		if (longestLength != 0)
-		{
-			longestPrefix = longestZero.getLongestPrefix();
-			
+		{			
 			if (!this.localRoute.containsKey((Object)longestLength))
 			{
 				if (this.containerLocal.size() < this.limit)
@@ -103,7 +98,7 @@ public class SystemNodeP2P implements Serializable{
 				
 				this.containerLocal.add(bf);
 			}
-			else
+			else // this.localRoute.containsKey((Object)longestLength)
 			{
 				String path_tmp;
 				longestPrefix = longestZero.getLongestPrefix();
@@ -117,9 +112,7 @@ public class SystemNodeP2P implements Serializable{
 					path_tmp = this.path + longestPrefix;
 				}
 				
-				BFP2P bf_tmp2 = (new PathToBF((new BFToPath(bf, Config.sizeOfFragment))
-						.split(longestLength, Config.numberOfFragment), 
-						Config.sizeOfFragment)).convert();
+				BFP2P bf_tmp2 = (new PathToBF(longestZero.getRemainPrefix(), Config.sizeOfFragment)).convert();
 				
 				Message rep = new Message();
 				rep.setType("add");
@@ -145,7 +138,7 @@ public class SystemNodeP2P implements Serializable{
 				
 				this.containerLocal.add(bf);
 			}
-			else
+			else //this.localRoute.containsKey((Object)longestPrefix)
 			{
 				String path_tmp;
 				
@@ -158,9 +151,7 @@ public class SystemNodeP2P implements Serializable{
 					path_tmp = this.path + longestPrefix;
 				}
 				
-				BFP2P bf_tmp2 = (new PathToBF((new BFToPath(bf, Config.sizeOfFragment))
-						.split(1, Config.numberOfFragment), 
-						Config.sizeOfFragment)).convert();
+				BFP2P bf_tmp2 = (new PathToBF(longestZero.getRemainPrefix(1), Config.sizeOfFragment)).convert();
 				
 				Message rep = new Message();
 				rep.setType("add");
@@ -176,21 +167,25 @@ public class SystemNodeP2P implements Serializable{
 		Hashtable<String, HashSet<BFP2P>> htshsbf = new Hashtable<String, HashSet<BFP2P>>();
 		
 		Iterator<BFP2P> iterator = this.containerLocal.iterator();
+		
 		while(iterator.hasNext())
 		{
 			BFP2P bf_tmp = iterator.next();
-			BFToPath bfToPath = new BFToPath(bf_tmp, Config.sizeOfFragment);
 			longestZero = new LongestZero(bf_tmp, Config.sizeOfFragment);
 			
 			longestLength = longestZero.getLongestLength();
 			
+			BFP2P bf_tmp2;
+			
 			if (longestLength != 0)
 			{
 				longestPrefix = longestZero.getLongestPrefix();
+				bf_tmp2 = (new PathToBF(longestZero.getRemainPrefix(), Config.sizeOfFragment)).convert();
 			}
 			else //longestLength == 0
 			{
 				longestPrefix = "/" + bf_tmp.getFragment(0, Config.sizeOfFragment).toInt();
+				bf_tmp2 = (new PathToBF(longestZero.getRemainPrefix(1), Config.sizeOfFragment)).convert();
 			}
 			
 			String path_tmp ;
@@ -203,16 +198,12 @@ public class SystemNodeP2P implements Serializable{
 				path_tmp = longestPrefix;
 			}
 			
-			if (htshsbf.containsKey(longestPrefix))
+			if (htshsbf.containsKey(path_tmp))
 			{
-				BFP2P bf_tmp2 = (new PathToBF(bfToPath.split(longestLength, Config.numberOfFragment), 
-								Config.sizeOfFragment)).convert();
 				htshsbf.get(path_tmp).add(bf_tmp2);
 			}
 			else // !htshsbf.containsKey(longestPrefix)
 			{
-				BFP2P bf_tmp2 = (new PathToBF(bfToPath.split(longestLength, Config.numberOfFragment), 
-						Config.sizeOfFragment)).convert();
 				HashSet<BFP2P> hsbf = new HashSet<BFP2P>();
 				hsbf.add(bf_tmp2);
 				htshsbf.put(path_tmp, hsbf);
@@ -232,33 +223,35 @@ public class SystemNodeP2P implements Serializable{
 	{
 		int rang = (new CalculRangP2P()).getRang(this.path);
 				
+		PathToBF pathToBF = new PathToBF(path, Config.sizeOfFragment);
+		LongestZero longestZero = new LongestZero(pathToBF.convert(), Config.sizeOfFragment);
+		
 		if (rang == 0)
-		{
-			PathToBF pathToBF = new PathToBF(path, Config.sizeOfFragment);
-			int longestLength = (new LongestZero(pathToBF.convert(), Config.sizeOfFragment)).getLongestLength();
-			
-			if (longestLength != 0)
+		{	
+			if (longestZero.getLongestLength() != 0)
 			{
-				this.localRoute.put((Object) longestLength, nodeID);
+				this.localRoute.put(longestZero.getLongestLength(), nodeID);
 			}
-			else
+			else // longestLength == 0
 			{
-				this.localRoute.put(this.path + pathToBF.convert().getFragment(0, Config.sizeOfFragment).toInt(), nodeID);
+				String path_tmp = pathToBF.split(rang+1, Config.sizeOfBF);
+				this.localRoute.put(path_tmp, nodeID);
 			}
 		}
-		else
+		else // rang != 0
 		{
-			PathToBF pathToBF = new PathToBF(path, Config.sizeOfFragment);
-			pathToBF = new PathToBF(pathToBF.split(rang + 1, Config.numberOfFragment), Config.sizeOfFragment);
-			int longestLength = (new LongestZero(pathToBF.convert(), Config.sizeOfFragment)).getLongestLength();
-
-			if (longestLength != 0)
+			String path_tmp = pathToBF.split(rang+1, Config.sizeOfBF);
+			pathToBF = new PathToBF(path_tmp, Config.sizeOfFragment);
+			longestZero = new LongestZero(pathToBF.convert(), Config.sizeOfFragment);
+			
+			if (longestZero.getLongestLength() != 0)
 			{
-				this.localRoute.put((Object) longestLength, nodeID);
+				this.localRoute.put(longestZero.getLongestLength(), nodeID);
 			}
-			else
+			else // longestLength == 0
 			{
-				this.localRoute.put("/" + pathToBF.convert().getFragment(0, Config.sizeOfFragment).toInt(), nodeID);
+				path_tmp = pathToBF.split(1, Config.sizeOfBF);
+				this.localRoute.put(path_tmp, nodeID);
 			}
 		}
 	}

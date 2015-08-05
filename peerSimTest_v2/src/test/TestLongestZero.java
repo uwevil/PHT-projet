@@ -14,8 +14,9 @@ public class TestLongestZero {
 		BFP2P bf1 = (new PathToBF(s, 8)).convert();
 		String bfToPath = (new BFToPath(bf1, 8)).convert();
 		int longestLength = (new LongestZero(bf1, 8)).getLongestLength();
-		String longestPrefix = (new LongestZero(bf1, 8)).getLongestPrefix();
-		String remainingPrefix = (new BFToPath(bf1, 8)).split(longestLength, 11);
+		LongestZero longestZero = new LongestZero(bf1, 8);
+		String longestPrefix = longestZero.getLongestPrefix();
+		String remainingPrefix = longestZero.getRemainPrefix();
 		
 		System.out.println(bf1);
 		System.out.println(bfToPath);
@@ -25,13 +26,12 @@ public class TestLongestZero {
 
 		System.out.println("-------------");
 		
-	//	System.out.println((new LongestZero((new PathToBF(remainingPrefix, 8)).convert(), 8)).getLongestLength(4));
-	//	System.out.println((new LongestZero((new PathToBF(remainingPrefix, 8)).convert(), 8)).getLongestPrefix(4));
-	//	System.out.println((new BFToPath((new PathToBF(remainingPrefix, 8)).convert(), 8)).split(1, 100));
+		System.out.println((new LongestZero((new PathToBF(remainingPrefix, 8)).convert(), 8)).getLongestLength(4));
+		System.out.println((new LongestZero((new PathToBF(remainingPrefix, 8)).convert(), 8)).getLongestPrefix(4));
+		System.out.println((new BFToPath((new PathToBF(remainingPrefix, 8)).convert(), 8)).split(1, 100));
 		
 		System.out.println("-----------------");
 		
-		System.out.println((new PathToBF(remainingPrefix, 8)).split(0, 4));
 	}
 
 }

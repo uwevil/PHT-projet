@@ -5,7 +5,8 @@ public class LongestZero {
 	private BFP2P bf;
 	private int sizeOfFragment;
 	private int longestLength;
-	private String longestPrefix;
+	private String longestPrefix = new String();
+	private String remainPrefix = new String();
 	
 	public LongestZero(BFP2P bf, int sizeOfFragment)
 	{		
@@ -14,7 +15,7 @@ public class LongestZero {
 		
 		int long0 = 0;
 		String prefix0 = new String();
-		
+
 		for (int i = 0; i < bf.size()/sizeOfFragment; i++)
 		{
 			if (bf.getFragment(i, sizeOfFragment).toInt() != 0)
@@ -33,6 +34,18 @@ public class LongestZero {
 		else
 		{
 			longestPrefix = prefix0;
+		}
+		
+		if (long0 == bf.size())
+		{
+			remainPrefix = null;
+		}
+		else
+		{
+			for (int i = long0; i < bf.size()/sizeOfFragment; i++)
+			{
+				remainPrefix += "/" + bf.getFragment(i, sizeOfFragment).toInt();
+			}
 		}
 	}
 	
@@ -63,6 +76,11 @@ public class LongestZero {
 		return this.longestPrefix;
 	}
 	
+	public String getRemainPrefix()
+	{
+		return this.remainPrefix;
+	}
+	
 	public String getLongestPrefix(int stop)
 	{
 		if (stop >= bf.size()/sizeOfFragment)
@@ -86,5 +104,20 @@ public class LongestZero {
 		}
 		
 		return prefix0;
+	}
+	
+	public String getRemainPrefix(int start)
+	{
+		if (start < 0)
+			return null;
+		
+		String remain = new String();
+		
+		for (int i = start; i < bf.size()/sizeOfFragment; i++)
+		{
+			remain += "/" + bf.getFragment(i, sizeOfFragment).toInt();
+		}
+		
+		return remain;
 	}
 }
