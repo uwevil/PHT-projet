@@ -38,8 +38,8 @@ public class MSPastry implements DhtInterface, EDProtocol {
         code = PhtUtil.hashMe(dest);
         recipient = new BigInteger(code);
         MSPClient.lock();
-        System.out.printf("\n[[%d]] PHT MSPastry::send %s\n\n", this.msp.nodeId, recipient);
-//        this.msp.setMspastryid(this.mspId);
+        System.out.printf("\n-->[[%d]] PHT MSPastry::send %s\n\n", this.msp.nodeId, recipient);
+        //this.msp.setMspastryid(this.mspId);
 
 
         this.msp.send( recipient, message);
