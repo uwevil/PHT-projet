@@ -1,9 +1,8 @@
 package test;
 
 import peerSimTest_v2.BFP2P;
-import peerSimTest_v2.BFToPath;
+import peerSimTest_v2.Config;
 import peerSimTest_v2.LongestZero;
-import peerSimTest_v2.PathToBF;
 
 public class TestLongestZero {
 
@@ -11,8 +10,10 @@ public class TestLongestZero {
 	{
 		String s = "/0/0/0/0/0/0/1/22/0/0/0/8";
 		
-		BFP2P bf1 = (new PathToBF(s, 8)).convert();
-		String bfToPath = (new BFToPath(bf1, 8)).convert();
+		BFP2P bf1 = (new BFP2P()).pathToBF(s, 0, 100, Config.sizeOfFragment);
+		System.out.println("bf1.size() = " + bf1.size());
+
+		String bfToPath = bf1.toPath(0, 100);
 		int longestLength = (new LongestZero(bf1, 8)).getLongestLength();
 		LongestZero longestZero = new LongestZero(bf1, 8);
 		String longestPrefix = longestZero.getLongestPrefix();
@@ -26,11 +27,14 @@ public class TestLongestZero {
 
 		System.out.println("-------------");
 		
-		System.out.println((new LongestZero((new PathToBF(remainingPrefix, 8)).convert(), 8)).getLongestLength(4));
-		System.out.println((new LongestZero((new PathToBF(remainingPrefix, 8)).convert(), 8)).getLongestPrefix(4));
-		System.out.println((new BFToPath((new PathToBF(remainingPrefix, 8)).convert(), 8)).split(1, 100));
+		System.out.println((new LongestZero((new BFP2P())
+				.pathToBF(remainingPrefix, 0, 100, Config.sizeOfFragment), 8)).getLongestLength(4));
+		System.out.println((new LongestZero((new BFP2P())
+				.pathToBF(remainingPrefix, 0, 100, Config.sizeOfFragment), 8)).getLongestPrefix(4));
+		System.out.println((new BFP2P()).pathToBF(remainingPrefix, 1, 100, Config.sizeOfFragment).toPath(0, 100));
 		
 		System.out.println("-----------------");
+		 
 		
 	}
 

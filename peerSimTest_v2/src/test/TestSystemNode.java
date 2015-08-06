@@ -14,22 +14,22 @@ public class TestSystemNode {
 	{
 		String s = "/0/0/0/0/0/0/1/22/0/0/0/8";
 		
-		BFP2P bf1 = (new PathToBF(s, 8)).convert();
+		BFP2P bf1 = (new BFP2P()).pathToBF(s, 0, Config.numberOfFragment, Config.sizeOfFragment);
 
-		SystemNodeP2P systemIndex = new SystemNodeP2P(0, "/12/1", 0);
+		SystemNodeP2P systemIndex = new SystemNodeP2P(0, "/12", 1);
 		
-		systemIndex.add("/0/0/0/0/0/0", 20);
-		systemIndex.add("/10", 23);
+		systemIndex.add("/12/0/0/0/0/0/0", 20);
+		systemIndex.add("/12", 23);
 		
 		Object o = systemIndex.add(bf1);
 		
-	//	System.out.println(systemIndex.getContainerLocal().toString());
+		System.out.println(systemIndex.getContainerLocal().toString());
 		
-	//	System.out.println((Message)o);
-	//	System.out.println((new BFToPath((BFP2P)(((Message)o).getData()), 8)).convert());
+		System.out.println((Message)o);
+		System.out.println(((BFP2P)(((Message)o).getData())).toPath(0, Config.numberOfFragment));
 		
 		
-		Enumeration<String> enumeration = ((Hashtable<String, HashSet<BFP2P>>) o).keys();
+	/*	Enumeration<String> enumeration = ((Hashtable<String, HashSet<BFP2P>>) o).keys();
 		
 		while (enumeration.hasMoreElements())
 		{
@@ -40,9 +40,13 @@ public class TestSystemNode {
 			Iterator<BFP2P> iterator = ((Hashtable<String, HashSet<BFP2P>>)o).get(tmp).iterator();
 			
 			System.out.println("   " 
-					+ (new BFToPath(iterator.next(), 8)).convert());
+					+ ((BFP2P)iterator.next()).toPath(0, Config.numberOfFragment));
 		}
-		
+	*/	
+		int i = 1;
+		Object ii = i;
+		if (((Object)i).getClass().getName().equals("java.lang.Integer"))
+			System.out.println("essssssssssss");
 	}
 
 }

@@ -1,18 +1,27 @@
 package peerSimTest_v2;
 
+/**Type de message :
+ * <ul>
+ * 	<p>
+ * 	<li> createIndex
+ * 	<li> removeIndex
+ * 	<li> add
+ * 	<li> remove
+ * 	<li> search
+ * 	</p>
+ * </ul>
+ * <ul>
+ * 	<p> 
+ * 	<li> createNode
+ * 	<li> removeNode
+ * 	</p>
+ * </ul>
+ * <ul>
+ * 	<li> OK
+ * </ul>
+ * 
+ **/
 public class Message {
-	/*Type de message
-	 * createIndex
-	 * removeIndex
-	 * add
-	 * remove
-	 * search
-	 * 
-	 * createNode
-	 * removeNode
-	 * 
-	 * OK
-	 * */
 	
 	private String indexName;
 	private String type = "";
@@ -23,10 +32,52 @@ public class Message {
 	private Object option1 = null;
 	private Object option2 = null;
 	
+	/**Type de message :
+	 * <ul>
+	 * 	<p>
+	 * 	<li> createIndex
+	 * 	<li> removeIndex
+	 * 	<li> add
+	 * 	<li> remove
+	 * 	<li> search
+	 * 	</p>
+	 * </ul>
+	 * <ul>
+	 * 	<p> 
+	 * 	<li> createNode
+	 * 	<li> removeNode
+	 * 	</p>
+	 * </ul>
+	 * <ul>
+	 * 	<li> OK
+	 * </ul>
+	 * 
+	 **/
 	public Message()
 	{
 	}
 	
+	/**Type de message :
+	 * <ul>
+	 * 	<p>
+	 * 	<li> createIndex
+	 * 	<li> removeIndex
+	 * 	<li> add
+	 * 	<li> remove
+	 * 	<li> search
+	 * 	</p>
+	 * </ul>
+	 * <ul>
+	 * 	<p> 
+	 * 	<li> createNode
+	 * 	<li> removeNode
+	 * 	</p>
+	 * </ul>
+	 * <ul>
+	 * 	<li> OK
+	 * </ul>
+	 * 
+	 **/
 	public Message(String type, String indexName, String path, int src, int dest, Object data)
 	{
 		this.indexName = indexName;

@@ -94,9 +94,9 @@ public class FragmentP2P implements Serializable{
 		return true;
 	}
 	
-	/* 
+	/**
 	 * Convertir le fragment en entier
-	 * */
+	 **/
 	
 	public int toInt()
 	{
@@ -112,17 +112,17 @@ public class FragmentP2P implements Serializable{
 	 * Convertir un entier 'a' en fragment de taille 'nbits'
 	 * */
 	
-	public FragmentP2P intToFragment(int nbits, int a)
+	public FragmentP2P intToFragment(int a)
 	{
 		int val = a;
-		FragmentP2P f = new FragmentP2P(nbits);
+		FragmentP2P f = new FragmentP2P(this.size);
 		
-		for (int i = 0; i < nbits; i++)
+		for (int i = 0; i < this.size; i++)
 		{
-			if (1<<(nbits - i - 1) <= val)
+			if (1<<(this.size - i - 1) <= val)
 			{
-				f.setBit(nbits - i - 1, true);
-				val = val - (1<<(nbits - i - 1));
+				f.setBit(this.size - i - 1, true);
+				val = val - (1<<(this.size - i - 1));
 			}
 		}
 		
@@ -145,5 +145,24 @@ public class FragmentP2P implements Serializable{
 	public int size()
 	{
 		return this.size;
+	}
+	
+	public String toPath()
+	{
+		return "/" + this.toInt();
+	}
+	
+	public FragmentP2P pathToFragment(String path)
+	{		
+		char[] array = path.toCharArray();
+		String s = new String();
+		for (int i = 1; i < array.length; i++)
+		{
+			if (array[i] != '/')
+				s += array[i];
+		}
+		
+		FragmentP2P f = (new FragmentP2P(this.size)).intToFragment(Integer.parseInt(s));
+		return f;
 	}
 }

@@ -24,12 +24,15 @@ public class BFP2P implements Serializable
 		this.bitSetSize = bitSetSize;
 	}
 	
+	public BFP2P()
+	{}
+	
 	/** 
 	 * Créer un filtre à partir d'une chaîne de caractère : 0 et 1 et avec la taille d'un fragment bitsPerElement
 	 * lever Exception quand la chaîne contient les autres caractères.
 	 * */
 	
-	public BFP2P(String chaineBits, int bitsPerElement) throws ErrorException
+	public BFP2P(String chaineBits) throws ErrorException
 	{
 		char[] chararray = chaineBits.toCharArray();
 			
@@ -259,6 +262,59 @@ public class BFP2P implements Serializable
 		return  f;
 	}
 	
+	/**
+	 * [start, stop]
+	 * 
+	 * */
+	
+	public String toPath(int start, int stop)
+	{
+		try {
+			String s = new String();
+			
+			if (start < 0)
+				throw new ErrorException("toPath : start < 0 = " + start);
+			
+			int max = stop;
+			
+			if (stop >= this.bitSetSize/Config.sizeOfFragment)
+				max = this.bitSetSize/Config.sizeOfFragment - 1;
+			
+			for (int i = start; i <= max; i++)
+				s += "/" + this.getFragment(i, Config.sizeOfFragment).toInt();
+			
+			return s;
+		} catch (ErrorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	public BFP2P pathToBF(String path, int start, int stop, int sizeOfFragment)
+	{
+		try {
+			if (start < 0 || start > stop)
+				throw new ErrorException("pathToBF : start invalid = " + start);
+			
+			String[] s = path.split("/");
+			
+			if (stop > s.length - 2)
+				stop = s.length - 2;
+			
+			String s_tmp = new String();
+			for (int i = start + 1; i <= stop + 1; i++)
+				s_tmp += ((new FragmentP2P(sizeOfFragment)).intToFragment(Integer.parseInt(s[i]))).toString();
+			
+			return (new BFP2P(s_tmp));
+		} catch (ErrorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
 }
 
 
