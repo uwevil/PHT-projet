@@ -450,7 +450,7 @@ public class PhtProtocol implements EDProtocol {
             }
         }
 
-        // Continue the lookup is the node is not a leaf
+        // Continue the lookup if the node is not a leaf
         if (! node.isLeaf()) {
             log( String.format("((%d)) <noLeaf> processLinLookup :: node %d" +
                             " :: node's label: '%s' :: key: '%s' :: op: %d\n",

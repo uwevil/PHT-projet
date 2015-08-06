@@ -5,5 +5,7 @@
 	<classpathentry kind="lib" path="/Users/taysir/Documents/lip6_2e_sejour/simulations/lib/peersim-1.0.5.jar"/>
 	<classpathentry kind="lib" path="/Users/taysir/Documents/lip6_2e_sejour/simulations/lib/djep-1.0.0.jar"/>
 	<classpathentry kind="lib" path="/Users/taysir/Documents/lip6_2e_sejour/simulations/lib/jep-2.3.0.jar"/>
+	<classpathentry kind="lib" path="/Users/taysir/Documents/lip6_2e_sejour/simulations/lib/pastry/classes"/>
+	<classpathentry kind="lib" path="/Users/taysir/Documents/lip6_2e_sejour/simulations/lib/commons-codec-1.10/commons-codec-1.10.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -36,7 +36,7 @@ public class MSPInit implements Control{
 
             lst.setNode(Network.get(i));
             msprot.setListener(lst);
-            msprot.setMspastryid(this.mspid);
+            //msprot.setMspastryid(this.mspid);
             dht.setMSP(msprot);
             prot.setDht(dht);
             prot.setNodeId(i);
