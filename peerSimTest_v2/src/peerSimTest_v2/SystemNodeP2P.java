@@ -97,6 +97,18 @@ public class SystemNodeP2P implements Serializable{
 		{			
 			if (!this.localRoute.containsKey((Object)longestLength))
 			{
+				/*
+				//***********************LOG***************
+				WriteFile wf = new WriteFile(Config.peerSimLOG+"_containerLocal_" + server, true);
+				Iterator<BFP2P> iterator = this.containerLocal.iterator();
+				
+				while (iterator.hasNext())
+				{
+					wf.write(" " + iterator.next().toPath(0, 100)+ "\n");
+				}
+				wf.close();
+				//******************************************
+				*/
 				if (this.containerLocal.size() < this.limit)
 				{
 					this.containerLocal.add(bf);
@@ -234,7 +246,7 @@ public class SystemNodeP2P implements Serializable{
 				
 		BFP2P bf = (new BFP2P()).pathToBF(path, 0, Config.numberOfFragment, Config.sizeOfFragment);
 		LongestZero longestZero = new LongestZero(bf, Config.sizeOfFragment);
-		
+
 		if (rang == 0)
 		{	
 			if (longestZero.getLongestLength() != 0)
@@ -263,6 +275,29 @@ public class SystemNodeP2P implements Serializable{
 				this.localRoute.put(path_tmp, nodeID);
 			}
 		}
+		/**/
+		if (longestZero.getLongestLength() == 0 || longestZero.getLongestLength() < 7)
+			return;
+		//***********************LOG***************	
+		WriteFile wf = new WriteFile(Config.peerSimLOG+"_localRoute_" + server, true);
+		Enumeration<Object> enumeration = this.localRoute.keys();
+		wf.write(this.path + " host\n");
+		while (enumeration.hasMoreElements())
+		{
+			Object o = enumeration.nextElement();
+			if (o.getClass().getName().equals("java.lang.Integer"))
+			{
+				wf.write((Integer)o + " " + this.localRoute.get(o)+ "\n");
+			}
+			else
+			{
+				wf.write((String)o + " " + this.localRoute.get(o)+ "\n");
+			}
+			wf.write("       " + path + " " + nodeID + "\n");
+		}
+		wf.close();
+		//******************************************
+		
 	}
 	
 	/**

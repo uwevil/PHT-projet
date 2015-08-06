@@ -29,8 +29,8 @@ public class Message {
 	private String path;
 	private int src;
 	private int dest;
-	private Object option1 = null;
-	private Object option2 = null;
+	private int requestID;
+	private Object option = null;
 	
 	/**Type de message :
 	 * <ul>
@@ -148,24 +148,24 @@ public class Message {
 		this.dest = dest;
 	}
 	
-	public Object getOption1()
+	public int getRequestID()
 	{
-		return this.option1;
+		return this.requestID;
 	}
 	
-	public void setOption1(Object option1)
+	public void setRequestID(int requestID)
 	{
-		this.option1 = option1;
+		this.requestID = requestID;
 	}
 	
-	public Object getOption2()
+	public Object getOption()
 	{
-		return this.option2;
+		return this.option;
 	}
 	
-	public void setOption2(Object option2)
+	public void setOption(Object option)
 	{
-		this.option2 = option2;
+		this.option = option;
 	}
 	
 	
@@ -178,8 +178,8 @@ public class Message {
 				+ "Data         : " + this.getData() + "\n  "
 				+ "Source       : " + this.getSource() + "\n  "
 				+ "Destinataire : " + this.getDestinataire() + "\n  "
-				+ "Option1      : " + this.option1 + "\n  "
-				+ "Option2      : " + this.option2 + "\n";
+				+ "RequestID    : " + this.requestID + "\n  "
+				+ "Option       : " + this.option + "\n";
 	}
 	
 }

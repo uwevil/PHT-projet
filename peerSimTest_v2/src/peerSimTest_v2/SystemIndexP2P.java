@@ -108,8 +108,19 @@ public class SystemIndexP2P implements Serializable{
 	{
 		if (!this.listNode.containsKey(path))
 		{
+			System.out.println("dsqdqsdqs");
 			this.listNode.put(path, node);
 		}
+	}
+	
+	/**
+	 * Ajout nodeID à localRoute du nœud
+	 * 
+	 * */
+	
+	public void addPathNodeID(String path_father, String path, int nodeID)
+	{
+		this.listNode.get(path_father).add(path, nodeID);
 	}
 		
 	/**
@@ -129,13 +140,7 @@ public class SystemIndexP2P implements Serializable{
 		
 		if (n == null)
 			return null;
-		
-		ControlerNw.config_log.getTranslate().setLength(1000000);
-		int key = ControlerNw.config_log.getTranslate().translate(bf.toString());
-		//****************Compteur un nœud visité************
-		ControlerNw.search_log.get(key).addNodeVisited(1);
-		//***************************************************
-		
+
 		return n.search(bf);
 	}
 	 
@@ -174,85 +179,7 @@ public class SystemIndexP2P implements Serializable{
 	
 	public Object remove(BFP2P bf, String path)
 	{
-		/*
-		SystemNodeP2P n = (SystemNodeP2P)listNode.get(path);
-		if (n == null)
-			return null;
-		
-		Object o = n.remove(bf);
-		if (o == null)
-			return null;
-		if (path == "/")
-			return null;
-		
-		Message rep = new Message();
-		
-		while (o != null)
-		{
-			if (((o.getClass()).getName()).equals("java.lang.String"))
-			{
-				if (!listNode.containsKey((String)o))
-				{
-					rep.setData(o);
-					rep.setOption1("remove");
-					return rep;
-				}
-				else
-				{
-					n = listNode.get((String)o);
-					o = n.remove(bf);
-				}
-			}else{ // localRoute
-				String path_tmp = n.getPath();
-				int rang_tmp = n.getRang();
-
-				if (path_tmp == "/")
-					return null;
-				
-				listNode.remove(path_tmp);
-
-				int endIndex = path_tmp.lastIndexOf('/');
-				
-				if (!this.listNode.containsKey(path_tmp.substring(0, endIndex)))
-				{
-					rep.setData(path_tmp.substring(0, endIndex));
-					rep.setOption1("removeNode");
-					return rep;
-				}
-				
-				n = (SystemNodeP2P)listNode.get(path_tmp.substring(0, endIndex));
-				
-				while(true)
-				{
-					if (n.remove(bf.getFragment(rang_tmp)))
-					{
-						return null;
-					}
-					else
-					{
-						path_tmp = n.getPath();
-						rang_tmp = n.getRang();
-
-						if (path_tmp == "/")
-							return null;
-						
-						listNode.remove(path);
-
-						endIndex = path.lastIndexOf('/');
-						
-						if (!this.listNode.containsKey(path_tmp.substring(0, endIndex)))
-						{
-							rep.setData(path_tmp.substring(0, endIndex));
-							rep.setOption1("removeNode");
-							return rep;
-						}
-						
-						n = (SystemNodeP2P)listNode.get(path.substring(0, endIndex));
-					}
-				}
-			}
-		}
-		*/
+	
 		return null;
 	}
 	
@@ -264,31 +191,7 @@ public class SystemIndexP2P implements Serializable{
 	
 	public String removeNode(FragmentP2P f, String path)
 	{
-		String path_tmp = path;
-		
-		while (true)
-		{
-			SystemNodeP2P n = (SystemNodeP2P)listNode.get(path_tmp);
-			if (n == null)
-				return null;
-			
-			if (n.remove(f))
-			{
-				return null;
-			}
-				
-			int endIndex = path_tmp.lastIndexOf('/');	
-
-			path_tmp = path_tmp.substring(0, endIndex);
-					
-			if (path_tmp == "/")
-				return null;
-			
-			if (!this.listNode.containsKey(path_tmp))
-			{
-				return path_tmp;
-			}
-		}
+		return null;
 	}
 	
 	public int size()
