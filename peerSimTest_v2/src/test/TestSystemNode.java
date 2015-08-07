@@ -23,7 +23,7 @@ public class TestSystemNode {
 		
 		Object o = systemIndex.add(bf1);
 		
-		System.out.println(systemIndex.getContainerLocal().toString());
+		System.out.println(systemIndex.getLocalContainer().toString());
 		
 		System.out.println((Message)o);
 		System.out.println(((BFP2P)(((Message)o).getData())).toPath(0, Config.numberOfFragment));

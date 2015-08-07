@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.concurrent.TimeUnit;
 
 import peersim.config.Configuration;
@@ -35,7 +37,7 @@ public class ObserverNw implements Control {
 		}
 		else if (ok2 && ControlerNw.config_log.getExperience_OK() && Config.ObserverNw_OK)
 		{
-			Node n = Network.get(37);
+			Node n = Network.get(23);
 			
 			System.out.println("Expérience n° " + experience);
 			
@@ -51,7 +53,7 @@ public class ObserverNw implements Control {
 				Config.peerSimLOG_path = "/Users/dcs/vrac/test/" + date + "/" + experience + "_path_log";
 				*/
 				
-				int essai = 1;
+				int essai = 2;
 				String date = (new SimpleDateFormat("dd-MM-yyyy")).format(new Date());
 				Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "/Essai" + essai 
 						+ "/" + experience + "_log";
@@ -65,8 +67,8 @@ public class ObserverNw implements Control {
 				{
 					Message message = new Message();
 					message.setIndexName("dcs");
-					message.setSource(37);
-					message.setDestinataire(37);
+					message.setSource(23);
+					message.setDestinataire(23);
 					
 					message.setType("search");
 					
@@ -74,11 +76,16 @@ public class ObserverNw implements Control {
 					
 					bf.addAll(rf.getDescription(i));
 					
-					Object[] o = new Object[2];
-					o[0] = bf;
-					o[1] = "/";
+					ControlerNw.config_log.getTranslate().setLength(Config.requestRang);
+					int requestID = ControlerNw.config_log.getTranslate().translate(bf.toString());
 					
-					message.setData(o);
+					Hashtable<String, BFP2P> hs = new Hashtable<String, BFP2P>();
+					
+					hs.put("/", bf);
+					
+					message.setData(hs);
+
+					message.setRequestID(requestID);
 					j++;
 					EDSimulator.add(0, message, n, pid);
 				}
@@ -178,6 +185,8 @@ public class ObserverNw implements Control {
 				size++;
 			}
 			
+			if (size == 0)
+				size = 1;
 			long i = time/size;
 			long hours = TimeUnit.MILLISECONDS.toHours(i);
 			i -= TimeUnit.HOURS.toMillis(hours);

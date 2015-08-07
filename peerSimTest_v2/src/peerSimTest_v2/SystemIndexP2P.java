@@ -108,7 +108,6 @@ public class SystemIndexP2P implements Serializable{
 	{
 		if (!this.listNode.containsKey(path))
 		{
-			System.out.println("dsqdqsdqs");
 			this.listNode.put(path, node);
 		}
 	}

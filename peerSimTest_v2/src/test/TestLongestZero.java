@@ -11,13 +11,12 @@ public class TestLongestZero {
 		String s = "/0/0/0/0/0/0/1/22/0/0/0/8";
 		
 		BFP2P bf1 = (new BFP2P()).pathToBF(s, 0, 100, Config.sizeOfFragment);
-		System.out.println("bf1.size() = " + bf1.size());
 
 		String bfToPath = bf1.toPath(0, 100);
 		int longestLength = (new LongestZero(bf1, 8)).getLongestLength();
 		LongestZero longestZero = new LongestZero(bf1, 8);
-		String longestPrefix = longestZero.getLongestPrefix();
-		String remainingPrefix = longestZero.getRemainPrefix();
+		String longestPrefix = longestZero.getLongestPrefix(longestLength);
+		String remainingPrefix = longestZero.getRemainPrefix(longestLength);
 		
 		System.out.println(bf1);
 		System.out.println(bfToPath);
