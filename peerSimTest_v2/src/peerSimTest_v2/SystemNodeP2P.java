@@ -109,6 +109,13 @@ public class SystemNodeP2P implements Serializable{
 				wf.close();
 				//******************************************
 				*/
+				Iterator<BFP2P> iterator = this.localContainer.iterator();
+				while (iterator.hasNext())
+				{
+					if (((BFP2P)iterator.next()).equals(bf))
+						return null;
+				}
+				
 				if (this.localContainer.size() < this.limit)
 				{
 					this.localContainer.add(bf);
@@ -149,8 +156,15 @@ public class SystemNodeP2P implements Serializable{
 						
 			if (!this.localRoute.containsKey(longestPrefix))
 			{
-				if (this.localContainer.size() < this.limit)
+				Iterator<BFP2P> iterator = this.localContainer.iterator();
+				while (iterator.hasNext())
 				{
+					if (((BFP2P)iterator.next()).equals(bf))
+						return null;
+				}
+				
+				if (this.localContainer.size() < this.limit)
+				{	
 					this.localContainer.add(bf);
 					return null;
 				}

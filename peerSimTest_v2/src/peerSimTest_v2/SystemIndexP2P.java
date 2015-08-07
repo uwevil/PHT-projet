@@ -107,9 +107,7 @@ public class SystemIndexP2P implements Serializable{
 	public void addSystemNodeP2P(String path, SystemNodeP2P node)
 	{
 		if (!this.listNode.containsKey(path))
-		{
 			this.listNode.put(path, node);
-		}
 	}
 	
 	/**

@@ -60,10 +60,9 @@ public class BFP2P implements Serializable
 		if (getClass() != o.getClass())
 			return false;
 		final BFP2P other = (BFP2P) o;
-		
-		if (this.bitSetSize != other.bitSetSize)
+
+		if (this.bitSetSize != other.size())
 			return false;
-		
 		if (this.bitset != other.bitset && (this.bitset == null || !this.bitset.equals(other.bitset)))
 			return false;
 		return true;
@@ -233,7 +232,7 @@ public class BFP2P implements Serializable
 			return false;
 		final BFP2P other = (BFP2P) o;
 		
-		if (this.bitSetSize != other.bitSetSize)
+		if (this.bitSetSize != other.size())
 			return false;
 		
 		for (int i = 0; i < bitSetSize; i++)

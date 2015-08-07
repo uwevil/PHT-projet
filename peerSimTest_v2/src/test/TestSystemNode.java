@@ -43,6 +43,16 @@ public class TestSystemNode {
 					+ ((BFP2P)iterator.next()).toPath(0, Config.numberOfFragment));
 		}
 	*/	
+		
+		HashSet<BFP2P> localContainer = new HashSet<BFP2P>();
+		localContainer.add(bf1);
+		
+		BFP2P bf2 = (new BFP2P()).pathToBF(s, 0, Config.numberOfFragment, Config.sizeOfFragment);
+		
+		System.out.println("Contains " + localContainer.contains(bf2));
+		System.out.println((localContainer.iterator().next()).equals(bf2));
+		System.out.println(bf2.equals(bf1));
+		
 		int i = 1;
 		Object ii = i;
 		if (((Object)i).getClass().getName().equals("java.lang.Integer"))
