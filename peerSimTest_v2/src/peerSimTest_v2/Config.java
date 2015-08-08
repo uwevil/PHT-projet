@@ -11,6 +11,7 @@ public class Config {
 
 	private ArrayList<String> nodeMatched = new ArrayList<String>();
 	private Hashtable<Integer, String> indexHeight = new Hashtable<Integer, String>();
+	private Hashtable<Integer, String> realIndexHeight = new Hashtable<Integer, String>();
 	private Hashtable<Integer, Object> listAnswers = new Hashtable<Integer, Object>();
 	private int[] nodePerServer = new int[Network.size()];
 	private Hashtable<String, Integer> filterPerNode = new Hashtable<String, Integer>();
@@ -55,6 +56,7 @@ public class Config {
 		nodeVisited = 0;
 		nodeMatched = new ArrayList<String>();
 		indexHeight = new Hashtable<Integer, String>();
+		realIndexHeight = new Hashtable<Integer, String>();
 		listAnswers = new Hashtable<Integer, Object>();
 		date = (new SimpleDateFormat("dd/MM/yyyy/HH-mm-ss")).format(new Date());
 		time = 0;
@@ -170,6 +172,11 @@ public class Config {
 	public Hashtable<Integer, String> getIndexHeight()
 	{
 		return this.indexHeight;
+	}
+	
+	public Hashtable<Integer, String> getRealIndexHeight()
+	{
+		return this.realIndexHeight;
 	}
 	
 	public synchronized void setExperience_OK(boolean val)

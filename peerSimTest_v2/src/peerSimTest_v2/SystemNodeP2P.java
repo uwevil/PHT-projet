@@ -244,21 +244,7 @@ public class SystemNodeP2P implements Serializable{
 				htshsbf.put(path_tmp, hsbf);
 			}
 		}
-		/*
-		//***********************LOG***************
-		WriteFile wf = new WriteFile(Config.peerSimLOG+"_containerLocal_" + server, true);
-		Iterator<BFP2P> iterator1 = this.containerLocal.iterator();
-		wf.write("-------------" + this.path + "-----------" + (new CalculRangP2P()).getRang(this.path)+"\n");
-		while (iterator1.hasNext())
-		{
-			BFP2P bf_tmp = iterator1.next();
-			wf.write("rang " + (new CalculRangP2P()).getRang(bf_tmp.toPath(0, 100))+" " + bf_tmp.toPath(0, 100)+ "\n");
-		}
-		wf.write("\n");
-
-		wf.close();
-		//******************************************
-		*/
+		
 		this.localContainer = new HashSet<BFP2P>();
 		
 		return htshsbf;
@@ -301,31 +287,6 @@ public class SystemNodeP2P implements Serializable{
 				this.localRoute.put(path_tmp, nodeID);
 			}
 		}
-		
-	//	if (longestZero.getLongestLength() == 0 || longestZero.getLongestLength() < 7)
-	//		return;
-		/*
-		//***********************LOG***************	
-		WriteFile wf = new WriteFile(Config.peerSimLOG+"_localRoute_" + server, true);
-		Enumeration<Object> enumeration = this.localRoute.keys();
-		wf.write(this.path + " host\n");
-		while (enumeration.hasMoreElements())
-		{
-			Object o = enumeration.nextElement();
-			if (o.getClass().getName().equals("java.lang.Integer"))
-			{
-				wf.write((Integer)o + " " + this.localRoute.get(o)+ "\n");
-			}
-			else
-			{
-				wf.write((String)o + " " + this.localRoute.get(o)+ "\n");
-			}
-			wf.write("       " + path + " " + nodeID + "\n");
-		}
-		wf.write("\n");
-		wf.close();
-		//******************************************
-		*/
 	}
 	
 	/**
@@ -517,12 +478,12 @@ public class SystemNodeP2P implements Serializable{
 			if (this.localRoute.containsKey(longestLength))
 			{
 				String path_tmp;
-				int rang = (new CalculRangP2P()).getRang(this.path);
-				if (rang == 0)
+				
+				if (this.path == "/")
 				{
 					path_tmp = longestZero.getLongestPrefix();
 				}
-				else // rang != 0
+				else // this.path != "/"
 				{
 					path_tmp = this.path + longestZero.getLongestPrefix();
 				}
@@ -539,19 +500,20 @@ public class SystemNodeP2P implements Serializable{
 			}
 			else // !this.localRoute.containsKey(longestLength)
 			{
-				if (this.localContainer.contains(bf))
+				Iterator<BFP2P> iterator = this.localContainer.iterator();
+				while (iterator.hasNext())
 				{
-					Message rep = new Message();
-					
-					rep.setType("searchExact_OK");
-					rep.setPath(this.path);
-					rep.setData(bf);
-					
-					return rep;
-				}
-				else // !this.containerLocal.contains(bf)
-				{
-					return null;
+					BFP2P bf_tmp = (BFP2P)iterator.next();
+					if (bf_tmp.equals(bf))
+					{
+						Message rep = new Message();
+						
+						rep.setType("searchExact_OK");
+						rep.setPath(this.path);
+						rep.setData(bf_tmp);
+						
+						return rep;
+					}
 				}
 			}
 		}
@@ -562,12 +524,12 @@ public class SystemNodeP2P implements Serializable{
 			if (this.localRoute.containsKey(f.toPath()))
 			{
 				String path_tmp;
-				int rang = (new CalculRangP2P()).getRang(this.path);
-				if (rang == 0)
+
+				if (this.path == "/")
 				{
 					path_tmp = f.toPath();
 				}
-				else // rang != 0
+				else // this.path != "/"
 				{
 					path_tmp = this.path + f.toPath();
 				}
@@ -584,45 +546,119 @@ public class SystemNodeP2P implements Serializable{
 			}
 			else // !this.localRoute.containsKey(f.toPath())
 			{
-				if (this.localContainer.contains(bf))
+				Iterator<BFP2P> iterator = this.localContainer.iterator();
+				while (iterator.hasNext())
 				{
-					Message rep = new Message();
-					
-					rep.setType("searchExact_OK");
-					rep.setPath(this.path);
-					rep.setData(bf);
-					
-					return rep;
-				}
-				else // !this.containerLocal.contains(bf)
-				{
-					return null;
+					BFP2P bf_tmp = (BFP2P)iterator.next();
+					if (bf_tmp.equals(bf))
+					{
+						Message rep = new Message();
+						
+						rep.setType("searchExact_OK");
+						rep.setPath(this.path);
+						rep.setData(bf_tmp);
+						
+						return rep;
+					}
 				}
 			}
 		}
+		return null;
 	}
 	
 	/**
 	 * Supprimer le filtre dans le nœud
-	 * 
+	 * <p>
 	 * Retourner soit vide, soit une chaîne de caractères, soit une table de routage
 	 * */
 	
 	public Object remove(BFP2P bf)
 	{
-		return null;
-	}
-	
-	/**
-	 * Supprimer l'entrée 'f' dans la table de routage
-	 * 
-	 * Retourner true si réussit, false sinon
-	 * */
-	
-	public boolean remove(FragmentP2P f)
-	{
-		return true;
+		LongestZero longestZero = new LongestZero(bf, Config.sizeOfFragment);
+		
+		int longestLength = longestZero.getLongestLength();
+		
+		if (longestLength != 0)
+		{
+			if (this.localRoute.containsKey(longestLength))
+			{
+				String path_tmp;
+				
+				if (this.path == "/")
+				{
+					path_tmp = longestZero.getLongestPrefix();
+				}
+				else // this.path != "/"
+				{
+					path_tmp = this.path + longestZero.getLongestPrefix();
+				}
+				
+				Message rep = new Message();
+				
+				rep.setType("remove");
+				rep.setPath(path_tmp);
+				rep.setDestinataire(this.localRoute.get(longestLength));
+				rep.setData((new BFP2P())
+						.pathToBF(longestZero.getRemainPrefix(), 0, Config.numberOfFragment, Config.sizeOfFragment));
+				
+				return rep;
+			}
+			else // !this.localRoute.containsKey(longestLength)
+			{
+				Iterator<BFP2P> iterator = this.localContainer.iterator();
+				while (iterator.hasNext())
+				{
+					BFP2P bf_tmp = (BFP2P)iterator.next();
+					if (bf_tmp.equals(bf))
+					{
+						this.localContainer.remove(bf_tmp);
+						return null;
+					}
+				}
+			}
+		}
+		else // longestLength == 0
+		{
+			FragmentP2P f = bf.getFragment(0, Config.sizeOfFragment);
+			
+			if (this.localRoute.containsKey(f.toPath()))
+			{
+				String path_tmp;
 
+				if (this.path == "/")
+				{
+					path_tmp = f.toPath();
+				}
+				else // this.path != "/"
+				{
+					path_tmp = this.path + f.toPath();
+				}
+				
+				Message rep = new Message();
+				
+				rep.setType("remove");
+				rep.setPath(path_tmp);
+				rep.setDestinataire(this.localRoute.get(f.toPath()));
+				rep.setData((new BFP2P())
+						.pathToBF(longestZero.getRemainPrefix(1), 0, Config.numberOfFragment, Config.sizeOfFragment));
+				
+				return rep;
+			}
+			else // !this.localRoute.containsKey(f.toPath())
+			{
+				Iterator<BFP2P> iterator = this.localContainer.iterator();
+				while (iterator.hasNext())
+				{
+					BFP2P bf_tmp = (BFP2P)iterator.next();
+					if (bf_tmp.equals(bf))
+					{
+						this.localContainer.remove(bf_tmp);
+						return null;
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	public String toString()

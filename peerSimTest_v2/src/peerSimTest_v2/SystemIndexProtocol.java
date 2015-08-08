@@ -101,10 +101,6 @@ public class SystemIndexProtocol implements EDProtocol{
 			treatCreateNode(message, pid);
 			break;
 			
-		case "removeNode": //removeNode, Name, path
-			treatRemoveNode(message, pid);
-			break;
-		 
 		case "search_OK": //			
 			treatSearch_OK(message, pid);
 			break;
@@ -127,13 +123,12 @@ public class SystemIndexProtocol implements EDProtocol{
 	}
 
 
-	@SuppressWarnings({ "unchecked" })
-	/*
+	/**
 	 * Traiter la réponse pour une recherch
 	 * 
 	 * Le message contient indexName, filtre de la requête, liste des requêtes trouvés, nombre de réponses en attente
 	 * */
-	
+	@SuppressWarnings({ "unchecked" })
 	private void treatSearch_OK(Message message, int pid)
 	{		
 		int key = message.getRequestID();
@@ -257,74 +252,46 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 	}
 
-	/*
+	/**
 	 * Traiter le message de la recherche exacte
 	 * 
 	 * Le message contient le filtre de la requête, le filtre trouvé
 	 * */
 	
 	private void treatSearchExact_OK(Message message, int pid)
-	{
-		
-		BFP2P data1 = (BFP2P) message.getOption();
-		
+	{		
 		int key = message.getRequestID();
 		
-		if (data1 == null)
+		if (message.getData() == null)
 		{
 			//**********Compter le temps total de la recherche exacte*************
 			long time = (Calendar.getInstance()).getTimeInMillis() - ControlerNw.search_log.get(key).getTime();
 			ControlerNw.config_log.getTimeGlobal().put(key, time);
 			//********************************************************************
-			
-			/*
-			//*******LOG*******
-			WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "Exact_null", true);
-			wf.write("BFP2P source " + message.getSource() + "\n"
-					+ ((BFP2P) ((Object[])message.getData())[0]).toString() + "\n\n"
-					+ "\n\n");
-			
-			wf.write("Filtres crées   : " + ControlerNw.config_log.getTotalFilterCreated() + "\n");
-			wf.write("Filtres ajoutés : " + ControlerNw.config_log.getTotalFilterAdded() + "\n\n");
-			wf.write("Nœuds crées     : " + ControlerNw.config_log.getNodeCreated() + "\n");
-			wf.write("Nœuds visités   : " + ControlerNw.config_log.getNodeVisited() + "\n");
-			wf.write("Nœuds matched   : " + ControlerNw.config_log.getNodeMatched().size() + "\n\n");
-		
-			int k = 0;
-			for (int i = 0; i < Network.size(); i++)
-			{
-				if (ControlerNw.config_log.getPeerCreated(i))
-					k++;
-			}
-			
-			wf.write("Nombre de pairs : " + k + " pairs\n");
-			
-			wf.write("Temps de recherche : " + time + "ms\n\n");
-			
-
-			wf.write("Trouvé : " + ControlerNw.search_log.get(key).getNumberOfFilters() + " filtres\n\n");
-			
-			wf.write("Liste des chemins matched: " + ControlerNw.search_log.get(key).getNodeMatched() + "\n");
-			
-			wf.close();
-			//*****************
-			*/
 		}
 		else // data1 != null
 		{	
+			BFP2P data1 = (BFP2P) message.getData();
+			
 			//**********Compter le temps total de la recherche exacte*************
 			long time = (Calendar.getInstance()).getTimeInMillis() - ControlerNw.search_log.get(key).getTime();		
 			ControlerNw.config_log.getTimeGlobal().put(key, time);
 			//********************************************************************
+			
 			//*******LOG*******
+			ControlerNw.search_log.get(key).addNumberOfFilters(1);
+			ControlerNw.search_log.get(key).addNodeMatched(message.getPath());
+			
 			WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "Exact_" + key, true);
 			wf.write("BFP2P source " + message.getSource() + "\n"
-					+ ((BFP2P) ((Object[])message.getData())[0]).toString() + "\n\n"
+					+ ((new BFP2P())
+							.pathToBF(message.getPath(), 0, Config.numberOfFragment, Config.sizeOfFragment))
+							.toString()
 					+ data1.toString()
 					+ "\n\n");
 			
-			wf.write("Nœuds visités   : " + ControlerNw.config_log.getNodeVisited() + "\n");
-			wf.write("Nœuds matched   : " + ControlerNw.config_log.getNodeMatched().size() + "\n\n");
+			wf.write("Nœuds visités   : " + ControlerNw.search_log.get(key).getNodeVisited() + "\n");
+			wf.write("Nœuds matched   : " + ControlerNw.search_log.get(key).getNodeMatched().size() + "\n\n");
 			
 			wf.write("Temps de recherche : " + time + "ms\n\n");
 			wf.write("Trouvé : " + ControlerNw.search_log.get(key).getNumberOfFilters() + " filtres\n\n");
@@ -457,6 +424,23 @@ public class SystemIndexProtocol implements EDProtocol{
 	{
 		String indexName = message.getIndexName();
 		String path = message.getPath();
+		
+		if (path != "/")
+		{
+			String[] a_tmp = path.split("/");
+			int h_tmp = 0;
+			int i = 0;
+			for (i = 0; i < a_tmp.length; i++)
+			{
+				if (a_tmp[i] != null && a_tmp[i].equals("0"))
+					break;
+				
+				h_tmp++;
+			}
+			if (i == a_tmp.length)
+				ControlerNw.config_log.getRealIndexHeight().put(h_tmp, path);
+			
+		}
 		
 		ControlerNw.config_log.getTranslate().setLength(Network.size());
 		int serverID = ControlerNw.config_log.getTranslate().translate(path);
@@ -898,240 +882,63 @@ public class SystemIndexProtocol implements EDProtocol{
 		}	
 	}
 
-	/*
+	/**
 	 * Traiter le message de la recherche exacte
-	 * 
-	 * Ce message contient indexName, filtre de la requête et chaîne de caractères(chemin)
+	 * <p>
+	 * Ce message contient :
+	 * <ul>
+	 * 	<li> indexName
+	 * 	<li> path
+	 * 	<li> bf
+	 * </ul>
 	 * */
 	
 	private void treatSearchExact(Message message, int pid)
-	{		
+	{				
 		String indexName = message.getIndexName();
-		BFP2P BFP2P = (BFP2P) ((Object[])message.getData())[0];
-		
-		if (((Object[]) message.getData())[1] == null)
+		BFP2P bf = (BFP2P) message.getData();
+		String path = (String) message.getPath();
+		int requestID = message.getRequestID();
+				
+		if (message.getData() == null)
 		{
 			Message rep = new Message();
 			rep.setType("searchExact_KO");
 			rep.setIndexName(indexName);
+			rep.setPath(path);
 			rep.setSource(nodeIndex);
 			rep.setDestinataire(message.getSource());
 			rep.setData("list path ou path == null");
+			rep.setRequestID(requestID);
 			
 			t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
 			return;
 		}
 		
-		if ((String)((Object[]) message.getData())[1] == "/") // search la racine
-		{				
-			ControlerNw.config_log.getTranslate().setLength(Network.size());
-			int serverID = ControlerNw.config_log.getTranslate().translate(indexName);
-			
-			ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
-			int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
-			
-			if (nodeIndex == message.getSource())
-			{				
-				ControlerNw.config_log.getTranslate().setLength(1000000);
-				int key = ControlerNw.config_log.getTranslate().translate(BFP2P.toString());
-				
-				if (!ControlerNw.search_log.containsKey(key))
-				{
-					Config config = new Config();
-					config.setTime((Calendar.getInstance()).getTimeInMillis());
-					
-					ControlerNw.search_log.put(key, config);	
-				}
-			}
-			
-			if (serverID == nodeIndex) // ce serveur gère ce systemIndex
+		if (nodeIndex == message.getSource())
+		{			
+			if (!ControlerNw.search_log.containsKey(requestID))
 			{
-				if (this.listSystemIndexP2P.containsKey(indexID)) // il contient ce systemIndex
-				{
-					/*
-					//*******LOG*******
-					String s_tmp = new String();
-					for (int i = 0; i < Config.numberOfFragment; i++)
-					{
-						s_tmp += "/"+ BFP2P.getFragment(i).toInt();
-					}
-					String date = (new SimpleDateFormat("mm-ss-SSS")).format(new Date());
-
-					WriteFile wf1 = new WriteFile(Config.peerSimLOG_path, false);
-					wf1.write(date + "       Node " + nodeIndex + " receive from " + message.getSource() + "\n"
-							+ "        BFP2P " + BFP2P.toString() + "\n"
-							+ "        BFP2P_path : " + s_tmp + "\n"
-							+ "        Path : " + "/" + "\n\n");
-					wf1.close();
-					//*****************
-				*/
-					
-					SystemIndexP2P systemIndex = (SystemIndexP2P) this.listSystemIndexP2P.get(indexID);
-					
-					/*
-					//*******LOG*******
-					WriteFile wf = new WriteFile(Config.peerSimLOG, true);
-					wf.write("search racine "+ indexID + " node "+ nodeIndex + "\n"
-							+ message.toString()
-							+ "\n");
-					wf.close();
-					//*****************
-					*/
-					
-					Object o = systemIndex.searchExact(BFP2P, "/");
-					
-					treatSearchExact(o, indexName, message, pid);
-				}
-				else // il contient pas indexID
-				{
-					/*
-					//*******LOG*******
-					
-					WriteFile wf1 = new WriteFile(Config.peerSimLOG_path, true);
-					wf1.write("Node " + nodeIndex + " reply to " + message.getSource() + "\n"
-							+ "\n");
-					wf1.close();
-					//*****************
-					*/
-					
-					Message rep = new Message();
-					rep.setIndexName(indexName);
-					rep.setType("searchExact_OK");
-					
-					Object[] o_tmp = new Object[2];
-					o_tmp[0] = BFP2P;
-					o_tmp[1] =  null;
-					
-					rep.setData(o_tmp);
-					rep.setSource(nodeIndex);
-					rep.setDestinataire(message.getSource());
-					
-					t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
-					
-					/*
-					//*******LOG*******
-					WriteFile wf = new WriteFile(Config.peerSimLOG, true);
-					wf.write("search_OK "+ indexID + " node "+ nodeIndex + "\n"
-							+ message.toString()
-							+ "\n");
-					wf.close();
-					//*****************
-					*/
-				}
-			}
-			else // ce n'est pas celui qui gère ce systemIndex : serverID != nodeIndex
-			{
-				/*
-				//*******LOG*******
-				String s_tmp = new String();
-				for (int i = 0; i < Config.numberOfFragment; i++)
-				{
-					s_tmp += "/"+ BFP2P.getFragment(i).toInt();
-				}
-				String date = (new SimpleDateFormat("mm-ss-SSS")).format(new Date());
-
-				WriteFile wf1 = new WriteFile(Config.peerSimLOG_path, true);
-				wf1.write(date + "       Node " + nodeIndex + " transfer to " + serverID + "\n"
-						+ "        BFP2P " + BFP2P.toString() + "\n"
-						+ "        BFP2P_path : " + s_tmp + "\n"
-						+ "        Path : " + "/" + "\n");
-				wf1.close();
-				//*****************
-				*/
-				
-				t.send(Network.get(nodeIndex), Network.get(serverID), message, pid);
-				
-				/*
-				//*******LOG*******
-				WriteFile wf = new WriteFile(Config.peerSimLOG, true);
-				wf.write("search racine forward "+ indexID + " node "+ nodeIndex + "\n"
-						+ message.toString()
-						+ "\n");
-				wf.close();
-				//*****************
-				*/
+				Config config = new Config();
+				config.setTime((Calendar.getInstance()).getTimeInMillis());
+				ControlerNw.search_log.put(requestID, config);
 			}
 		}
-		else // search les fils : path != "/"
+		
+		ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
+		int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
+		
+		if (this.listSystemIndexP2P.containsKey(indexID))
 		{
-			ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
-			int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
+			SystemIndexP2P systemIndexP2P = (SystemIndexP2P) this.listSystemIndexP2P.get(indexID);
 			
-			/*
-			//*******LOG*******
-			String date = (new SimpleDateFormat("mm-ss-SSS")).format(new Date());
-
-			WriteFile wf = new WriteFile(Config.peerSimLOG_path, true);
-			wf.write(date +"       Node " + nodeIndex + " receive paths"
-				//	+ message.toString() + "\n"
-					+ "\n");
-			wf.close();
-			//*****************
-			*/
+			//**************************log***********************************
+			ControlerNw.search_log.get(requestID).addNodeVisited(1);
+			ControlerNw.search_log.get(requestID).addNodeMatched(path);
+			//****************************************************************
+			Object o = systemIndexP2P.searchExact(bf, path);
 			
-			if (this.listSystemIndexP2P.containsKey(indexID)) // contient indexID
-			{
-				SystemIndexP2P systemIndex = (SystemIndexP2P) this.listSystemIndexP2P.get(indexID);
-				
-				String path_tmp = (String) ((Object[])message.getData())[1];
-									
-				//*******LOG*******
-				/*	
-				WriteFile wf1 = new WriteFile(Config.peerSimLOG_path, true);
-				wf1.write("        Path : " + path_tmp + "\n");
-				wf1.close();
-				//*****************
-				*/
-					
-				Object o = systemIndex.searchExact(BFP2P, path_tmp);
-				treatSearchExact(o, indexName, message, pid);
-
-				/*
-				//*******LOG*******
-				WriteFile wf2 = new WriteFile(Config.peerSimLOG, true);
-				wf2.write("search path "+ indexID+ " node "+ nodeIndex  + "\n"
-						+ message.toString()
-						+ "\n");
-				wf2.close();
-				//*****************
-				*/
-			}
-			else // !this.listSystemIndexP2P.containsKey(indexID)
-			{
-				Message rep = new Message();
-				rep.setIndexName(indexName);
-				rep.setType("searchExact_OK");
-				
-				Object[] o_tmp = new Object[2];
-				o_tmp[0] = BFP2P;
-				o_tmp[1] = null;
-				
-				rep.setData(o_tmp);
-				rep.setSource(nodeIndex);
-				rep.setDestinataire(message.getSource());
-				
-				/*
-				//*******LOG*******
-				String date1 = (new SimpleDateFormat("mm-ss-SSS")).format(new Date());
-
-				WriteFile wf1 = new WriteFile(Config.peerSimLOG_path, true);
-				wf1.write(date1 + "       Node " + nodeIndex + " reply to " + message.getSource() + "\n"
-						+ "\n");
-				wf1.close();
-				//*****************
-				*/
-				
-				t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
-				/*
-				//*******LOG*******
-				WriteFile wf2 = new WriteFile(Config.peerSimLOG, true);
-				wf2.write("search_OK path "+ indexID + " node "+ nodeIndex + "\n"
-						+ message.toString()
-						+ "\n");
-				wf2.close();
-				//*****************
-			*/
-			}	
+			treatSearchExact(o, indexName, message, pid);
 		}	
 	}
 	
@@ -1140,126 +947,135 @@ public class SystemIndexProtocol implements EDProtocol{
 		if (o == null)
 		{
 			if (message.getSource() != nodeIndex)
-			{
-				Object[] o_tmp = new Object[2];
-				o_tmp[0] = (BFP2P) ((Object[])message.getData())[0];
-				o_tmp[1] = null;
-				
+			{				
 				Message rep = new Message();
 				rep.setType("searchExact_OK");
 				rep.setIndexName(indexName);
+				rep.setPath(message.getPath());
+				rep.setRequestID(message.getRequestID());
 				rep.setSource(nodeIndex);
 				rep.setDestinataire(message.getSource());
-				rep.setData(o_tmp);
+				rep.setData(null);
 			
 				t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
 			}
-			else
-			{
-				ControlerNw.config_log.getTranslate().setLength(1000000);
-				int key = ControlerNw.config_log.getTranslate().translate((((Object[])message.getData())[0]).toString());
+			else // message.getSource == nodeIndex
+			{				
+				long time = (Calendar.getInstance()).getTimeInMillis() 
+						- ControlerNw.search_log.get(message.getRequestID()).getTime();
 				
-				long time = (Calendar.getInstance()).getTimeInMillis() - ControlerNw.search_log.get(key).getTime();
-				
-				ControlerNw.config_log.getTimeGlobal().put(key, time);
-				
-				/*
+				ControlerNw.config_log.getTimeGlobal().put(message.getRequestID(), time);
+					
 				//*******LOG*******
-				WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "Exact_null", true);
-				wf.write("BFP2P source " + message.getSource() + "\n"
-						+ ((BFP2P) ((Object[])message.getData())[0]).toString() + "\n\n"
-						+ "\n\n");
-				
-				wf.write("Filtres crées   : " + ControlerNw.config_log.getTotalFilterCreated() + "\n");
-				wf.write("Filtres ajoutés : " + ControlerNw.config_log.getTotalFilterAdded() + "\n\n");
-				wf.write("Nœuds crées     : " + ControlerNw.config_log.getNodeCreated() + "\n");
-				wf.write("Nœuds visités   : " + ControlerNw.search_log.get(key).getNodeVisited() + "\n");
-				wf.write("Nœuds matched   : " + ControlerNw.search_log.get(key).getNodeMatched().size() + "\n\n");
-			
-				int k = 0;
+				ControlerNw.search_log.remove(message.getRequestID());
+				//*****************
 				for (int i = 0; i < Network.size(); i++)
-				{						
-					if (ControlerNw.config_log.getPeerCreated(i))
-						k++;
+				{	
+					Message rep = new Message();
+					rep.setType("overview");
+					rep.setIndexName(message.getIndexName());
+					rep.setSource(nodeIndex);
+					rep.setDestinataire(i);
+					
+					t.send(Network.get(nodeIndex), Network.get(i), rep, pid);
 				}
 				
-				wf.write("Nombre de pairs : " + k + " pairs\n");
-				wf.write("Temps de recherche : " + time + "ms\n\n");
-				wf.write("Trouvé : " + ControlerNw.search_log.get(key).getNumberOfFilters() + " filtres\n\n");
-				wf.write("Liste des chemins matched: " + ControlerNw.search_log.get(key).getNodeMatched() + "\n");
-				
-				wf.close();
-				*/
-				ControlerNw.search_log.remove(key);
-
-				//*****************
+				if (ControlerNw.search_log.isEmpty()) // si in n'y a aucune requête en cours, signaler
+				{
+					ControlerNw.config_log.setEnd_OK(true);
+				}
 			}
 			return;
 		}
-			
-		if (o.getClass().getName().equals("java.lang.String"))
+		else // o != null
 		{
-			ControlerNw.config_log.getTranslate().setLength(Network.size());
-			int serverID = ControlerNw.config_log.getTranslate().translate((String)o);
+			Message resultat = (Message) o;
 			
-			Object[] o_tmp = new Object[2];
-			o_tmp[0] = (BFP2P) ((Object[])message.getData())[0];
-			o_tmp[1] = o;
-			
-			Message rep = new Message();
-			rep.setType("searchExact");
-			rep.setIndexName(indexName);
-			rep.setSource(message.getSource());
-			rep.setDestinataire(serverID);
-			rep.setData(o_tmp);
-		
-			t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
-		}
-		else // BFP2P
-		{
-			if (message.getSource() == nodeIndex)
-			{				
-				ControlerNw.config_log.getTranslate().setLength(1000000);
-				int key = ControlerNw.config_log.getTranslate().translate((((Object[])message.getData())[0]).toString());
-				
-				long time = (Calendar.getInstance()).getTimeInMillis() - ControlerNw.search_log.get(key).getTime();
-				
-				ControlerNw.config_log.getTimeGlobal().put(key, time);
-				
-				//*******LOG*******
-				WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "Exact_" + key, true);
-				wf.write("BFP2P source " + message.getSource() + "\n"
-						+ ((BFP2P) ((Object[])message.getData())[0]).toString() + "\n\n"
-						+ ((BFP2P)o).toString()
-						+ "\n\n");
-				
-				wf.write("Nœuds visités   : " + ControlerNw.search_log.get(key).getNodeVisited() + "\n");
-				wf.write("Nœuds matched   : " + ControlerNw.search_log.get(key).getNodeMatched().size() + "\n\n");
-			
-				wf.write("Temps de recherche : " + time + "ms\n\n");
-				wf.write("Trouvé : " + ControlerNw.search_log.get(key).getNumberOfFilters() + " filtres\n\n");
-				wf.write("Liste des chemins matched: " + ControlerNw.search_log.get(key).getNodeMatched() + "\n");
-				
-				wf.close();
-				
-				ControlerNw.search_log.remove(key);
-
-				//*****************
-			}
-			else // message.getSource() != nodeIndex
+			if (resultat.getType().equals("searchExact_OK"))
 			{
-				Object[] o_tmp = new Object[2];
-				o_tmp[0] = (BFP2P) ((Object[])message.getData())[0];
-				o_tmp[1] = o;
+				if (message.getSource() == nodeIndex)
+				{									
+					int requestID = message.getRequestID();
+					
+					long time = (Calendar.getInstance()).getTimeInMillis() 
+							- ControlerNw.search_log.get(requestID).getTime();
+					
+					ControlerNw.config_log.getTimeGlobal().put(requestID, time);
+					
+					//*******LOG*******
+					
+					ControlerNw.search_log.get(requestID).addNumberOfFilters(1);
+					ControlerNw.search_log.get(requestID).addNodeMatched(resultat.getPath());
+					
+					WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "Exact_" + requestID, true);
+					wf.write("BFP2P source " + message.getSource() + "\n"
+							+ (new BFP2P())
+								.pathToBF(resultat.getPath(), 0, Config.numberOfFragment, Config.sizeOfFragment)
+								.toString()
+							+ ((BFP2P) resultat.getData()).toString() + "\n\n"
+							+ "\n\n");
+					
+					wf.write("Nœuds visités   : " 
+							+ ControlerNw.search_log.get(requestID).getNodeVisited() + "\n");
+					wf.write("Nœuds matched   : " 
+							+ ControlerNw.search_log.get(requestID).getNodeMatched().size() + "\n\n");
 				
+					wf.write("Temps de recherche : " + time + "ms\n\n");
+					wf.write("Trouvé : " 
+							+ ControlerNw.search_log.get(requestID).getNumberOfFilters() + " filtres\n\n");
+					wf.write("Liste des chemins matched: " 
+								+ ControlerNw.search_log.get(requestID).getNodeMatched() + "\n");
+					
+					wf.close();
+					
+					ControlerNw.search_log.remove(requestID);
+
+					//*****************
+					
+					for (int i = 0; i < Network.size(); i++)
+					{	
+						Message rep = new Message();
+						rep.setType("overview");
+						rep.setIndexName(message.getIndexName());
+						rep.setSource(nodeIndex);
+						rep.setDestinataire(i);
+						
+						t.send(Network.get(nodeIndex), Network.get(i), rep, pid);
+					}
+					
+					if (ControlerNw.search_log.isEmpty()) // si in n'y a aucune requête en cours, signaler
+					{
+						ControlerNw.config_log.setEnd_OK(true);
+					}
+				}
+				else // message.getSource() != nodeIndex
+				{
+					Message rep = new Message();
+					
+					rep.setType("searchExact_OK");
+					rep.setIndexName(indexName);
+					rep.setPath(resultat.getPath());
+					rep.setRequestID(message.getRequestID());
+					rep.setSource(nodeIndex);
+					rep.setDestinataire(message.getSource());
+					rep.setData(resultat.getData());
+				
+					t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
+				}
+			}
+			else // message type search
+			{
 				Message rep = new Message();
-				rep.setType("searchExact_OK");
+				
+				rep.setType("searchExact");
 				rep.setIndexName(indexName);
-				rep.setSource(nodeIndex);
-				rep.setDestinataire(message.getSource());
-				rep.setData(o_tmp);
-			
-				t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
+				rep.setPath(resultat.getPath());
+				rep.setRequestID(message.getRequestID());
+				rep.setSource(message.getSource());
+				rep.setDestinataire(resultat.getDestinataire());
+				rep.setData(resultat.getData());
+				
+				t.send(Network.get(nodeIndex), Network.get(resultat.getDestinataire()), rep, pid);
 			}
 		}	
 	}
@@ -1319,8 +1135,8 @@ public class SystemIndexProtocol implements EDProtocol{
 	/**
 	 * Traiter le message de suppression d'un système index
 	 * 
-	*le nœud qui gère la racine diffuse aux autres pour supprimer le système d'index
-	**/
+	 * le nœud qui gère la racine diffuse aux autres pour supprimer le système d'index
+	 **/
 	private void treatRemoveIndex(Message message, int pid)
 	{
 		String indexName = message.getIndexName();
@@ -1333,10 +1149,12 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		if (serverID == nodeIndex)
 		{	
-			Message rep = new Message();
 			if (listSystemIndexP2P.containsKey(indexID))
 			{
 				listSystemIndexP2P.remove(indexID);
+				
+				Message rep = new Message();
+
 				rep.setType("removeIndex_OK");
 				rep.setIndexName(indexName);
 				rep.setData("REMOVED");
@@ -1347,6 +1165,8 @@ public class SystemIndexProtocol implements EDProtocol{
 			}
 			else
 			{
+				Message rep = new Message();
+
 				rep.setType("removeIndex_OK");
 				rep.setIndexName(indexName);
 				rep.setData("NOT_EXISTED");
@@ -1358,6 +1178,8 @@ public class SystemIndexProtocol implements EDProtocol{
 						
 			for (int i = 0; i < Network.size(); i++)
 			{
+				Message rep = new Message();
+
 				rep = new Message();
 				rep.setType("removeIndexSuite");
 				rep.setIndexName(indexName);
@@ -1393,7 +1215,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		}	
 	}
 	
-	/*
+	/**
 	 * Traiter le message de suppression d'un système index provenant de la racine
 	 * */
 
@@ -1404,10 +1226,12 @@ public class SystemIndexProtocol implements EDProtocol{
 		ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
 		int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
 		
-		Message rep = new Message();
 		if (listSystemIndexP2P.containsKey(indexID))
 		{
 			listSystemIndexP2P.remove(indexID);
+			
+			Message rep = new Message();
+
 			rep.setType("removeIndex_OK");
 			rep.setIndexName(indexName);
 			rep.setData("REMOVED");
@@ -1418,6 +1242,8 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 		else
 		{
+			Message rep = new Message();
+
 			rep.setType("removeIndex_OK");
 			rep.setIndexName(indexName);
 			rep.setData("NOT_EXISTED");
@@ -1428,224 +1254,45 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 	}
 	
-	/*
+	/**
 	 * Traiter le message de suppression d'un filtre du système index
-	 * 
+	 * <p>
 	 * Ce message contient indexName, filtre, chaîne de caractères(chemin)
 	 * */
-	
 	private void treatRemove(Message message, int pid)
 	{
 		String indexName = message.getIndexName();
-		BFP2P BFP2P = (BFP2P) message.getData();
+		BFP2P bf = (BFP2P) message.getData();
 		String path = (String) message.getPath();
-		
-		if (path == null)
+		int requestID = message.getRequestID();
+				
+		if (message.getData() == null)
 		{
 			Message rep = new Message();
 			rep.setType("remove_KO");
 			rep.setIndexName(indexName);
+			rep.setPath(path);
 			rep.setSource(nodeIndex);
 			rep.setDestinataire(message.getSource());
 			rep.setData("list path ou path == null");
+			rep.setRequestID(requestID);
 			
 			t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
 			return;
 		}
 		
-		if (path == "/") // remove à partir de la racine
-		{				
-			ControlerNw.config_log.getTranslate().setLength(Network.size());
-			int serverID = ControlerNw.config_log.getTranslate().translate(indexName);
-			
-			ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
-			int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
-			
-			if (serverID == nodeIndex) // ce serveur gère ce systemIndex
-			{
-				if (this.listSystemIndexP2P.containsKey(indexID)) // il contient ce systemIndex
-				{
-					/*
-					//*******LOG*******
-					String s_tmp = new String();
-					for (int i = 0; i < Config.numberOfFragment; i++)
-					{
-						s_tmp += "/"+ BFP2P.getFragment(i).toInt();
-					}
-					String date = (new SimpleDateFormat("mm-ss-SSS")).format(new Date());
-
-					WriteFile wf1 = new WriteFile(Config.peerSimLOG_path, false);
-					wf1.write(date + "       Node " + nodeIndex + " receive from " + message.getSource() + "\n"
-							+ "        BFP2P " + BFP2P.toString() + "\n"
-							+ "        BFP2P_path : " + s_tmp + "\n"
-							+ "        Path : " + "/" + "\n\n");
-					wf1.close();
-					//*****************
-					*/
-					
-					SystemIndexP2P systemIndex = (SystemIndexP2P) this.listSystemIndexP2P.get(indexID);
-					
-					/*
-					//*******LOG*******
-					WriteFile wf = new WriteFile(Config.peerSimLOG, true);
-					wf.write("search racine "+ indexID + " node "+ nodeIndex + "\n"
-							+ message.toString()
-							+ "\n");
-					wf.close();
-					//*****************
-					*/
-					
-					Object o = systemIndex.remove(BFP2P, "/");
-					
-					treatRemove(o, indexName, message, pid);
-				}
-				else // !listSystemIndexP2P.containsKey(indexID)
-				{
-					/*
-					//*******LOG*******
-					
-					WriteFile wf1 = new WriteFile(Config.peerSimLOG_path, true);
-					wf1.write("Node " + nodeIndex + " reply to " + message.getSource() + "\n"
-							+ "\n");
-					wf1.close();
-					//*****************
-					*/
-					
-					Message rep = new Message();
-					rep.setIndexName(indexName);
-					rep.setType("remove_OK");					
-					rep.setData(BFP2P);
-					rep.setPath(path);
-					rep.setSource(nodeIndex);
-					rep.setDestinataire(message.getSource());
-					
-					t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
-					
-					/*
-					//*******LOG*******
-					WriteFile wf = new WriteFile(Config.peerSimLOG, true);
-					wf.write("search_OK "+ indexID + " node "+ nodeIndex + "\n"
-							+ message.toString()
-							+ "\n");
-					wf.close();
-					//*****************
-					*/
-				}
-			}
-			else // serverID != nodeIndex
-			{
-				/*
-				//*******LOG*******
-				String s_tmp = new String();
-				for (int i = 0; i < Config.numberOfFragment; i++)
-				{
-					s_tmp += "/"+ BFP2P.getFragment(i).toInt();
-				}
-				String date = (new SimpleDateFormat("mm-ss-SSS")).format(new Date());
-
-				WriteFile wf1 = new WriteFile(Config.peerSimLOG_path, true);
-				wf1.write(date + "       Node " + nodeIndex + " transfer to " + serverID + "\n"
-						+ "        BFP2P " + BFP2P.toString() + "\n"
-						+ "        BFP2P_path : " + s_tmp + "\n"
-						+ "        Path : " + "/" + "\n");
-				wf1.close();
-				//*****************
-				*/
-				
-				t.send(Network.get(nodeIndex), Network.get(serverID), message, pid);
-				
-				/*
-				//*******LOG*******
-				WriteFile wf = new WriteFile(Config.peerSimLOG, true);
-				wf.write("search racine forward "+ indexID + " node "+ nodeIndex + "\n"
-						+ message.toString()
-						+ "\n");
-				wf.close();
-				//*****************
-				*/
-			}
-		}
-		else // path != "/"
+		ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
+		int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
+		
+		if (this.listSystemIndexP2P.containsKey(indexID))
 		{
-			ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
-			int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
-			
-			/*
-			//*******LOG*******
-			String date = (new SimpleDateFormat("mm-ss-SSS")).format(new Date());
-
-			WriteFile wf = new WriteFile(Config.peerSimLOG_path, true);
-			wf.write(date +"       Node " + nodeIndex + " receive paths"
-				//	+ message.toString() + "\n"
-					+ "\n");
-			wf.close();
-			//*****************
-			*/
-			
-			if (this.listSystemIndexP2P.containsKey(indexID)) // contient indexID
-			{
-				SystemIndexP2P systemIndex = (SystemIndexP2P) this.listSystemIndexP2P.get(indexID);
-									
-				//*******LOG*******
-				/*	
-				WriteFile wf1 = new WriteFile(Config.peerSimLOG_path, true);
-				wf1.write("        Path : " + path_tmp + "\n");
-				wf1.close();
-				//*****************
-				*/
-					
-				Object o = systemIndex.remove(BFP2P, path);
-				
-				treatRemove(o, indexName, message, pid);
-
-				/*
-				//*******LOG*******
-				WriteFile wf2 = new WriteFile(Config.peerSimLOG, true);
-				wf2.write("search path "+ indexID+ " node "+ nodeIndex  + "\n"
-						+ message.toString()
-						+ "\n");
-				wf2.close();
-				//*****************
-				*/
-			}
-			else // !this.listSystemIndexP2P.containsKey(indexID)
-			{
-				Message rep = new Message();
-				rep.setIndexName(indexName);
-				rep.setType("remove_OK");
-				
-				rep.setData(BFP2P);
-				rep.setPath(path);
-				rep.setSource(nodeIndex);
-				rep.setDestinataire(message.getSource());
-				
-				/*
-				//*******LOG*******
-				String date1 = (new SimpleDateFormat("mm-ss-SSS")).format(new Date());
-
-				WriteFile wf1 = new WriteFile(Config.peerSimLOG_path, true);
-				wf1.write(date1 + "       Node " + nodeIndex + " reply to " + message.getSource() + "\n"
-						+ "\n");
-				wf1.close();
-				//*****************
-				*/
-				
-				t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
-				
-				/*
-				//*******LOG*******
-				WriteFile wf2 = new WriteFile(Config.peerSimLOG, true);
-				wf2.write("search_OK path "+ indexID + " node "+ nodeIndex + "\n"
-						+ message.toString()
-						+ "\n");
-				wf2.close();
-				//*****************
-				*/
-			}
+			SystemIndexP2P systemIndexP2P = (SystemIndexP2P) this.listSystemIndexP2P.get(indexID);
+			Object o = systemIndexP2P.searchExact(bf, path);
+			treatRemove(o, indexName, message, pid);
 		}
 	}
 
-	/*
+	/**
 	 * Traiter la réponse du système index
 	 * 
 	 * il y a 2 cas: null ou message
@@ -1654,63 +1301,23 @@ public class SystemIndexProtocol implements EDProtocol{
 	
 	private void treatRemove(Object o, String indexName, Message message, int pid)
 	{
+		if (o == null)
+			return;
 		
-	}
-	
-	/*
-	 * Traiter le message de suppression d'un nœud
-	 * */
-	
-	private void treatRemoveNode(Message message, int pid)
-	{
-		String indexName = message.getIndexName();
-		BFP2P bf = (BFP2P) message.getData();
-		String path = message.getPath();
-		
-		ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
-		int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
-		
-		Message rep = new Message();
-		
-		if (listSystemIndexP2P.containsKey(indexID))
+		if (o.getClass().getName().contains("Message"))
 		{
-			SystemIndexP2P systemIndex = listSystemIndexP2P.get(indexID);
+			Message rep = new Message();
 			
-			Object o = systemIndex.removeNode(bf.getFragment(
-					(new CalculRangP2P()).getRang(path), Config.sizeOfFragment), path);
-			
-			if (o == null)
-			{
-				rep.setType("removeNode_OK");
-				rep.setIndexName(indexName);
-				rep.setData("REMOVED");
-				rep.setSource(nodeIndex);
-				rep.setDestinataire(message.getSource());
-				
-				t.send(Network.get(nodeIndex), Network.get((int)message.getSource()), rep, pid);
-			}
-			
-			ControlerNw.config_log.getTranslate().setLength(Network.size());
-			int serverID = ControlerNw.config_log.getTranslate().translate((String)o);
-			
-			rep.setType("removeNode");
+			rep.setType("remove");
 			rep.setIndexName(indexName);
-			rep.setData(message.getData());
-			rep.setPath((String)o);
+			rep.setRequestID(message.getRequestID());
 			rep.setSource(message.getSource());
-			rep.setDestinataire(serverID);
 			
-			t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
-		}
-		else // !listSystemIndexP2P.containsKey(indexID)
-		{
-			rep.setType("removeNode_OK");
-			rep.setIndexName(indexName);
-			rep.setData("REMOVED_NODE");
-			rep.setSource(nodeIndex);
-			rep.setDestinataire(message.getSource());
+			rep.setData(((Message) o).getData());
+			rep.setPath(((Message) o).getPath());
+			rep.setDestinataire(((Message) o).getDestinataire());
 			
-			t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
+			t.send(Network.get(nodeIndex), Network.get(((Message) o).getDestinataire()), rep, pid);
 		}
 	}
 	
@@ -1796,6 +1403,22 @@ public class SystemIndexProtocol implements EDProtocol{
 			{
 				wf.write(i + " " + ControlerNw.config_log.getIndexHeight().get(i) + "\n");
 			}			
+		}
+		wf.write("\n");
+		
+		enumeration = ControlerNw.config_log.getRealIndexHeight().keys();
+		
+		while (enumeration.hasMoreElements())
+		{
+			Integer i = enumeration.nextElement();
+			if (i <= 9)
+			{
+				wf.write(i + "  " + ControlerNw.config_log.getRealIndexHeight().get(i) + "\n");
+			}
+			else
+			{
+				wf.write(i + " " + ControlerNw.config_log.getRealIndexHeight().get(i) + "\n");
+			}	
 		}
 		
 		wf.close();
@@ -1890,20 +1513,36 @@ public class SystemIndexProtocol implements EDProtocol{
 			
 			if (i < 10)
 			{
-				wf1.write(i + "       " + ControlerNw.config_log.getFilterPerNode().get(s_tmp) + "    " + s_tmp +  "\n");
+				wf1.write(i + "       " 
+						+ ControlerNw.config_log.getFilterPerNode().get(s_tmp) + "    " + s_tmp +  "\n");
 			}
 			else if (i < 100)
 			{ 
-				wf1.write(i + "      " + ControlerNw.config_log.getFilterPerNode().get(s_tmp) + "    " + s_tmp + "\n");
+				wf1.write(i + "      " 
+						+ ControlerNw.config_log.getFilterPerNode().get(s_tmp) + "    " + s_tmp + "\n");
 			}
 			else
 			{					
-				wf1.write(i + "     " + ControlerNw.config_log.getFilterPerNode().get(s_tmp) + "    " + s_tmp + "\n");
+				wf1.write(i + "     " 
+						+ ControlerNw.config_log.getFilterPerNode().get(s_tmp) + "    " + s_tmp + "\n");
 			}
 			i++;
 			k++;
 			
-			if (ControlerNw.config_log.getFilterPerNode().get(s_tmp) < 100)
+			if (ControlerNw.config_log.getFilterPerNode().get(s_tmp) < 50)
+			{
+				if (hias.containsKey(50))
+				{
+					hias.get(50).add(s_tmp);
+				}
+				else
+				{
+					ArrayList<String> als = new ArrayList<String>();
+					als.add(s_tmp);
+					hias.put(50, als);
+				}
+			}
+			else if (ControlerNw.config_log.getFilterPerNode().get(s_tmp) < 100)
 			{
 				if (hias.containsKey(100))
 				{
@@ -1957,6 +1596,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			}
 			else if (ControlerNw.config_log.getFilterPerNode().get(s_tmp) < 5000)
 			{
+				System.out.println("<5000 = " + ControlerNw.config_log.getFilterPerNode().get(s_tmp));
 				if (hias.containsKey(5000))
 				{
 					hias.get(5000).add(s_tmp);
@@ -2053,7 +1693,11 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		float n = 0;
 
-		int m = hias.get(100) == null ? 0 : hias.get(100).size();
+		int m = hias.get(50) == null ? 0 : hias.get(50).size();
+		n += (float)((float)m/(float)k)*100;
+		wf1.write("    <50 = " + m + " " + (float)((float)m/(float)k)*100 + "%\n");
+		
+		m = hias.get(100) == null ? 0 : hias.get(100).size();
 		n += (float)((float)m/(float)k)*100;
 		wf1.write("   <100 = " + m + " " + (float)((float)m/(float)k)*100 + "%\n");
 		
@@ -2064,8 +1708,10 @@ public class SystemIndexProtocol implements EDProtocol{
 		m = hias.get(500) == null ? 0 : hias.get(500).size();
 		n += (float)((float)m/(float)k)*100;
 		wf1.write("   <500 = " + m + " " + (float)((float)m/(float)k)*100 + "%\n");
-		if (m > 0)
-			wf1.write("                     " + hias.get(500).toString() + "\n");
+		
+		m = hias.get(1000) == null ? 0 : hias.get(1000).size();
+		n += (float)((float)m/(float)k)*100;
+		wf1.write("  <1000 = " + m + " " + (float)((float)m/(float)k)*100 + "%\n");
 		
 		m = hias.get(5000) == null ? 0 : hias.get(5000).size();
 		n += (float)((float)m/(float)k)*100;

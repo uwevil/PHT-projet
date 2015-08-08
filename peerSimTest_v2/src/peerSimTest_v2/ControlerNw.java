@@ -90,7 +90,7 @@ public class ControlerNw implements Control {
 				
 				/**************/
 				ok3 = true;
-			//	Config.ObserverNw_OK = true;
+		//		Config.ObserverNw_OK = true;
 				/**************/
 				
 				System.out.println("Fini de lecture " + line + " lignes");

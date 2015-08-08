@@ -152,23 +152,18 @@ public class SystemIndexP2P implements Serializable{
 	 * </p>
 	 * */
 	public Object searchExact(BFP2P bf, String path)
-	{
-		ControlerNw.config_log.getTranslate().setLength(1000000);
-		int key = ControlerNw.config_log.getTranslate().translate(bf.toString());
-		
+	{		
 		SystemNodeP2P n = (SystemNodeP2P)listNode.get(path);
 		
 		if (n == null)
 			return null;
-		
-		ControlerNw.search_log.get(key).addNodeMatched(path);
-		
+				
 		return n.searchExact(bf);
 	}
 	
-	/*
+	/**
 	 * Supprimer le filtre dans le chemin précis
-	 * 
+	 * <p>
 	 * Retourner soit null, soit un message vers le serveur hébergé
 	 * il y a 2 type de message : remove(supprimer le filtre) et removeNode(supprimer un nœud)
 	 * 	contient une chaîne de caractères
@@ -176,19 +171,11 @@ public class SystemIndexP2P implements Serializable{
 	
 	public Object remove(BFP2P bf, String path)
 	{
-	
-		return null;
-	}
-	
-	/*
-	 * Supprimer le nœud précis dans le système
-	 * 
-	 * Retourner soit null, soit une chaîne de caractères
-	 * */
-	
-	public String removeNode(FragmentP2P f, String path)
-	{
-		return null;
+		SystemNodeP2P n = (SystemNodeP2P)listNode.get(path);
+		
+		if (n == null)
+			return null;
+		return n.remove(bf);
 	}
 	
 	public int size()

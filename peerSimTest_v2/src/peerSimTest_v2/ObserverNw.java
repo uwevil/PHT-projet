@@ -14,6 +14,7 @@ import peersim.core.Network;
 import peersim.core.Node;
 import peersim.edsim.EDSimulator;
 
+@SuppressWarnings("unused")
 public class ObserverNw implements Control {
 
 	private static final String PAR_PROTOCOL = "protocol";
@@ -41,6 +42,15 @@ public class ObserverNw implements Control {
 			
 			System.out.println("Expérience n° " + experience);
 			
+			String essai = "2_v2";
+			String date = (new SimpleDateFormat("dd-MM-yyyy")).format(new Date());
+			Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "/Essai" + essai 
+					+ "/" + experience + "_log";
+			Config.peerSimLOG_resultat = "/Users/dcs/vrac/test/" + date + "/Essai" + essai 
+					+ "/" + experience + "_resultat_log";
+			Config.peerSimLOG_path = "/Users/dcs/vrac/test/" + date + "/Essai" + essai 
+					+ "/" + experience + "_path_log";
+			
 			try 
 			{
 				ReadFile rf = new ReadFile("/Users/dcs/vrac/test/wikiDocs<60_500_request");
@@ -52,17 +62,7 @@ public class ObserverNw implements Control {
 				Config.peerSimLOG_resultat = "/Users/dcs/vrac/test/" + date + "/" + experience + "_resultat_log";
 				Config.peerSimLOG_path = "/Users/dcs/vrac/test/" + date + "/" + experience + "_path_log";
 				*/
-				
-				int essai = 0;
-				String date = (new SimpleDateFormat("dd-MM-yyyy")).format(new Date());
-				Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "/Essai" + essai 
-						+ "/" + experience + "_log";
-				Config.peerSimLOG_resultat = "/Users/dcs/vrac/test/" + date + "/Essai" + essai 
-						+ "/" + experience + "_resultat_log";
-				Config.peerSimLOG_path = "/Users/dcs/vrac/test/" + date + "/Essai" + essai 
-						+ "/" + experience + "_path_log";
 		
-				
 				for (int i = experience*10; i < rf.size() && j < 10; i++)
 				{
 					Message message = new Message();
@@ -92,6 +92,7 @@ public class ObserverNw implements Control {
 				experience++;
 				
 				System.out.println("NOMBRE de requete = " + rf.size());
+				
 			} 
 			catch (FileNotFoundException e)
 			{
@@ -106,24 +107,26 @@ public class ObserverNw implements Control {
 				ok2 = false;
 			}
 			
+				
 			/*
 			Message message = new Message();
 			message.setIndexName("dcs");
-			message.setSource(37);
-			message.setDestinataire(37);
+			message.setSource(23);
+			message.setDestinataire(23);
 			
-			message.setType("search");
+			message.setType("searchExact");
 			
-			BFP2P bf = new BFP2P(Config.sizeOfBF, 
-					Config.sizeOfBF/Config.numberOfFragment);
+			BFP2P bf = new BFP2P(Config.sizeOfBF);
 			
-			bf.addAll("view");
+			bf.addAll("this,list,characters,ayn,rands,novel,atlas,shrugged");
 			
-			Object[] o = new Object[2];
-			o[0] = bf;
-			o[1] = "/";
+			ControlerNw.config_log.getTranslate().setLength(Config.requestRang);
+			int requestID = ControlerNw.config_log.getTranslate().translate(bf.toString());
 			
-			message.setData(o);
+			message.setPath("/");
+			message.setData(bf);
+			message.setRequestID(requestID);
+			
 			EDSimulator.add(0, message, n, pid);
 			ok2 = false;
 			ControlerNw.config_log.setExperience_OK(false);
