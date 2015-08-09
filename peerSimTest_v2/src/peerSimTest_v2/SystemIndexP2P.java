@@ -172,7 +172,7 @@ public class SystemIndexP2P implements Serializable{
 	public Object remove(BFP2P bf, String path)
 	{
 		SystemNodeP2P n = (SystemNodeP2P)listNode.get(path);
-		
+
 		if (n == null)
 			return null;
 		return n.remove(bf);

@@ -498,24 +498,6 @@ public class SystemNodeP2P implements Serializable{
 				
 				return rep;
 			}
-			else // !this.localRoute.containsKey(longestLength)
-			{
-				Iterator<BFP2P> iterator = this.localContainer.iterator();
-				while (iterator.hasNext())
-				{
-					BFP2P bf_tmp = (BFP2P)iterator.next();
-					if (bf_tmp.equals(bf))
-					{
-						Message rep = new Message();
-						
-						rep.setType("searchExact_OK");
-						rep.setPath(this.path);
-						rep.setData(bf_tmp);
-						
-						return rep;
-					}
-				}
-			}
 		}
 		else // longestLength == 0
 		{
@@ -544,23 +526,21 @@ public class SystemNodeP2P implements Serializable{
 				
 				return rep;
 			}
-			else // !this.localRoute.containsKey(f.toPath())
+		}
+		
+		Iterator<BFP2P> iterator = this.localContainer.iterator();
+		while (iterator.hasNext())
+		{
+			BFP2P bf_tmp = (BFP2P)iterator.next();
+			if (bf_tmp.equals(bf))
 			{
-				Iterator<BFP2P> iterator = this.localContainer.iterator();
-				while (iterator.hasNext())
-				{
-					BFP2P bf_tmp = (BFP2P)iterator.next();
-					if (bf_tmp.equals(bf))
-					{
-						Message rep = new Message();
-						
-						rep.setType("searchExact_OK");
-						rep.setPath(this.path);
-						rep.setData(bf_tmp);
-						
-						return rep;
-					}
-				}
+				Message rep = new Message();
+				
+				rep.setType("searchExact_OK");
+				rep.setPath(this.path);
+				rep.setData(bf_tmp);
+				
+				return rep;
 			}
 		}
 		return null;
@@ -600,27 +580,14 @@ public class SystemNodeP2P implements Serializable{
 				rep.setDestinataire(this.localRoute.get(longestLength));
 				rep.setData((new BFP2P())
 						.pathToBF(longestZero.getRemainPrefix(), 0, Config.numberOfFragment, Config.sizeOfFragment));
-				
+
 				return rep;
-			}
-			else // !this.localRoute.containsKey(longestLength)
-			{
-				Iterator<BFP2P> iterator = this.localContainer.iterator();
-				while (iterator.hasNext())
-				{
-					BFP2P bf_tmp = (BFP2P)iterator.next();
-					if (bf_tmp.equals(bf))
-					{
-						this.localContainer.remove(bf_tmp);
-						return null;
-					}
-				}
 			}
 		}
 		else // longestLength == 0
 		{
 			FragmentP2P f = bf.getFragment(0, Config.sizeOfFragment);
-			
+
 			if (this.localRoute.containsKey(f.toPath()))
 			{
 				String path_tmp;
@@ -644,18 +611,16 @@ public class SystemNodeP2P implements Serializable{
 				
 				return rep;
 			}
-			else // !this.localRoute.containsKey(f.toPath())
+		}
+
+		Iterator<BFP2P> iterator = this.localContainer.iterator();
+		while (iterator.hasNext())
+		{
+			BFP2P bf_tmp = (BFP2P)iterator.next();
+			if (bf_tmp.equals(bf))
 			{
-				Iterator<BFP2P> iterator = this.localContainer.iterator();
-				while (iterator.hasNext())
-				{
-					BFP2P bf_tmp = (BFP2P)iterator.next();
-					if (bf_tmp.equals(bf))
-					{
-						this.localContainer.remove(bf_tmp);
-						return null;
-					}
-				}
+				this.localContainer.remove(bf_tmp);
+				return null;
 			}
 		}
 		return null;

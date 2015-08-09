@@ -69,23 +69,20 @@ public class ObserverNw implements Control {
 					message.setIndexName("dcs");
 					message.setSource(23);
 					message.setDestinataire(23);
-					
-					message.setType("search");
-					
+										
 					BFP2P bf = new BFP2P(Config.sizeOfBF);
 					
 					bf.addAll(rf.getDescription(i));
 					
 					ControlerNw.config_log.getTranslate().setLength(Config.requestRang);
 					int requestID = ControlerNw.config_log.getTranslate().translate(bf.toString());
-					
-					Hashtable<String, BFP2P> hs = new Hashtable<String, BFP2P>();
-					
-					hs.put("/", bf);
-					
-					message.setData(hs);
-
 					message.setRequestID(requestID);
+
+					Hashtable<String, BFP2P> hs = new Hashtable<String, BFP2P>();
+					hs.put("/", bf);
+					message.setData(hs);
+					message.setType("search");
+					
 					j++;
 					EDSimulator.add(0, message, n, pid);
 				}

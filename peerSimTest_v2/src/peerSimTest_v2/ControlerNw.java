@@ -82,15 +82,15 @@ public class ControlerNw implements Control {
 						EDSimulator.add(0, message, n, pid);
 					}
 					
-					if (line == 1600000)
+					if (line == 1600)
 						break;
 				}
 				reader.close();
 				ok2 = false;
 				
 				/**************/
-				ok3 = true;
-		//		Config.ObserverNw_OK = true;
+		//		ok3 = true;
+				Config.ObserverNw_OK = true;
 				/**************/
 				
 				System.out.println("Fini de lecture " + line + " lignes");

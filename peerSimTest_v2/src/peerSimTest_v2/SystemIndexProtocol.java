@@ -1287,7 +1287,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		if (this.listSystemIndexP2P.containsKey(indexID))
 		{
 			SystemIndexP2P systemIndexP2P = (SystemIndexP2P) this.listSystemIndexP2P.get(indexID);
-			Object o = systemIndexP2P.searchExact(bf, path);
+			Object o = systemIndexP2P.remove(bf, path);
 			treatRemove(o, indexName, message, pid);
 		}
 	}
@@ -1303,6 +1303,7 @@ public class SystemIndexProtocol implements EDProtocol{
 	{
 		if (o == null)
 			return;
+		
 		
 		if (o.getClass().getName().contains("Message"))
 		{

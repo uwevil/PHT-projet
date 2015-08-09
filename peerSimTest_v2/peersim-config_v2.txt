@@ -37,5 +37,6 @@ control.0.protocol link
 control.0.step 100
 
 control.1 peerSimTest_v2.ObserverNw
+#control.1 peerSimTest_v2.TestRemove
 control.1.protocol link
 control.1.step 7000
