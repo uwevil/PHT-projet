@@ -14,6 +14,8 @@ import java.util.Hashtable;
  * 	<li> serverID
  * 	<li> listeNode
  * </ul>
+ * 
+ * @author dcs
  **/
 
 public class SystemIndexP2P implements Serializable{
@@ -33,6 +35,8 @@ public class SystemIndexP2P implements Serializable{
  	 *	<li> gamma
  	 *	<li> listNode
 	 * </ul>
+	 * 
+	 * @author dcs
 	 * */
 	
 	public SystemIndexP2P(String indexName, int serverID) {
@@ -49,6 +53,8 @@ public class SystemIndexP2P implements Serializable{
 	
 	/**
 	 * Créer le nœud root "/"
+	 * 
+	 * @author dcs
 	 * */
 	
 	public void createRoot()
@@ -59,14 +65,17 @@ public class SystemIndexP2P implements Serializable{
 	/**
 	 * Ajouter un filtre dans le nœud identifié par 'path'
 	 * 
-	 * <p>	
-	 * Retourner : 
+	 * @param bf
+	 * @param path
+	 *	
+	 * @return
 	 * <ul>
 	 * 	<li> soit {@link null}
 	 * 	<li> soit {@link Message}
-	 * 	<li> soit {@code Hashtable<String, HashSet<BFP2P>>}.
+	 * 	<li> soit {@code Hashtable<String, HashSet<BFP2P>>}
 	 * </ul>
-	 * </p>
+	 * 
+	 * @author dcs
 	 * */
 	
 	public Object add(BFP2P bf, String path)
@@ -101,7 +110,12 @@ public class SystemIndexP2P implements Serializable{
 	}
 	
 	/**
-	 * Ajouter un nœud dans le système
+	 * Ajouter un nœud dans le système.
+	 * 
+	 * @param path
+	 * @param node
+	 * 
+	 * @author dcs
 	 * */
 	
 	public void addSystemNodeP2P(String path, SystemNodeP2P node)
@@ -113,6 +127,9 @@ public class SystemIndexP2P implements Serializable{
 	/**
 	 * Ajout nodeID à localRoute du nœud
 	 * 
+	 * @param path_father
+	 * @param path
+	 * @param nodeID
 	 * */
 	
 	public void addPathNodeID(String path_father, String path, int nodeID)
@@ -121,15 +138,18 @@ public class SystemIndexP2P implements Serializable{
 	}
 		
 	/**
-	 * Rechercher le filtre dans le chemin précis
-	 *  <p>
-	 * Retourner : 
+	 * Rechercher le filtre dans le chemin précis.
+	 * 
+	 * @param bf
+	 * @param path
+	 * @return
 	 * <ul>
 	 * 	{@link Object[]}
 	 * 	<li> {@code o[0] = HashSet<BFP2P>}
 	 * 	<li> {@code o[1] = Hashtable<Integer,Hashtable<String,BFP2P>>}.
 	 * </ul>
-	 * </p>
+	 * 
+	 * @author dcs
 	 **/
 	public Object search(BFP2P bf, String path)
 	{
@@ -143,13 +163,16 @@ public class SystemIndexP2P implements Serializable{
 	 
 	/**
 	 * Rechercher le filtre précise
-	 * <p>
-	 * Retourner 
+	 * 
+	 * @param bf
+	 * @param path
+	 * @return
 	 * 	<ul>
 	 * 	<li> soit {@link null}
 	 * 	<li> soit {@link Message}
 	 * 	</ul>
-	 * </p>
+	 * 
+	 * @author dcs
 	 * */
 	public Object searchExact(BFP2P bf, String path)
 	{		
@@ -162,11 +185,20 @@ public class SystemIndexP2P implements Serializable{
 	}
 	
 	/**
-	 * Supprimer le filtre dans le chemin précis
-	 * <p>
-	 * Retourner soit null, soit un message vers le serveur hébergé
-	 * il y a 2 type de message : remove(supprimer le filtre) et removeNode(supprimer un nœud)
-	 * 	contient une chaîne de caractères
+	 * Supprimer le filtre dans le chemin précis.
+	 * 
+	 * @param bf
+	 * @param path
+	 * 
+	 * @return
+	 * 	<li> soit null
+	 * 	<li> soit un message vers le serveur hébergé
+	 * 		<ul>
+				<li> type : remove(supprimer le filtre), removeNode(supprimer un nœud)
+				<li> une chaîne de caractères
+			</ul>
+	 * 
+	 * @author dcs
 	 * */
 	
 	public Object remove(BFP2P bf, String path)
@@ -183,8 +215,11 @@ public class SystemIndexP2P implements Serializable{
 		return this.listNode.size();
 	}
 	
-	/*
-	 * Rendre une liste des nœuds stockés dans le système
+	/**
+	 * Rendre une liste des nœuds stockés dans le système.
+	 * 
+	 * @return {@code Hashtable<String, SystemNodeP2P>}
+	 * @author dcs
 	 * */
 	
 	public Hashtable<String, SystemNodeP2P> getListNode()

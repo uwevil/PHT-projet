@@ -19,7 +19,13 @@ public class SystemNodeP2P implements Serializable{
 	
 	/**
 	 * Initiliser un nœud avec le server hébergé, l'identifiant sous forme une chaîne de caractères, le rang et la limite
-	 * 	une talbe de routage
+	 * 	une talbe de routage.
+	 * 
+	 * @param server
+	 * @param path
+	 * @param limit
+	 * 
+	 * @author dcs
 	 * */
 	
 	public SystemNodeP2P(int server, String path, int limit)
@@ -32,7 +38,10 @@ public class SystemNodeP2P implements Serializable{
 	}
 	
 	/**
-	 * Rendre l'identifiant de ce nœud
+	 * Rendre l'identifiant du nœud.
+	 * 
+	 * @return {@link String}
+	 * @author dcs
 	 * */
 	
 	public String getPath()
@@ -42,6 +51,8 @@ public class SystemNodeP2P implements Serializable{
 	
 	/**
 	 * Rendre le server hébergé
+	 * @return {@link int}
+	 * @author dcs
 	 * */
 	
 	public int getServer()
@@ -50,7 +61,10 @@ public class SystemNodeP2P implements Serializable{
 	}
 		
 	/**
-	 * Rendre la table de routage de ce nœud
+	 * Rendre la table de routage du nœud.
+	 * 
+	 * @return {@code Hashtable<Object, Integer>}
+	 * @author dcs
 	 * */
 	
 	public Hashtable<Object, Integer> getLocalRoute()
@@ -59,7 +73,10 @@ public class SystemNodeP2P implements Serializable{
 	}
 	
 	/**
-	 * Rendre le conteneur local
+	 * Rendre le conteneur local.
+	 * 
+	 * @return {@code HashSet<BFP2P>}
+	 * @author dcs
 	 * */
 	
 	public HashSet<BFP2P> getLocalContainer()
@@ -68,7 +85,10 @@ public class SystemNodeP2P implements Serializable{
 	}
 	
 	/**
-	 * Rendre la limite(pour le conteneur local) stockée dans ce nœud
+	 * Rendre la limite (pour le conteneur local) stockée dans le nœud.
+	 * 
+	 * @return {@link int}
+	 * @author dcs
 	 * */
 	
 	public int getLimit()
@@ -77,14 +97,15 @@ public class SystemNodeP2P implements Serializable{
 	}
 	
 	/** Ajouter le filtre dans le nœud.
-	 * <p>	
-	 * Retourner : 
-	 * <ul>
+	 * 
+	 * @param bf
+	 * @throws ErrorException
+	 * @return 
 	 * 	<li> soit {@link null}
 	 * 	<li> soit {@link Message}
 	 * 	<li> soit {@code Hashtable<String, HashSet<BFP2P>>}.
-	 * </ul>
-	 * </p>
+	 * 
+	 * @author dcs
 	 * */
 	public Object add(BFP2P bf) throws ErrorException
 	{	
@@ -97,18 +118,6 @@ public class SystemNodeP2P implements Serializable{
 		{			
 			if (!this.localRoute.containsKey(longestLength))
 			{
-				/*
-				//***********************LOG***************
-				WriteFile wf = new WriteFile(Config.peerSimLOG+"_containerLocal_" + server, true);
-				Iterator<BFP2P> iterator = this.containerLocal.iterator();
-				
-				while (iterator.hasNext())
-				{
-					wf.write(" " + iterator.next().toPath(0, 100)+ "\n");
-				}
-				wf.close();
-				//******************************************
-				*/
 				Iterator<BFP2P> iterator = this.localContainer.iterator();
 				while (iterator.hasNext())
 				{
@@ -252,6 +261,11 @@ public class SystemNodeP2P implements Serializable{
 	
 	/**
 	 * Ajouter l'identifiant du nœud et l'id du serveur dans la table de routage.
+	 * 
+	 * @param path
+	 * @param nodeID
+	 * 
+	 * @author dcs
 	 * */
 	
 	public void add(String path, int nodeID)
@@ -291,14 +305,15 @@ public class SystemNodeP2P implements Serializable{
 	
 	/**
 	 * Rechercher tous les filtres qui contiennent le filtre(sous-filtre).
-	 * <p>
-	 * Retourner : 
-	 * <ul>
+	 * 
+	 * @param bf
+	 * @return
+	 * 
 	 * 	{@link Object[]}
 	 * 	<li> {@code o[0] = HashSet<BFP2P>}
 	 * 	<li> {@code o[1] = Hashtable<Integer,Hashtable<String,BFP2P>>}.
-	 * </ul>
-	 * </p>
+	 * 
+	 * @author dcs
 	 * */
 	
 	public Object search(BFP2P bf)
@@ -426,29 +441,7 @@ public class SystemNodeP2P implements Serializable{
 				}
 			}	
 		}
-		/*
-		//*****************************LOG*****************************
-		WriteFile wf = new WriteFile(Config.peerSimLOG+"_"+"test", true);
 		
-		Enumeration<Integer> enumeration2 = res2.keys();
-		wf.write("--------------"+this.path+"----------------\n");
-		while(enumeration2.hasMoreElements())
-		{
-			Integer i = enumeration2.nextElement();
-			wf.write(i + "\n");
-
-			Enumeration<String> enumeration3 = (res2.get(i)).keys();
-			while (enumeration3.hasMoreElements())
-			{
-				String s = enumeration3.nextElement();
-				
-				wf.write("    " + s + " = " + (res2.get(i)).get(s).toPath(0, 100)+ "\n");
-			}
-		}
-		wf.write("\n\n");
-		wf.close();
-		//*************************************************************
-		*/
 		Object[] o = new Object[2];
 		o[0] = res;
 		o[1] = res2;
@@ -457,14 +450,14 @@ public class SystemNodeP2P implements Serializable{
 	}
 	
 	/**
-	 * Rechercher le filtre précise
-	 * <p>
-	 * Retourner 
-	 * 	<ul>
-	 * 	<li> soit vide {@link null}
-	 * 	<li> soit un message {@link Message}
-	 * 	</ul>
-	 * </p>
+	 * Rechercher le filtre précis.
+	 * 
+	 * @param bf
+	 * @return 
+	 * 	<li> {@link null}
+	 * 	<li> {@link Message}
+	 * 
+	 * @author dcs
 	 * */
 	
 	public Object searchExact(BFP2P bf)

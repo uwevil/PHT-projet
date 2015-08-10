@@ -124,9 +124,16 @@ public class SystemIndexProtocol implements EDProtocol{
 
 
 	/**
-	 * Traiter la réponse pour une recherch
+	 * Traiter la réponse pour la recherche.
 	 * 
-	 * Le message contient indexName, filtre de la requête, liste des requêtes trouvés, nombre de réponses en attente
+	 * @param message
+	 *  <li> indexName
+	 *  <li> filtre de la requête
+	 *  <li> liste des filtres trouvés
+	 *  <li> liste des identifiants des nœuds en attente de la réponse.
+	 *  @param pid
+	 *  
+	 *  @author dcs
 	 * */
 	@SuppressWarnings({ "unchecked" })
 	private void treatSearch_OK(Message message, int pid)
@@ -253,9 +260,13 @@ public class SystemIndexProtocol implements EDProtocol{
 	}
 
 	/**
-	 * Traiter le message de la recherche exacte
+	 * Traiter le message de la recherche exacte.
 	 * 
-	 * Le message contient le filtre de la requête, le filtre trouvé
+	 * @param message
+	 * 	<li> filtre de la requête
+	 * 	<li> filtre trouvé
+	 * @param pid
+	 * @author dcs
 	 * */
 	
 	private void treatSearchExact_OK(Message message, int pid)
@@ -322,9 +333,12 @@ public class SystemIndexProtocol implements EDProtocol{
 	}
 
 	/**
-	 * Traiter le message reçu appellé par treatSearch_OK(recherche globale)
-	 * <p>
-	 * retourner true si il n'y a plus de réponses en attente, false sinon
+	 * Traiter le message reçu appellé par treatSearch_OK(recherche globale).
+	 * 
+	 * @param message
+	 * @return {@link Boolean} true si il n'y a plus de réponses en attente, false sinon.
+	 * 
+	 * @author dcs
 	 * */
 	
 	private boolean treatListAnswer(Message message)
@@ -378,7 +392,7 @@ public class SystemIndexProtocol implements EDProtocol{
 	}
 	
 	/**
-	 * Retourner true si 2 tables sont identiques, false sinon
+	 * @return {@link Boolean} true si 2 tables sont identiques, false sinon.
 	 * */
 	
 	private boolean testOK(int[] a, int[] b, int size)
@@ -409,14 +423,16 @@ public class SystemIndexProtocol implements EDProtocol{
 	}
 	
 	/**
-	 * Traiter le message de création du nœud
-	 * <p>
-	 * Ce message contient : 
-	 * <ul>
+	 * Traiter le message de création du nœud.
+	 * 
+	 * @param message
 	 * 	<li> indexName
 	 * 	<li> path
 	 * 	<li> {@code HashSet<BFP2P>}
-	 * </ul>
+	 * 
+	 * @param pid
+	 * 
+	 * @author dcs
 	 * */
 	
 	@SuppressWarnings("unchecked")
@@ -430,9 +446,19 @@ public class SystemIndexProtocol implements EDProtocol{
 			String[] a_tmp = path.split("/");
 			int h_tmp = 0;
 			int i = 0;
+			boolean ok = false;
 			for (i = 0; i < a_tmp.length; i++)
 			{
-				if (a_tmp[i] != null && a_tmp[i].equals("0"))
+				if (i != 0 && a_tmp[i-1].equals("0"))
+				{	
+					ok = true;
+				}
+				else
+				{
+					ok = false;
+				}
+				
+				if (a_tmp[i] != null && a_tmp[i].equals("0") && ok)
 					break;
 				
 				h_tmp++;
@@ -484,13 +510,15 @@ public class SystemIndexProtocol implements EDProtocol{
 
 	/**
 	 * Traiter le message d'ajout dans le système.
-	 * <p>
-	 * Ce message contient : 
-	 * <ul>
+	 *
+	 * @param message
 	 * 	<li> indexName
 	 * 	<li> Path
-	 * 	<li> BF
-	 * </ul>
+	 * 	<li> bf
+	 * 
+	 * @param pid
+	 * 
+	 * @author dcs
 	 * */
 	
 	private void treatAdd(Message message, int pid)
@@ -554,14 +582,13 @@ public class SystemIndexProtocol implements EDProtocol{
 	}
 	
 	/**
-	 * Traiter les cas de la réponse du nœud du système
-	 * <p>
-	 * 3 cas sont:
-	 * <ul>
+	 * Traiter les cas de la réponse du nœud du système.
+	 * @param o
 	 * 	<li> soit {@link null}
 	 * 	<li> soit {@link Message}
 	 * 	<li> soit {@code Hashtable<String, HashSet<BFP2P>>}.
-	 * </ul>
+	 * 
+	 * @author dcs
 	 * */
 	
 	private void treatAdd(Object o, String indexName, String path, int pid)
@@ -614,14 +641,13 @@ public class SystemIndexProtocol implements EDProtocol{
 	}
 			
 	/**
-	 * Traiter le message de la recherche
-	 * <p>
-	 * Ce message contient : 
-	 * <ul>
+	 * Traiter le message de la recherche.
+	 * 
+	 * @param message
 	 * 	<li> indexName
 	 * 	<li> {@code Hashtable<String, BFP2P>}
-	 * </ul>
-	 * 	
+	 * 
+	 * @author dcs	
 	 * */
 	@SuppressWarnings("unchecked")
 
@@ -704,10 +730,17 @@ public class SystemIndexProtocol implements EDProtocol{
 	}
 	
 	/**
-	 * Traiter la valeur retournée par le système
-	 * <p>
-	 * Il y a 2 cas, null ou non null
-	 * si non null, le message contient une liste de filtres trouvés et une liste des servers à tranférer la requête
+	 * Traiter la valeur retournée par le système.
+	 * 
+	 * @param o
+	 * 	<li> {@code null}
+	 * 	<li> {@link Message} 
+	 * 		<ul>
+	 *		<li> liste de filtres trouvés {@code HashSet<BFP2P>}
+	 *		<li> liste des servers à tranférer la requête {@code Hashtable<Integer, Hashtable<String, BFP2P>>}
+	 *		</ul>
+	 *
+	 * @author dcs
 	 * */
 	
 	@SuppressWarnings("unchecked")
@@ -883,14 +916,14 @@ public class SystemIndexProtocol implements EDProtocol{
 	}
 
 	/**
-	 * Traiter le message de la recherche exacte
-	 * <p>
-	 * Ce message contient :
-	 * <ul>
+	 * Traiter le message de la recherche exacte.
+	 * 
+	 * @param message
 	 * 	<li> indexName
 	 * 	<li> path
 	 * 	<li> bf
-	 * </ul>
+	 * 
+	 * @author dcs
 	 * */
 	
 	private void treatSearchExact(Message message, int pid)
@@ -941,6 +974,16 @@ public class SystemIndexProtocol implements EDProtocol{
 			treatSearchExact(o, indexName, message, pid);
 		}	
 	}
+	
+	/**
+	 * Traiter la valeur retournée par le système.
+	 * 
+	 * @param o
+	 * 	<li> {@code null}
+	 * 	<li> {@link Message} 
+	 * 	
+	 * @author dcs
+	 * */
 	
 	private void treatSearchExact(Object o, String indexName, Message message, int pid)
 	{
@@ -1081,9 +1124,9 @@ public class SystemIndexProtocol implements EDProtocol{
 	}
 
 	/**
-	 * Traiter le message de création d'un système index
+	 * Traiter le message de création d'un système index.
 	 * 
-	 * Ce message contient indexName.
+	 * @author dcs
 	 * */
 	
 	private void treatCreateIndex(Message message, int pid)
@@ -1133,9 +1176,11 @@ public class SystemIndexProtocol implements EDProtocol{
 	}
 	
 	/**
-	 * Traiter le message de suppression d'un système index
+	 * Traiter le message de suppression d'un système index.
+	 * <p>
+	 * Le nœud qui gère la racine diffuse aux autres pour supprimer le système d'index.
 	 * 
-	 * le nœud qui gère la racine diffuse aux autres pour supprimer le système d'index
+	 * @author dcs
 	 **/
 	private void treatRemoveIndex(Message message, int pid)
 	{
@@ -1216,7 +1261,9 @@ public class SystemIndexProtocol implements EDProtocol{
 	}
 	
 	/**
-	 * Traiter le message de suppression d'un système index provenant de la racine
+	 * Traiter le message de suppression d'un système index provenant de la racine.
+	 * 
+	 * @author dcs
 	 * */
 
 	private void treatRemoveIndexSuite(Message message, int pid)
@@ -1256,8 +1303,8 @@ public class SystemIndexProtocol implements EDProtocol{
 	
 	/**
 	 * Traiter le message de suppression d'un filtre du système index
-	 * <p>
-	 * Ce message contient indexName, filtre, chaîne de caractères(chemin)
+	 * 
+	 * @author dcs
 	 * */
 	private void treatRemove(Message message, int pid)
 	{
@@ -1295,8 +1342,14 @@ public class SystemIndexProtocol implements EDProtocol{
 	/**
 	 * Traiter la réponse du système index
 	 * 
-	 * il y a 2 cas: null ou message
-	 * Pour le message, soit de 'remove' soit de 'removeNode'
+	 * @param o 
+	 * 	<li> null
+	 * 	<li> message
+	 * 		<ul>type <li> 'remove' 
+	 * 		<li>'removeNode'
+	 * 		</ul>
+	 * 
+	 * @author dcs
 	 * */
 	
 	private void treatRemove(Object o, String indexName, Message message, int pid)
@@ -1323,7 +1376,9 @@ public class SystemIndexProtocol implements EDProtocol{
 	}
 	
 	/**
-	 * Capturer l'état du système
+	 * Capturer l'état du système.
+	 * 
+	 * @author dcs
 	 * */
 		
 	private void treatOverview(Message message, int pid)

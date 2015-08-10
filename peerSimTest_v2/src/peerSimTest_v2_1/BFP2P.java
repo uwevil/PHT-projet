@@ -1,4 +1,4 @@
-package peerSimTest_v2;
+package peerSimTest_v2_1;
 
 import java.io.Serializable;
 import java.security.MessageDigest;
@@ -341,6 +341,28 @@ public class BFP2P implements Serializable
 		}
 		
 		return null;
+	}
+	
+	public BFP2P compressed(int sizeOfFragment)
+	{
+		FragmentP2P tmp = new FragmentP2P(sizeOfFragment);
+		String s = new String();
+		for (int i = 0; i < this.bitSetSize/sizeOfFragment; i++)
+		{
+			if (i != 0)
+			{
+				tmp = this.getFragment(i-1, sizeOfFragment);
+				
+				if (!tmp.equals(this.getFragment(i, sizeOfFragment)))
+					s += "/"+this.getFragment(i, sizeOfFragment).toInt();
+			}
+			else
+			{
+				s += "/"+this.getFragment(i, sizeOfFragment).toInt();
+			}
+		}
+		
+		return (new BFP2P()).pathToBF(s, 0, Config.numberOfFragment, sizeOfFragment);
 	}
 }
 

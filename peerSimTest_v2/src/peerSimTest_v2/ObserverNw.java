@@ -42,7 +42,7 @@ public class ObserverNw implements Control {
 			
 			System.out.println("Expérience n° " + experience);
 			
-			String essai = "2_v2";
+			String essai = "0_v2";
 			String date = (new SimpleDateFormat("dd-MM-yyyy")).format(new Date());
 			Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "/Essai" + essai 
 					+ "/" + experience + "_log";
@@ -62,7 +62,7 @@ public class ObserverNw implements Control {
 				Config.peerSimLOG_resultat = "/Users/dcs/vrac/test/" + date + "/" + experience + "_resultat_log";
 				Config.peerSimLOG_path = "/Users/dcs/vrac/test/" + date + "/" + experience + "_path_log";
 				*/
-		
+
 				for (int i = experience*10; i < rf.size() && j < 10; i++)
 				{
 					Message message = new Message();

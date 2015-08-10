@@ -8,6 +8,10 @@ public class LongestZero {
 	private String longestPrefix = new String();
 	private String remainPrefix = new String();
 	
+	/**
+	 * Rendre le nombre de zéros à partir la première postion du filtre.,
+	 * 
+	 * */
 	public LongestZero(BFP2P bf, int sizeOfFragment)
 	{		
 		this.bf = bf;
@@ -49,6 +53,13 @@ public class LongestZero {
 		}
 	}
 	
+	/**
+	 * Rendre le nombre de zéros.
+	 * 
+	 * @param stop 
+	 * @return int
+	 * @author dcs
+	 * */
 	public int getLongestLength(int stop)
 	{
 		if (stop >= bf.size()/sizeOfFragment)
@@ -66,21 +77,47 @@ public class LongestZero {
 		return long0;
 	}
 	
+	/**
+	 * Rendre le nombre de zéros.
+	 * 
+	 * @return int
+	 * @author dcs
+	 * */
 	public int getLongestLength()
 	{
 		return longestLength;
 	}
 	
+	/**
+	 * Rendre la chaîne de zéros s'il existe.
+	 * 
+	 * @return {@link String}
+	 * @author dcs
+	 * */
 	public String getLongestPrefix()
 	{
 		return this.longestPrefix;
 	}
 	
+	/**
+	 * Rendre la chaîne restante après la suppression des zéros au début.
+	 * 
+	 * @return {@link String}
+	 * @author dcs
+	 * */
 	public String getRemainPrefix()
 	{
 		return this.remainPrefix;
 	}
 	
+	
+	/**
+	 * Rendre la chaîne de zéros s'il existe.
+	 * 
+	 * @param stop
+	 * @return {@link String}
+	 * @author dcs
+	 * */
 	public String getLongestPrefix(int stop)
 	{
 		if (stop >= bf.size()/sizeOfFragment)
@@ -106,6 +143,13 @@ public class LongestZero {
 		return prefix0;
 	}
 	
+	/**
+	 * Rendre la chaîne restante après la suppression des zéros au début.
+	 * 
+	 * @param start
+	 * @return {@link String}
+	 * @author dcs
+	 * */
 	public String getRemainPrefix(int start)
 	{
 		if (start < 0)
