@@ -21,8 +21,8 @@ public class Config {
 	public static int indexRand = 99999999;
 	public static int requestRang = 1000000;
 	public static int sizeOfBF = 512;
-	public static int numberOfFragment = 64;
-	public static int sizeOfFragment = sizeOfBF/numberOfFragment;
+	public static int sizeOfFragment = 8;
+	public static int numberOfFragment = sizeOfBF/sizeOfFragment;
 	public static int gamma = 1000;
 	private NameToID translate = new NameToID(0);
 	private boolean end_OK = false;

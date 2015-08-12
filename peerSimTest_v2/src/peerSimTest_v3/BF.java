@@ -1,10 +1,10 @@
-package peerSimTest_v2_1;
+package peerSimTest_v3;
 
 import java.io.Serializable;
 import java.security.MessageDigest;
 import java.util.BitSet;
 
-public class BFP2P implements Serializable
+public class BF implements Serializable
 {
 
 	/**
@@ -15,14 +15,14 @@ public class BFP2P implements Serializable
 	private int bitSetSize;
 	
 	/** 
-	 * Créer un filtre vide
+	 * Créer un filtre vide.
 	 * 
 	 * @param bitSetSize taille du filtre.
 	 * 
 	 * @author dcs
 	 * */
 	
-	public BFP2P(int bitSetSize)
+	public BF(int bitSetSize)
 	{
 		this.bitset = new BitSet(bitSetSize);
 		this.bitSetSize = bitSetSize;
@@ -33,7 +33,7 @@ public class BFP2P implements Serializable
 	 * 
 	 * @author dcs
 	 * */
-	public BFP2P()
+	public BF()
 	{}
 	
 	/** 
@@ -43,7 +43,7 @@ public class BFP2P implements Serializable
 	 * @throws ErrorException
 	 * @author dcs
 	 * */
-	public BFP2P(String chaineBits) throws ErrorException
+	public BF(String chaineBits) throws ErrorException
 	{
 		char[] chararray = chaineBits.toCharArray();
 			
@@ -71,7 +71,7 @@ public class BFP2P implements Serializable
 			return false;
 		if (getClass() != o.getClass())
 			return false;
-		final BFP2P other = (BFP2P) o;
+		final BF other = (BF) o;
 
 		if (this.bitSetSize != other.size())
 			return false;
@@ -242,7 +242,7 @@ public class BFP2P implements Serializable
 			return false;
 		if (getClass() != o.getClass())
 			return false;
-		final BFP2P other = (BFP2P) o;
+		final BF other = (BF) o;
 		
 		if (this.bitSetSize != other.size())
 			return false;
@@ -316,10 +316,11 @@ public class BFP2P implements Serializable
 	/**
 	 * Retourne un filtre à partir du chemin "/././." dans l'interval [start, stop] avec la taille d'un fragment.
 	 * 
-	 * @return {@link BFP2P}
+	 * @return {@link BF}
 	 * @author dcs
 	 * */
-	public BFP2P pathToBF(String path, int start, int stop, int sizeOfFragment)
+	
+	public BF pathToBF(String path, int start, int stop, int sizeOfFragment)
 	{
 		try {
 			if (start < 0 || start > stop)
@@ -334,7 +335,7 @@ public class BFP2P implements Serializable
 			for (int i = start + 1; i <= stop + 1; i++)
 				s_tmp += ((new FragmentP2P(sizeOfFragment)).intToFragment(Integer.parseInt(s[i]))).toString();
 			
-			return (new BFP2P(s_tmp));
+			return (new BF(s_tmp));
 		} catch (ErrorException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -343,26 +344,43 @@ public class BFP2P implements Serializable
 		return null;
 	}
 	
-	public BFP2P compressed(int sizeOfFragment)
+	/**
+	 * Retourne le rang du filtre entre [0, bitSetSize/sizeOfFragment].
+	 * 
+	 * @return int
+	 * @author dcs
+	 * */
+	
+	public int getRang(int sizeOfFragment)
 	{
-		FragmentP2P tmp = new FragmentP2P(sizeOfFragment);
-		String s = new String();
-		for (int i = 0; i < this.bitSetSize/sizeOfFragment; i++)
-		{
-			if (i != 0)
-			{
-				tmp = this.getFragment(i-1, sizeOfFragment);
-				
-				if (!tmp.equals(this.getFragment(i, sizeOfFragment)))
-					s += "/"+this.getFragment(i, sizeOfFragment).toInt();
-			}
-			else
-			{
-				s += "/"+this.getFragment(i, sizeOfFragment).toInt();
-			}
-		}
+		if (this.bitSetSize == 0)
+			return -1;
 		
-		return (new BFP2P()).pathToBF(s, 0, Config.numberOfFragment, sizeOfFragment);
+		return this.bitSetSize/sizeOfFragment - 1;
+	}
+	
+	/**
+	 * Retourne une clé sous forme le filtre.
+	 * 
+	 * @param sizeOfFragment taille d'un fragment.
+	 * @param numberOfBits nombre de bits récupérés pour chaque fragment.
+	 * @param pas distance entre 2 bits récupérés pour chaque fragment.
+	 * @return {@link BF}
+	 * @author dcs
+	 * */
+	
+	public BF getKey(int sizeOfFragment, int numberOfBits, int pas)
+	{
+		int numberOfFragment = this.bitSetSize/sizeOfFragment;
+		BF rep = new BF(numberOfBits*numberOfFragment);
+		int k = 0;
+		for (int i = 0; i < this.bitSetSize; i += sizeOfFragment)
+		{
+			for (int j = 0; j < numberOfBits; j++)
+				rep.setBit(k + j, this.getBit(i + j*pas));
+			k += numberOfBits;
+		}
+		return rep;
 	}
 }
 

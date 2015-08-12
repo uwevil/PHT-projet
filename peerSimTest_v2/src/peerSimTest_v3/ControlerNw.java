@@ -1,4 +1,4 @@
-package peerSimTest_v2;
+package peerSimTest_v3;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -67,7 +67,7 @@ public class ControlerNw implements Control {
 					if (tmp.length >= 2 && tmp[1].length() > 2 )
 					{
 						@SuppressWarnings("static-access")
-						BFP2P bf_tmp = new BFP2P(config_log.sizeOfBF);
+						BF bf_tmp = new BF(config_log.sizeOfBF);
 						bf_tmp.addAll(tmp[1]);
 
 						Message message = new Message();
@@ -121,7 +121,7 @@ public class ControlerNw implements Control {
 					if (tmp.length >= 2 && tmp[1].length() > 2 )
 					{
 						@SuppressWarnings("static-access")
-						BFP2P bf_tmp = new BFP2P(config_log.sizeOfBF);
+						BF bf_tmp = new BF(config_log.sizeOfBF);
 						
 						bf_tmp.addAll(tmp[1]);
 						Message message = new Message();

@@ -1,4 +1,4 @@
-package peerSimTest_v2_1;
+package peerSimTest_v3;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,8 +21,11 @@ public class Config {
 	public static int indexRand = 99999999;
 	public static int requestRang = 1000000;
 	public static int sizeOfBF = 512;
-	public static int numberOfFragment = 64;
-	public static int sizeOfFragment = sizeOfBF/numberOfFragment;
+	public static int sizeOfFragment = 8;
+	public static int numberOfFragment = sizeOfBF/sizeOfFragment;
+	public static int sizeOfElement = 1;
+	public static int numberOfBits = 2;
+	public static int pas = 2;
 	public static int gamma = 1000;
 	public static boolean ObserverNw_OK = false;
 

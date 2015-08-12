@@ -1,4 +1,4 @@
-package peerSimTest_v2;
+package peerSimTest_v3;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public class SystemIndexProtocol implements EDProtocol{
 	private Transport t;
 	private int id;
 	
-	private Hashtable<Integer, SystemIndexP2P> listSystemIndexP2P = new Hashtable<Integer, SystemIndexP2P>();
+	private Hashtable<Integer, Object> listSystemIndex = new Hashtable<Integer, Object>();
 	private int[] recu = new int[Network.size()];
 	private boolean recu_OK = false;
 	
@@ -77,28 +77,24 @@ public class SystemIndexProtocol implements EDProtocol{
 			treatRemoveIndex(message, pid);
 			break;
 			
-		case "removeIndexSuite":
-			treatRemoveIndexSuite(message, pid);
-			break;
-			
-		case "add": // add, Name, path, BFP2P
+		case "add": // add, Name, path, BF
 			treatAdd(message, pid);
 			break;
 			
-		case "remove": //remove, Name, BFP2P
+		case "PUT": // PUT, indexName, BF, path
+			treatPUT(message, pid);
+			break;
+			
+		case "remove": //remove, Name, BF
 			treatRemove(message, pid);
 			break;
 			
-		case "search": //search, Name, tableau contient BFP2P et liste des paths
+		case "search": //search, Name, tableau contient BF et liste des paths
 			treatSearch(message, pid);
 			break;
 			
 		case "searchExact":
 			treatSearchExact(message, pid);
-			break;
-			
-		case "createNode": //createNode, Name, path
-			treatCreateNode(message, pid);
 			break;
 			
 		case "search_OK": //			
@@ -140,9 +136,9 @@ public class SystemIndexProtocol implements EDProtocol{
 	{		
 		int key = message.getRequestID();
 
-		if (message.getData() != null && ((HashSet<BFP2P>)message.getData()) != null)
+		if (message.getData() != null && ((HashSet<BF>)message.getData()) != null)
 		{
-			HashSet<BFP2P> data1 = (HashSet<BFP2P>)message.getData();
+			HashSet<BF> data1 = (HashSet<BF>)message.getData();
 			
 			if (!data1.isEmpty())
 			{
@@ -161,11 +157,11 @@ public class SystemIndexProtocol implements EDProtocol{
 				
 				WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "_"+key, true);
 
-				Iterator<BFP2P> iterator = data1.iterator();
+				Iterator<BF> iterator = data1.iterator();
 				
 				while (iterator.hasNext())
 				{
-					wf.write(((new BFP2P())
+					wf.write(((new BF())
 							.pathToBF(message.getPath(), 0, Config.numberOfFragment, Config.sizeOfFragment)).toString());
 					wf.write(iterator.next().toString() + "\n");
 				}
@@ -282,7 +278,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 		else // data1 != null
 		{	
-			BFP2P data1 = (BFP2P) message.getData();
+			BF data1 = (BF) message.getData();
 			
 			//**********Compter le temps total de la recherche exacte*************
 			long time = (Calendar.getInstance()).getTimeInMillis() - ControlerNw.search_log.get(key).getTime();		
@@ -294,8 +290,8 @@ public class SystemIndexProtocol implements EDProtocol{
 			ControlerNw.search_log.get(key).addNodeMatched(message.getPath());
 			
 			WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "Exact_" + key, true);
-			wf.write("BFP2P source " + message.getSource() + "\n"
-					+ ((new BFP2P())
+			wf.write("BF source " + message.getSource() + "\n"
+					+ ((new BF())
 							.pathToBF(message.getPath(), 0, Config.numberOfFragment, Config.sizeOfFragment))
 							.toString()
 					+ data1.toString()
@@ -421,93 +417,33 @@ public class SystemIndexProtocol implements EDProtocol{
 
 		return true;
 	}
-	
+
 	/**
-	 * Traiter le message de création du nœud.
-	 * 
-	 * @param message
-	 * 	<li> indexName
-	 * 	<li> path
-	 * 	<li> {@code HashSet<BFP2P>}
-	 * 
-	 * @param pid
+	 * Traiter le message de création d'un système index.
 	 * 
 	 * @author dcs
 	 * */
 	
-	@SuppressWarnings("unchecked")
-	private void treatCreateNode(Message message, int pid)
+	private void treatCreateIndex(Message message, int pid)
 	{
 		String indexName = message.getIndexName();
-		String path = message.getPath();
-		
-		if (path != "/")
-		{
-			String[] a_tmp = path.split("/");
-			int h_tmp = 0;
-			int i = 0;
-			boolean ok = false;
-			for (i = 0; i < a_tmp.length; i++)
-			{
-				if (i != 0 && a_tmp[i-1].equals("0"))
-				{	
-					ok = true;
-				}
-				else
-				{
-					ok = false;
-				}
 				
-				if (a_tmp[i] != null && a_tmp[i].equals("0") && ok)
-					break;
-				
-				h_tmp++;
-			}
-			if (i == a_tmp.length)
-				ControlerNw.config_log.getRealIndexHeight().put(h_tmp, path);
-			
-		}
-		
-		ControlerNw.config_log.getTranslate().setLength(Network.size());
-		int serverID = ControlerNw.config_log.getTranslate().translate(path);
-		
 		ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
 		int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
 		
-		if (serverID == nodeIndex) // c'est bien ce serveur qui gère ce path
-		{	
-			SystemIndexP2P systemIndex;
-			if (!this.listSystemIndexP2P.containsKey(indexID)) // contient pas ce systemIndex
-			{
-				systemIndex = new SystemIndexP2P(indexName, serverID);
-				
-				this.listSystemIndexP2P.put(indexID, systemIndex);				
-			}
-			else // listSystemIndexP2P.containsKey(indexID)
-			{
-				systemIndex = this.listSystemIndexP2P.get(indexID);			
-			}
-			
-			SystemNodeP2P systemNode = new SystemNodeP2P(serverID, path, Config.gamma);
-			
-			systemIndex.addSystemNodeP2P(path, systemNode);
-			
-			HashSet<BFP2P> c = (HashSet<BFP2P>) message.getData();
-			Iterator<BFP2P> iterator = c.iterator();
-			
-			while (iterator.hasNext())
-			{
-				BFP2P BFP2P = (BFP2P)iterator.next();
-				Object o = systemIndex.add(BFP2P, path);
-				treatAdd(o, indexName, path, pid);
-			}
-		}
-		else // serverID != nodeIndex
+		if (!listSystemIndex.containsKey(indexID)) //not contains indexID
 		{
-			t.send(Network.get(nodeIndex), Network.get(serverID), message, pid);
-		}
+			SystemIndex systemIndex =  new SystemIndex(indexName, nodeIndex);
+			Hashtable<BF, ArrayList<BF>> data = new Hashtable<BF, ArrayList<BF>>();
+			
+			Object[] o = new Object[2];
+			o[0] = systemIndex;
+			o[1] = data;
+			
+			listSystemIndex.put(indexID,o);
+		}	
 	}
-
+	
 	/**
 	 * Traiter le message d'ajout dans le système.
 	 *
@@ -524,118 +460,95 @@ public class SystemIndexProtocol implements EDProtocol{
 	private void treatAdd(Message message, int pid)
 	{
 		String indexName = message.getIndexName();
-		String path = message.getPath();
+		BF bf = (BF) message.getData();
+		BF key = bf.getKey(Config.sizeOfFragment, Config.numberOfBits, Config.pas);
 		
-		if (path.equals("/")) // ajout dans la racine, c-à-d la racine est sur le serveur qui stocke systemIndex
+		ControlerNw.config_log.getTranslate().setLength(Network.size());
+		int serverID = ControlerNw.config_log.getTranslate().translate(key.toString());
+		
+		ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
+		int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
+
+		Message rep = new Message();
+		
+		rep.setIndexName(indexName);
+		rep.setType("PUT");
+		rep.setPath(key);
+		rep.setData(bf);
+		rep.setSource(nodeIndex);
+		rep.setDestinataire(serverID);
+		
+		t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
+		
+		if (this.listSystemIndex.containsKey(indexID) && ((Object[])this.listSystemIndex.get(indexID))[0] != null)
 		{
-			ControlerNw.config_log.getTranslate().setLength(Network.size());	
-			int serverID = ControlerNw.config_log.getTranslate().translate(indexName);
-			
-			ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
-			int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
-			
-			if (serverID == nodeIndex) //c'est bien le serveur racine qui gère ce systemIndex
-			{				
-				if (!this.listSystemIndexP2P.containsKey(indexID)) // s'il contient pas ce systemIndex
-					return;
-				
-				SystemIndexP2P systemeIndex = (SystemIndexP2P)this.listSystemIndexP2P.get(indexID);
-				
-				Object o = systemeIndex.add((BFP2P)message.getData(), path);
-				treatAdd(o, indexName, path, pid);
-			}
-			else // serverID != nodeIndex
-			{				
-				t.send(Network.get(nodeIndex), Network.get(serverID), message, pid);
-			}
+			SystemIndex systemIndex = (SystemIndex)((Object[])this.listSystemIndex.get(indexID))[0];
+			systemIndex.add(bf);
 		}
-		else // path != "/"
-		{ 
-			ControlerNw.config_log.getTranslate().setLength(Network.size());
-			int serverID = ControlerNw.config_log.getTranslate().translate(path);
-			
-			ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
-			int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
-			
-			if (serverID == nodeIndex) // si contient ce nœud
-			{
-				if (!this.listSystemIndexP2P.containsKey(indexID)) // s'il contient pas ce systemIndex, créez le
-				{
-					SystemIndexP2P systemIndex = new SystemIndexP2P(indexName, serverID);
-					systemIndex.add((BFP2P)message.getData(), path);
-					
-					this.listSystemIndexP2P.put(indexID, systemIndex);
-				}
-				else // this.listSystemIndexP2P.containsKey(indexID)
-				{
-					SystemIndexP2P systemIndex = (SystemIndexP2P)this.listSystemIndexP2P.get(indexID);
-					
-					Object o = systemIndex.add((BFP2P)message.getData(), path);
-					treatAdd(o, indexName, path, pid);
-				}
-			}
-			else // serverID != nodeIndex
-			{				
-				t.send(Network.get(nodeIndex), Network.get(serverID), message, pid);
-			}
-		}
+		
 	}
 	
 	/**
-	 * Traiter les cas de la réponse du nœud du système.
-	 * @param o
-	 * 	<li> soit {@link null}
-	 * 	<li> soit {@link Message}
-	 * 	<li> soit {@code Hashtable<String, HashSet<BFP2P>>}.
+	 * Traiter le message de type "PUT".
 	 * 
-	 * @author dcs
+	 * @param message
+	 *  <li> indexName
+	 *  <li> path
+	 *  <li> BF
+	 *  
+	 *  @author dcs
 	 * */
 	
-	private void treatAdd(Object o, String indexName, String path, int pid)
+	@SuppressWarnings("unchecked")
+	private void treatPUT(Message message, int pid)
 	{
-		if (o == null)
-			return;
+		String indexName = message.getIndexName();
+		BF bf = (BF) message.getData();
+		BF key = message.getPath();
 		
-		if (o.getClass().getName().contains("Message")) // adresse d'un nœud
-		{			
-			Message rep = new Message();
-			rep.setType("add");
-			rep.setIndexName(indexName);
-			rep.setPath(((Message)o).getPath());
-			rep.setData(((Message)o).getData());
-			rep.setSource(nodeIndex);
-			rep.setDestinataire(((Message)o).getDestinataire());
-			
-			t.send(Network.get(nodeIndex), Network.get(((Message)o).getDestinataire()), rep, pid);
-		}
-		else // split()
+		ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
+		int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
+		
+		if (!this.listSystemIndex.containsKey(indexID))
 		{
-			@SuppressWarnings("unchecked")
-			Hashtable<String, HashSet<BFP2P>> o_tmp = (Hashtable<String, HashSet<BFP2P>>)o;
+			Hashtable<BF, ArrayList<BF>> data = new Hashtable<BF, ArrayList<BF>>();
+			ArrayList<BF> arrayList = new ArrayList<BF>();
 			
-			Enumeration<String> enumeration = o_tmp.keys();
+			arrayList.add(bf);
 			
-			ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
-			int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
-						
-			while (enumeration.hasMoreElements())
+			data.put(key, arrayList);
+			
+			Object[] o = new Object[2];
+			o[0] = null;
+			o[1] = data;
+			
+			listSystemIndex.put(indexID,o);
+			
+			return;
+		}
+		
+		Hashtable<BF, ArrayList<BF>> data = 
+				(Hashtable<BF, ArrayList<BF>>)((Object[])this.listSystemIndex.get(indexID))[1];
+		
+		if (data == null)
+		{
+			data = new Hashtable<BF, ArrayList<BF>>();
+			ArrayList<BF> arrayList = new ArrayList<BF>();
+			arrayList.add(bf);
+			data.put(key, arrayList);
+			((Object[])this.listSystemIndex.get(indexID))[1] = data;
+		}
+		else
+		{
+			if (data.containsKey(key))
 			{
-				String path_tmp = enumeration.nextElement();
-			
-				ControlerNw.config_log.getTranslate().setLength(Network.size());
-				int serverID = ControlerNw.config_log.getTranslate().translate(path_tmp);
-				
-				this.listSystemIndexP2P.get(indexID).addPathNodeID(path, path_tmp, serverID);
-				
-				Message rep = new Message();
-				rep.setType("createNode");
-				rep.setIndexName(indexName);
-				rep.setPath(path_tmp);
-				rep.setSource(nodeIndex);
-				rep.setDestinataire(serverID);
-				rep.setData(o_tmp.get(path_tmp));
-								
-				t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
+				data.get(key).add(bf);
+			}
+			else
+			{
+				ArrayList<BF> arrayList = new ArrayList<BF>();
+				arrayList.add(bf);
+				data.put(key, arrayList);
 			}
 		}
 	}
@@ -645,7 +558,7 @@ public class SystemIndexProtocol implements EDProtocol{
 	 * 
 	 * @param message
 	 * 	<li> indexName
-	 * 	<li> {@code Hashtable<String, BFP2P>}
+	 * 	<li> {@code Hashtable<String, BF>}
 	 * 
 	 * @author dcs	
 	 * */
@@ -710,11 +623,11 @@ public class SystemIndexProtocol implements EDProtocol{
 		ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
 		int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
 		
-		if (this.listSystemIndexP2P.containsKey(indexID))
+		if (this.listSystemIndex.containsKey(indexID))
 		{
-			SystemIndexP2P systemIndexP2P = (SystemIndexP2P) this.listSystemIndexP2P.get(indexID);
+			SystemIndex systemIndexP2P = (SystemIndex) this.listSystemIndex.get(indexID);
 			
-			Hashtable<String, BFP2P> htsbf = (Hashtable<String, BFP2P>)message.getData();
+			Hashtable<String, BF> htsbf = (Hashtable<String, BF>)message.getData();
 			
 			Enumeration<String> enumeration = htsbf.keys();
 			
@@ -742,8 +655,8 @@ public class SystemIndexProtocol implements EDProtocol{
 	 * 	<li> {@code null}
 	 * 	<li> {@link Message} 
 	 * 		<ul>
-	 *		<li> liste de filtres trouvés {@code HashSet<BFP2P>}
-	 *		<li> liste des servers à tranférer la requête {@code Hashtable<Integer, Hashtable<String, BFP2P>>}
+	 *		<li> liste de filtres trouvés {@code HashSet<BF>}
+	 *		<li> liste des servers à tranférer la requête {@code Hashtable<Integer, Hashtable<String, BF>>}
 	 *		</ul>
 	 *
 	 * @author dcs
@@ -772,7 +685,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		if (message.getSource() == nodeIndex) // c'est bien l'enquêteur
 		{
-			HashSet<BFP2P> resultat = (HashSet<BFP2P>)((Object[])o)[0];
+			HashSet<BF> resultat = (HashSet<BF>)((Object[])o)[0];
 
 			//***************LOG*************************
 			
@@ -780,13 +693,13 @@ public class SystemIndexProtocol implements EDProtocol{
 			{
 				WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "_" + message.getRequestID(), true);
 
-				Iterator<BFP2P> iterator = resultat.iterator();
+				Iterator<BF> iterator = resultat.iterator();
 				
 				while (iterator.hasNext())
 				{
-					wf.write(((new BFP2P()).pathToBF(path, 0, Config.numberOfFragment, Config.sizeOfFragment))
+					wf.write(((new BF()).pathToBF(path, 0, Config.numberOfFragment, Config.sizeOfFragment))
 							.toString());
-					wf.write(((BFP2P)iterator.next()).toString() + "\n");
+					wf.write(((BF)iterator.next()).toString() + "\n");
 				}
 				wf.close();
 				
@@ -805,8 +718,8 @@ public class SystemIndexProtocol implements EDProtocol{
 			}
 			//*******************************************
 			
-			Hashtable<Integer, Hashtable<String, BFP2P>> tmp = 
-					(Hashtable<Integer, Hashtable<String, BFP2P>>)((Object[])o)[1];
+			Hashtable<Integer, Hashtable<String, BF>> tmp = 
+					(Hashtable<Integer, Hashtable<String, BF>>)((Object[])o)[1];
 			Enumeration<Integer> enumeration = tmp.keys();
 			
 			while (enumeration.hasMoreElements())
@@ -818,14 +731,14 @@ public class SystemIndexProtocol implements EDProtocol{
 					ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
 					int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
 					
-					Hashtable<String, BFP2P> h_tmp = (Hashtable<String, BFP2P>)tmp.get(i);
+					Hashtable<String, BF> h_tmp = (Hashtable<String, BF>)tmp.get(i);
 					
 					Enumeration<String> s_tmp = h_tmp.keys();
 
 					while (s_tmp.hasMoreElements())
 					{
 						String tmp2 = s_tmp.nextElement();
-						Object o2 = (this.listSystemIndexP2P.get(indexID)).search(h_tmp.get(tmp2), tmp2);		
+						Object o2 = (this.listSystemIndex.get(indexID)).search(h_tmp.get(tmp2), tmp2);		
 						
 						Message rep = new Message();
 						
@@ -840,7 +753,7 @@ public class SystemIndexProtocol implements EDProtocol{
 					continue;
 				}
 				
-				Hashtable<String, BFP2P> h_tmp = (Hashtable<String, BFP2P>)tmp.get(i);
+				Hashtable<String, BF> h_tmp = (Hashtable<String, BF>)tmp.get(i);
 				
 				Enumeration<String> s_tmp = h_tmp.keys();
 				int j = 0;
@@ -871,9 +784,9 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 		else // message.getSource() != nodeIndex, répond au l'enquêteur
 		{
-			HashSet<BFP2P> resultat = (HashSet<BFP2P>)((Object[])o)[0];
-			Hashtable<Integer, Hashtable<String, BFP2P>> tmp = 
-					(Hashtable<Integer, Hashtable<String, BFP2P>>)((Object[])o)[1];
+			HashSet<BF> resultat = (HashSet<BF>)((Object[])o)[0];
+			Hashtable<Integer, Hashtable<String, BF>> tmp = 
+					(Hashtable<Integer, Hashtable<String, BF>>)((Object[])o)[1];
 			Enumeration<Integer> enumeration = tmp.keys();
 
 			String s = new String();
@@ -881,7 +794,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			{
 				Integer i = enumeration.nextElement();
 				
-				Hashtable<String, BFP2P> h_tmp = (Hashtable<String, BFP2P>)tmp.get(i);
+				Hashtable<String, BF> h_tmp = (Hashtable<String, BF>)tmp.get(i);
 				
 				Enumeration<String> s_tmp = h_tmp.keys();
 				while (s_tmp.hasMoreElements())
@@ -935,7 +848,7 @@ public class SystemIndexProtocol implements EDProtocol{
 	private void treatSearchExact(Message message, int pid)
 	{				
 		String indexName = message.getIndexName();
-		BFP2P bf = (BFP2P) message.getData();
+		BF bf = (BF) message.getData();
 		String path = (String) message.getPath();
 		int requestID = message.getRequestID();
 				
@@ -967,9 +880,9 @@ public class SystemIndexProtocol implements EDProtocol{
 		ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
 		int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
 		
-		if (this.listSystemIndexP2P.containsKey(indexID))
+		if (this.listSystemIndex.containsKey(indexID))
 		{
-			SystemIndexP2P systemIndexP2P = (SystemIndexP2P) this.listSystemIndexP2P.get(indexID);
+			SystemIndex systemIndexP2P = (SystemIndex) this.listSystemIndex.get(indexID);
 			
 			//**************************log***********************************
 			ControlerNw.search_log.get(requestID).addNodeVisited(1);
@@ -1057,11 +970,11 @@ public class SystemIndexProtocol implements EDProtocol{
 					ControlerNw.search_log.get(requestID).addNodeMatched(resultat.getPath());
 					
 					WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "Exact_" + requestID, true);
-					wf.write("BFP2P source " + message.getSource() + "\n"
-							+ (new BFP2P())
+					wf.write("BF source " + message.getSource() + "\n"
+							+ (new BF())
 								.pathToBF(resultat.getPath(), 0, Config.numberOfFragment, Config.sizeOfFragment)
 								.toString()
-							+ ((BFP2P) resultat.getData()).toString() + "\n\n"
+							+ ((BF) resultat.getData()).toString() + "\n\n"
 							+ "\n\n");
 					
 					wf.write("Nœuds visités   : " 
@@ -1128,58 +1041,6 @@ public class SystemIndexProtocol implements EDProtocol{
 			}
 		}	
 	}
-
-	/**
-	 * Traiter le message de création d'un système index.
-	 * 
-	 * @author dcs
-	 * */
-	
-	private void treatCreateIndex(Message message, int pid)
-	{
-		String indexName = message.getIndexName();
-		
-		ControlerNw.config_log.getTranslate().setLength(Network.size());
-		int serverID = ControlerNw.config_log.getTranslate().translate(indexName);
-		
-		ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
-		int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
-		
-		if (serverID == nodeIndex)
-		{
-			if (listSystemIndexP2P.containsKey(indexID)) // contains indexID
-			{
-				Message rep = new Message();
-				rep.setType("createIndex_OK");
-				rep.setIndexName(indexName);
-				rep.setData("EXISTED");
-				rep.setSource(nodeIndex);
-				rep.setDestinataire(message.getSource());
-				
-				t.send(Network.get(nodeIndex), Network.get((int)message.getSource()), rep, pid);
-			}
-			else // not contains indexID => create
-			{
-				SystemIndexP2P systemIndex =  new SystemIndexP2P(indexName, serverID);
-				systemIndex.createRoot();
-				
-				listSystemIndexP2P.put(indexID,systemIndex);
-								
-				Message rep = new Message();
-				rep.setType("createIndex_OK");
-				rep.setIndexName(indexName);
-				rep.setData("CREATED");
-				rep.setSource(nodeIndex);
-				rep.setDestinataire(message.getSource());
-								
-				t.send(Network.get(nodeIndex), Network.get((int)message.getSource()), rep, pid);
-			}	
-		}
-		else // forward cad serverID != nodeIndex
-		{ 
-			t.send(Network.get(nodeIndex), Network.get(serverID), message, pid);
-		}
-	}
 	
 	/**
 	 * Traiter le message de suppression d'un système index.
@@ -1200,9 +1061,9 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		if (serverID == nodeIndex)
 		{	
-			if (listSystemIndexP2P.containsKey(indexID))
+			if (listSystemIndex.containsKey(indexID))
 			{
-				listSystemIndexP2P.remove(indexID);
+				listSystemIndex.remove(indexID);
 				
 				Message rep = new Message();
 
@@ -1279,9 +1140,9 @@ public class SystemIndexProtocol implements EDProtocol{
 		ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
 		int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
 		
-		if (listSystemIndexP2P.containsKey(indexID))
+		if (listSystemIndex.containsKey(indexID))
 		{
-			listSystemIndexP2P.remove(indexID);
+			listSystemIndex.remove(indexID);
 			
 			Message rep = new Message();
 
@@ -1315,7 +1176,7 @@ public class SystemIndexProtocol implements EDProtocol{
 	private void treatRemove(Message message, int pid)
 	{
 		String indexName = message.getIndexName();
-		BFP2P bf = (BFP2P) message.getData();
+		BF bf = (BF) message.getData();
 		String path = (String) message.getPath();
 		int requestID = message.getRequestID();
 				
@@ -1337,9 +1198,9 @@ public class SystemIndexProtocol implements EDProtocol{
 		ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
 		int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
 		
-		if (this.listSystemIndexP2P.containsKey(indexID))
+		if (this.listSystemIndex.containsKey(indexID))
 		{
-			SystemIndexP2P systemIndexP2P = (SystemIndexP2P) this.listSystemIndexP2P.get(indexID);
+			SystemIndex systemIndexP2P = (SystemIndex) this.listSystemIndex.get(indexID);
 			Object o = systemIndexP2P.remove(bf, path);
 			treatRemove(o, indexName, message, pid);
 		}
@@ -1392,23 +1253,23 @@ public class SystemIndexProtocol implements EDProtocol{
 		ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
 		int indexID = ControlerNw.config_log.getTranslate().translate(message.getIndexName());
 		
-		if (this.listSystemIndexP2P.containsKey(indexID))
+		if (this.listSystemIndex.containsKey(indexID))
 		{
 			// procedure
-			SystemIndexP2P systemIndex = (SystemIndexP2P) this.listSystemIndexP2P.get(indexID);
+			SystemIndex systemIndex = (SystemIndex) this.listSystemIndex.get(indexID);
 						
 			ControlerNw.config_log.setNodePerServer(nodeIndex, systemIndex.size());		
 
-			Hashtable<String, SystemNodeP2P> htss = systemIndex.getListNode();
+			Hashtable<String, SystemNode> htss = systemIndex.getListNode();
 			Enumeration<String> htEnumeration = htss.keys();
 			
 			while (htEnumeration.hasMoreElements())
 			{
 				String s = htEnumeration.nextElement();
 				
-				SystemNodeP2P sn = htss.get(s);
+				SystemNode sn = htss.get(s);
 				
-				HashSet<BFP2P> containerLocal = sn.getLocalContainer();
+				HashSet<BF> containerLocal = sn.getLocalContainer();
 				ControlerNw.config_log.getFilterPerNode().put(s, containerLocal.size());
 				
 				if (!ControlerNw.config_log.getIndexHeight().contains((new CalculRangP2P()).getRang(s)))
