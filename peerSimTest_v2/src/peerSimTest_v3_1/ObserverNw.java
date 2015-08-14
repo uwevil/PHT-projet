@@ -1,4 +1,4 @@
-package peerSimTest_v2;
+package peerSimTest_v3_1;
 
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
@@ -42,7 +42,7 @@ public class ObserverNw implements Control {
 			
 			System.out.println("Expérience n° " + experience);
 			
-			String essai = "0_v2_size_"+Config.sizeOfFragment;
+			String essai = "0_v3_size_"+Config.sizeOfFragment;
 			String date = (new SimpleDateFormat("dd-MM-yyyy")).format(new Date());
 			Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "/Essai" + essai 
 					+ "/" + experience + "_log";
@@ -70,7 +70,7 @@ public class ObserverNw implements Control {
 					message.setSource(23);
 					message.setDestinataire(23);
 										
-					BFP2P bf = new BFP2P(Config.sizeOfBF);
+					BF bf = new BF(Config.sizeOfBF);
 					
 					bf.addAll(rf.getDescription(i));
 					
@@ -83,9 +83,7 @@ public class ObserverNw implements Control {
 					
 					message.setRequestID(requestID);
 
-					Hashtable<String, BFP2P> hs = new Hashtable<String, BFP2P>();
-					hs.put("/", bf);
-					message.setData(hs);
+					message.setBF(bf);
 					message.setType("search");
 					
 					j++;
@@ -118,7 +116,7 @@ public class ObserverNw implements Control {
 			
 			message.setType("searchExact");
 			
-			BFP2P bf = new BFP2P(Config.sizeOfBF);
+			BF bf = new BF(Config.sizeOfBF);
 			
 			bf.addAll("this,list,characters,ayn,rands,novel,atlas,shrugged");
 			

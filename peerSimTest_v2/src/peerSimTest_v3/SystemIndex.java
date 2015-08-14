@@ -26,7 +26,7 @@ public class SystemIndex implements Serializable{
 	 */
 	private static final long serialVersionUID = 1L;
 	private String indexName;
-	private Hashtable<BF, SystemNode> listNode;
+	private Hashtable<String, SystemNode> listNode;
 	
 	/**
 	 * Initialiser le système avec 
@@ -43,13 +43,27 @@ public class SystemIndex implements Serializable{
 	public SystemIndex(String indexName, int serverID) {
 		// TODO Auto-generated constructor stub
 		this.indexName = indexName;
-		listNode = new Hashtable<BF, SystemNode>();
-		listNode.put(new BF(), new SystemNode(new BF(), Config.gamma));
+		listNode = new Hashtable<String, SystemNode>();
+		listNode.put("/", new SystemNode("/", Config.gamma));
 	}
 	
 	public String getIndexName()
 	{
 		return this.indexName;
+	}
+	
+	public ArrayList<SystemNode> getListNode() throws ErrorException
+	{
+		ArrayList<SystemNode> res = new ArrayList<SystemNode>();
+		
+		Enumeration<String> enumeration = this.listNode.keys();
+	
+		while (enumeration.hasMoreElements())
+		{
+			res.add(this.listNode.get(enumeration.nextElement()));
+		}
+		
+		return res;
 	}
 	
 	/**
@@ -66,48 +80,65 @@ public class SystemIndex implements Serializable{
 	 * </ul>
 	 * 
 	 * @author dcs
+	 * @throws ErrorException 
 	 * */
 	
 	@SuppressWarnings("unchecked")
-	public void add(BF bf)
-	{
-		try
+	public void add(BF key) throws ErrorException
+	{				
+		SystemNode n = this.listNode.get("/");
+		Object o = n.insert(key);
+		
+		while (o != null)
 		{
-			SystemNode n =  (SystemNode)listNode.get(new BF());
-			Object o = n.add(bf);
-			
-			while (o != null)
+			if (o.getClass().getName().contains("String"))
 			{
-				if (o.getClass().getName().contains("BF"))
+				if (!this.listNode.containsKey(o))
 				{
-					n = (SystemNode)listNode.get((BF)o);
-					o = n.add(bf);
+					SystemNode systemNode = new SystemNode((String) o, Config.gamma);
+					systemNode.insert(key);
+									
+					this.listNode.put((String) o, systemNode);
+					return;
 				}
-				else // ArrayList<BF>
+				else // this.listNode.containsKey(o)
 				{
-					Iterator<BF> iterator = ((ArrayList<BF>)o).iterator();
-					int rang = n.getPath().getRang(Config.sizeOfElement);
-					
-					while (iterator.hasNext())
-					{
-						BF bf_tmp = iterator.next();
-						BF path = new BF(n.getPath().toString()+bf_tmp.getFragment(rang, Config.sizeOfElement));
-						
-						if (!this.listNode.containsKey(path))
-						{
-							this.listNode.put(path, new SystemNode(path, Config.gamma));
-						}
-						
-						n = this.listNode.get(path);
-						o = n.add(bf_tmp);
-					}
+					n = this.listNode.get(o);
+					o = n.insert(key);
 				}
 			}
+			else // o == ArrayList<BF>
+			{
+				Iterator<BF> iterator = ((ArrayList<BF>) o).iterator();
+				
+				while (iterator.hasNext())
+				{
+					BF bf_tmp = iterator.next();
+					
+					String path;
+					
+					if (n.getRang() == -1)
+					{
+						path = bf_tmp.getFragment(0, Config.sizeOfElement).toString();
+					}
+					else
+					{
+						path = n.getPath() + bf_tmp.getFragment(n.getRang(), Config.sizeOfElement).toString();
+					}
+
+					if (!this.listNode.containsKey(path))
+					{
+						SystemNode systemNode = new SystemNode(path, Config.gamma);
+						this.listNode.put(path, systemNode);
+				
+						n.addPathToChildNodes(path);
+					}
+					
+					this.add(bf_tmp);
+				}
+				return;
+			}
 		}
-		catch (ErrorException e)
-		{
-			e.printStackTrace();
-		}			
 	}
 		
 	/**
@@ -116,22 +147,61 @@ public class SystemIndex implements Serializable{
 	 * @param bf
 	 * @param path
 	 * @return
-	 * <ul>
-	 * 	{@link Object[]}
-	 * 	<li> {@code o[0] = HashSet<BF>}
-	 * 	<li> {@code o[1] = Hashtable<Integer,Hashtable<String,BF>>}.
-	 * </ul>
+	 * 	<li> {@code null}
+	 * 	<li> {@link BF}
+	 * 	<li> {@code ArrayList<BF>}
 	 * 
 	 * @author dcs
+	 * @throws ErrorException 
 	 **/
-	public Object search(BF bf, String path)
+	@SuppressWarnings("unchecked")
+	public Object search(BF key) throws ErrorException
 	{
-		SystemNode n = (SystemNode)listNode.get(path);
+		SystemNode n = this.listNode.get("/");
+		Object o = n.search(key);
 		
-		if (n == null)
+		if (o == null)
 			return null;
-
-		return n.search(bf);
+		
+		if (o.getClass().getName().contains("BF"))
+			return (BF) o;
+		
+		ArrayList<Object> arrayList = (ArrayList<Object>) o;
+		ArrayList<BF> res = new ArrayList<BF>();
+		
+		if (arrayList.size() == 0)
+			return null;
+		
+		int i = 0;
+		while (i < arrayList.size())
+		{
+			Object o_tmp = arrayList.get(i);
+			
+			if (o_tmp.getClass().getName().equals("java.lang.String"))
+			{
+				n = this.listNode.get(o_tmp);
+				Object o_tmp2 = n.search(key);
+				
+				if (o_tmp2 != null)
+				{
+					if (o_tmp2.getClass().getName().contains("BF"))
+					{	
+						res.add((BF) o_tmp2);
+					}
+					else
+					{
+						arrayList.addAll((ArrayList<Object>) o_tmp2);
+					}
+				}
+			}
+			else // BF
+			{
+				res.add((BF) o_tmp);
+			}
+			i++;
+		}
+		
+		return res;
 	}
 	 
 	/**
@@ -142,19 +212,34 @@ public class SystemIndex implements Serializable{
 	 * @return
 	 * 	<ul>
 	 * 	<li> soit {@link null}
-	 * 	<li> soit {@link Message}
+	 * 	<li> soit {@link BF}
 	 * 	</ul>
 	 * 
 	 * @author dcs
+	 * @throws ErrorException 
 	 * */
-	public Object searchExact(BF bf, String path)
+	public Object searchExact(BF key) throws ErrorException
 	{		
-		SystemNode n = (SystemNode)listNode.get(path);
+		SystemNode n = (SystemNode)this.listNode.get("/");
+		Object o = n.searchExact(key);
 		
-		if (n == null)
+		if (o == null)
 			return null;
 				
-		return n.searchExact(bf);
+		if (o.getClass().getName().contains("BF"))
+			return o;
+		
+		while (true)
+		{
+			n = this.listNode.get((String)o);
+			o = n.searchExact(key);
+			
+			if (o == null)
+				return null;
+					
+			if (o.getClass().getName().contains("BF"))
+				return o;
+		}
 	}
 	
 	/**

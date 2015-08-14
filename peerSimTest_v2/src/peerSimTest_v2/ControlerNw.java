@@ -82,7 +82,7 @@ public class ControlerNw implements Control {
 						EDSimulator.add(0, message, n, pid);
 					}
 					
-					if (line == 1)
+					if (line == 1600)
 						break;
 				}
 				reader.close();

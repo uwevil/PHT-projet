@@ -42,7 +42,7 @@ public class ObserverNw implements Control {
 			
 			System.out.println("Expérience n° " + experience);
 			
-			String essai = "0_v2_size_"+Config.sizeOfFragment;
+			String essai = "0_v3_size_"+Config.sizeOfFragment;
 			String date = (new SimpleDateFormat("dd-MM-yyyy")).format(new Date());
 			Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "/Essai" + essai 
 					+ "/" + experience + "_log";
@@ -83,9 +83,7 @@ public class ObserverNw implements Control {
 					
 					message.setRequestID(requestID);
 
-					Hashtable<String, BF> hs = new Hashtable<String, BF>();
-					hs.put("/", bf);
-					message.setData(hs);
+					message.setBF(bf);
 					message.setType("search");
 					
 					j++;
@@ -104,7 +102,7 @@ public class ObserverNw implements Control {
 			
 			ControlerNw.config_log.setExperience_OK(false);
 			
-			if (experience*10 >= 500)
+			if (experience*10 >= 5)
 			{
 				ok2 = false;
 			}

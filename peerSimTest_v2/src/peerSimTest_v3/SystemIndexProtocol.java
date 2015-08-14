@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
@@ -25,7 +24,8 @@ public class SystemIndexProtocol implements EDProtocol{
 	private Transport t;
 	private int id;
 	
-	private Hashtable<Integer, Object> listSystemIndex = new Hashtable<Integer, Object>();
+	private Hashtable<Integer, SystemIndex> listSystemIndex = new Hashtable<Integer, SystemIndex>();
+	private Hashtable<Integer, Hashtable<String, ArrayList<BF>>> database = new Hashtable<Integer, Hashtable<String,ArrayList<BF>>>();
 	private int[] recu = new int[Network.size()];
 	private boolean recu_OK = false;
 	
@@ -78,11 +78,24 @@ public class SystemIndexProtocol implements EDProtocol{
 			break;
 			
 		case "add": // add, Name, path, BF
-			treatAdd(message, pid);
+			try {
+				treatAdd(message, pid);
+			} catch (ErrorException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			break;
 			
 		case "PUT": // PUT, indexName, BF, path
 			treatPUT(message, pid);
+			break;
+			
+		case "GET": //GET, indexName, path
+			treatGET(message, pid);
+			break;
+			
+		case "GET_OK":
+			treatGet_OK(message, pid);
 			break;
 			
 		case "remove": //remove, Name, BF
@@ -90,23 +103,30 @@ public class SystemIndexProtocol implements EDProtocol{
 			break;
 			
 		case "search": //search, Name, tableau contient BF et liste des paths
-			treatSearch(message, pid);
+			try {
+				treatSearch(message, pid);
+			} catch (ErrorException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			break;
 			
 		case "searchExact":
-			treatSearchExact(message, pid);
-			break;
-			
-		case "search_OK": //			
-			treatSearch_OK(message, pid);
-			break;
-			
-		case "searchExact_OK":
-			treatSearchExact_OK(message, pid);
+			try {
+				treatSearchExact(message, pid);
+			} catch (ErrorException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			break;
 			
 		case "overview": // nœud 0 balance la requete vers tous les autres nœuds
-			treatOverview(message, pid);
+			try {
+				treatOverview(message, pid);
+			} catch (ErrorException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			break;
 			
 		case "overview_OK": // tous les nœuds répond au nœud 0
@@ -118,6 +138,17 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 	}
 
+	private void treatGet_OK(Message message, int pid)
+	{
+		if (message.getOption().equals("SEARCH"))
+		{
+			treatSearch_OK(message, pid);
+		}
+		else
+		{
+			treatSearchExact_OK(message, pid);
+		}
+	}
 
 	/**
 	 * Traiter la réponse pour la recherche.
@@ -134,65 +165,75 @@ public class SystemIndexProtocol implements EDProtocol{
 	@SuppressWarnings({ "unchecked" })
 	private void treatSearch_OK(Message message, int pid)
 	{		
-		int key = message.getRequestID();
-
-		if (message.getData() != null && ((HashSet<BF>)message.getData()) != null)
+		int requestID = message.getRequestID();
+		
+		if (message.getData() != null && ((ArrayList<BF>)message.getData()) != null)
 		{
-			HashSet<BF> data1 = (HashSet<BF>)message.getData();
+			ArrayList<BF> data1 = (ArrayList<BF>)message.getData();
 			
 			if (!data1.isEmpty())
 			{
-				if (ControlerNw.search_log.get(key) == null)
+				if (ControlerNw.search_log.get(requestID) == null)
 				{
 					System.out.println("error(treatSearch_OK) : search_log == null");
 					return;
 				}
-
-				//*************Compter le nombre de filtres trouvés pour cette requête
-				ControlerNw.search_log.get(key).addNumberOfFilters(data1.size());
-				//********************************************************************
 				
 				//*************LOG le résultat******************
 				String date = (new SimpleDateFormat("mm-ss-SSS")).format(new Date());
 				
-				WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "_"+key, true);
-
 				Iterator<BF> iterator = data1.iterator();
+				
+				BF bf = message.getBF();
+				
+				int size = 0;
 				
 				while (iterator.hasNext())
 				{
-					wf.write(((new BF())
-							.pathToBF(message.getPath(), 0, Config.numberOfFragment, Config.sizeOfFragment)).toString());
-					wf.write(iterator.next().toString() + "\n");
+					BF bf_tmp = iterator.next();
+					if (bf.in(bf_tmp))
+					{
+						size++;
+						WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "_"+requestID, true);
+						wf.write(bf_tmp.toString()+ "\n");
+						wf.close();
+
+					}
 				}
-				wf.close();
 				
-				WriteFile wf1 = new WriteFile(Config.peerSimLOG_resultat + "_node_" + key, true);
-				wf1.write(date + "       Source : " + message.getSource() + "\n");
-				wf1.write("                              " 
-							+ ControlerNw.search_log.get(key).getNumberOfFilters() + " (" + data1.size() +")\n");
-				wf1.close();
-				//***********************************************
+				if (size != 0)
+				{
+					//*************Compter le nombre de filtres trouvés pour cette requête
+					ControlerNw.search_log.get(requestID).addNumberOfFilters(size);
+					//********************************************************************
+					
+					WriteFile wf1 = new WriteFile(Config.peerSimLOG_resultat + "_node_" + requestID, true);
+					wf1.write(date + "       Source : " + message.getSource() + "\n");
+					wf1.write("                              " 
+								+ ControlerNw.search_log.get(requestID).getNumberOfFilters() + " (" + size +")\n");
+					wf1.close();
+					//***********************************************
+				}
 			}
 		}
 		
 		if (treatListAnswer(message)) // si toutes les réponses sont reçues
 		{
 			//******************Compter le temps total de la recherche*******************
-			long time = Calendar.getInstance().getTimeInMillis() - ControlerNw.search_log.get(key).getTime();
-			ControlerNw.config_log.getTimeGlobal().put(key, time);
+			long time = Calendar.getInstance().getTimeInMillis() - ControlerNw.search_log.get(requestID).getTime();
+			ControlerNw.config_log.getTimeGlobal().put(requestID, time);
 			//***************************************************************************
 			
 			//******************LOG le résultat*****************************************
-			WriteFile wf1 = new WriteFile(Config.peerSimLOG_resultat + "_resume_"+key, true);
+			WriteFile wf1 = new WriteFile(Config.peerSimLOG_resultat + "_resume_"+requestID, true);
 			
-			wf1.write("Nombre de chemins visités : " + ControlerNw.search_log.get(key).getNodeVisited() + " nœuds\n");
-			wf1.write("Nombre de chemins matched : " + ControlerNw.search_log.get(key).sizeNodeMatched() + " nœuds\n");
+			wf1.write("Nombre de chemins visités : " + ControlerNw.search_log.get(requestID).getNodeVisited() + " nœuds\n");
+			wf1.write("Nombre de chemins matched : " + ControlerNw.search_log.get(requestID).sizeNodeMatched() + " nœuds\n");
 			
 			int j = 0;
 			for (int i = 0; i < Network.size(); i++)
 			{
-				if (((int[])((Object[])ControlerNw.search_log.get(key).getListAnswer(key))[0])[i] > 0)
+				if (((int[])((Object[])ControlerNw.search_log.get(requestID).getListAnswer(requestID))[0])[i] > 0)
 					j++;		
 			}
 			
@@ -218,11 +259,11 @@ public class SystemIndexProtocol implements EDProtocol{
 				wf1.write("\nTemps de recherche : " + time + "ms\n");
 			}
 			
-			wf1.write("Temps de calcul    : " + ControlerNw.search_log.get(key).getTime_calcul() + "ms\n\n");
+			wf1.write("Temps de calcul    : " + ControlerNw.search_log.get(requestID).getTime_calcul() + "ms\n\n");
 			
-			wf1.write("Trouvé : " + ControlerNw.search_log.get(key).getNumberOfFilters() + " filtres\n\n");
+			wf1.write("Trouvé : " + ControlerNw.search_log.get(requestID).getNumberOfFilters() + " filtres\n\n");
 			
-			wf1.write("Liste des chemins matched: " + ControlerNw.search_log.get(key).getNodeMatched() + "\n");
+			wf1.write("Liste des chemins matched: " + ControlerNw.search_log.get(requestID).getNodeMatched() + "\n");
 			wf1.close();
 			
 			for (int i = 0; i < Network.size(); i++)
@@ -238,7 +279,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			//*******************************************************************************
 						
 			//************Supprimer la requête dans la table de requête
-			ControlerNw.search_log.remove(key);
+			ControlerNw.search_log.remove(requestID);
 
 			/*
 			System.out.println("\n\n");
@@ -265,47 +306,60 @@ public class SystemIndexProtocol implements EDProtocol{
 	 * @author dcs
 	 * */
 	
+	@SuppressWarnings("unchecked")
 	private void treatSearchExact_OK(Message message, int pid)
 	{		
-		int key = message.getRequestID();
+		int requestID = message.getRequestID();
 		
 		if (message.getData() == null)
 		{
 			//**********Compter le temps total de la recherche exacte*************
-			long time = (Calendar.getInstance()).getTimeInMillis() - ControlerNw.search_log.get(key).getTime();
-			ControlerNw.config_log.getTimeGlobal().put(key, time);
+			long time = (Calendar.getInstance()).getTimeInMillis() - ControlerNw.search_log.get(requestID).getTime();
+			ControlerNw.config_log.getTimeGlobal().put(requestID, time);
 			//********************************************************************
 		}
 		else // data1 != null
 		{	
-			BF data1 = (BF) message.getData();
+			ArrayList<BF> data1 = (ArrayList<BF>) message.getData();
 			
 			//**********Compter le temps total de la recherche exacte*************
-			long time = (Calendar.getInstance()).getTimeInMillis() - ControlerNw.search_log.get(key).getTime();		
-			ControlerNw.config_log.getTimeGlobal().put(key, time);
+			long time = (Calendar.getInstance()).getTimeInMillis() - ControlerNw.search_log.get(requestID).getTime();		
+			ControlerNw.config_log.getTimeGlobal().put(requestID, time);
 			//********************************************************************
 			
-			//*******LOG*******
-			ControlerNw.search_log.get(key).addNumberOfFilters(1);
-			ControlerNw.search_log.get(key).addNodeMatched(message.getPath());
+			Iterator<BF> iterator = data1.iterator();
 			
-			WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "Exact_" + key, true);
-			wf.write("BF source " + message.getSource() + "\n"
-					+ ((new BF())
-							.pathToBF(message.getPath(), 0, Config.numberOfFragment, Config.sizeOfFragment))
-							.toString()
-					+ data1.toString()
-					+ "\n\n");
+			BF bf = message.getBF();
 			
-			wf.write("Nœuds visités   : " + ControlerNw.search_log.get(key).getNodeVisited() + "\n");
-			wf.write("Nœuds matched   : " + ControlerNw.search_log.get(key).getNodeMatched().size() + "\n\n");
+			while (iterator.hasNext())
+			{
+				BF bf_tmp = iterator.next();
+				
+				if (bf.equals(bf_tmp))
+				{
+					//*******LOG*******
+					ControlerNw.search_log.get(requestID).addNumberOfFilters(1);
+					ControlerNw.search_log.get(requestID).addNodeMatched(message.getKey().toString());
+					
+					WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "Exact_" + requestID, true);
+					wf.write("BF source " + message.getSource() + "\n"
+							+ bf.toString() + "\n"
+							+ bf_tmp.toString()
+							+ "\n\n");
+					
+					wf.write("Nœuds visités   : " + ControlerNw.search_log.get(requestID).getNodeVisited() + "\n");
+					wf.write("Nœuds matched   : " + ControlerNw.search_log.get(requestID).getNodeMatched().size() + "\n\n");
+					
+					wf.write("Temps de recherche : " + time + "ms\n\n");
+					wf.write("Trouvé : " + ControlerNw.search_log.get(requestID).getNumberOfFilters() + " filtres\n\n");
+					wf.write("Liste des chemins matched: " + ControlerNw.search_log.get(requestID).getNodeMatched() + "\n");
+					
+					wf.close();
+					//*****************
+				}
+			}
 			
-			wf.write("Temps de recherche : " + time + "ms\n\n");
-			wf.write("Trouvé : " + ControlerNw.search_log.get(key).getNumberOfFilters() + " filtres\n\n");
-			wf.write("Liste des chemins matched: " + ControlerNw.search_log.get(key).getNodeMatched() + "\n");
 			
-			wf.close();
-			//*****************
 			
 			for (int i = 0; i < Network.size(); i++)
 			{	
@@ -319,7 +373,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			}
 		}
 		//***************Supprimer la requête dans la liste de requête en cours**
-		ControlerNw.search_log.remove(key);
+		ControlerNw.search_log.remove(requestID);
 		//*********************************************************
 		
 		if (ControlerNw.search_log.isEmpty()) // si in n'y a aucune requête en cours, signaler
@@ -339,49 +393,19 @@ public class SystemIndexProtocol implements EDProtocol{
 	
 	private boolean treatListAnswer(Message message)
 	{		
-		int key = message.getRequestID();
-		
+		int requestID = message.getRequestID();
+
 		// si cette requête a été enregistrée avant le lancement de la recherche
-		if (ControlerNw.search_log.get(key).containsKeyListAnswer(key))
+		if (ControlerNw.search_log.get(requestID).containsKeyListAnswer(requestID))
 		{
-			Object[] o = (Object[]) ControlerNw.search_log.get(key).getListAnswer(key);
+			Object[] o = (Object[]) ControlerNw.search_log.get(requestID).getListAnswer(requestID);
 			int[] received = (int[])o[0];
 			int[] total = (int[])o[1];
 			
-			if (message.getSource() != nodeIndex) // si le serveur répond n'est pas l'enquêteur
-				received[message.getSource()] += 1;			
+		//	if (message.getSource() != nodeIndex) // si le serveur répond n'est pas l'enquêteur
+			received[message.getSource()] += 1;			
 			
-			if (message.getOption() == null) 
-			{
-				return testOK(received, total, Network.size());
-			}
-			else
-			{
-				String s = (String) message.getOption();
-				String[] path_tmp = s.split(";");
-				
-				if (path_tmp.length < 1)
-				{
-					return testOK(received, total, Network.size());
-				}
-				else
-				{
-					ControlerNw.config_log.getTranslate().setLength(Network.size());
-					for (int i = 0; i < path_tmp.length; i++)
-					{
-						if (path_tmp[i].length() >= 1)
-						{
-							int j = ControlerNw.config_log.getTranslate().translate(path_tmp[i]);
-							
-							if (j != nodeIndex)
-							{
-								total[j] += 1;
-							}
-						}
-					}
-					return testOK(received, total, Network.size());
-				}
-			}
+			return testOK(received, total, Network.size());
 		}
 				
 		return false;	
@@ -434,13 +458,8 @@ public class SystemIndexProtocol implements EDProtocol{
 		if (!listSystemIndex.containsKey(indexID)) //not contains indexID
 		{
 			SystemIndex systemIndex =  new SystemIndex(indexName, nodeIndex);
-			Hashtable<BF, ArrayList<BF>> data = new Hashtable<BF, ArrayList<BF>>();
 			
-			Object[] o = new Object[2];
-			o[0] = systemIndex;
-			o[1] = data;
-			
-			listSystemIndex.put(indexID,o);
+			listSystemIndex.put(indexID,systemIndex);
 		}	
 	}
 	
@@ -455,12 +474,13 @@ public class SystemIndexProtocol implements EDProtocol{
 	 * @param pid
 	 * 
 	 * @author dcs
+	 * @throws ErrorException 
 	 * */
 	
-	private void treatAdd(Message message, int pid)
+	private void treatAdd(Message message, int pid) throws ErrorException
 	{
 		String indexName = message.getIndexName();
-		BF bf = (BF) message.getData();
+		BF bf = (BF) message.getBF();
 		BF key = bf.getKey(Config.sizeOfFragment, Config.numberOfBits, Config.pas);
 		
 		ControlerNw.config_log.getTranslate().setLength(Network.size());
@@ -473,17 +493,17 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		rep.setIndexName(indexName);
 		rep.setType("PUT");
-		rep.setPath(key);
-		rep.setData(bf);
+		rep.setKey(key);
+		rep.setBF(bf);
 		rep.setSource(nodeIndex);
 		rep.setDestinataire(serverID);
 		
 		t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
 		
-		if (this.listSystemIndex.containsKey(indexID) && ((Object[])this.listSystemIndex.get(indexID))[0] != null)
+		if (this.listSystemIndex.containsKey(indexID))
 		{
-			SystemIndex systemIndex = (SystemIndex)((Object[])this.listSystemIndex.get(indexID))[0];
-			systemIndex.add(bf);
+			SystemIndex systemIndex = (SystemIndex)this.listSystemIndex.get(indexID);
+			systemIndex.add(key);
 		}
 		
 	}
@@ -499,57 +519,80 @@ public class SystemIndexProtocol implements EDProtocol{
 	 *  @author dcs
 	 * */
 	
-	@SuppressWarnings("unchecked")
 	private void treatPUT(Message message, int pid)
 	{
 		String indexName = message.getIndexName();
-		BF bf = (BF) message.getData();
-		BF key = message.getPath();
+		BF bf = (BF) message.getBF();
+		BF key = message.getKey();
 		
 		ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
 		int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
 		
-		if (!this.listSystemIndex.containsKey(indexID))
+		if (!this.database.containsKey(indexID))
 		{
-			Hashtable<BF, ArrayList<BF>> data = new Hashtable<BF, ArrayList<BF>>();
+			Hashtable<String, ArrayList<BF>> data = new Hashtable<String, ArrayList<BF>>();
 			ArrayList<BF> arrayList = new ArrayList<BF>();
 			
 			arrayList.add(bf);
 			
-			data.put(key, arrayList);
+			data.put(key.toString(), arrayList);
 			
-			Object[] o = new Object[2];
-			o[0] = null;
-			o[1] = data;
-			
-			listSystemIndex.put(indexID,o);
+			this.database.put(indexID,data);
 			
 			return;
 		}
 		
-		Hashtable<BF, ArrayList<BF>> data = 
-				(Hashtable<BF, ArrayList<BF>>)((Object[])this.listSystemIndex.get(indexID))[1];
+		Hashtable<String, ArrayList<BF>> data = 
+				(Hashtable<String, ArrayList<BF>>) this.database.get(indexID);
 		
-		if (data == null)
+		if (data.containsKey(key.toString()))
 		{
-			data = new Hashtable<BF, ArrayList<BF>>();
-			ArrayList<BF> arrayList = new ArrayList<BF>();
-			arrayList.add(bf);
-			data.put(key, arrayList);
-			((Object[])this.listSystemIndex.get(indexID))[1] = data;
+			data.get(key.toString()).add(bf);
 		}
 		else
 		{
-			if (data.containsKey(key))
-			{
-				data.get(key).add(bf);
-			}
-			else
-			{
-				ArrayList<BF> arrayList = new ArrayList<BF>();
-				arrayList.add(bf);
-				data.put(key, arrayList);
-			}
+			ArrayList<BF> arrayList = new ArrayList<BF>();
+			arrayList.add(bf);
+			data.put(key.toString(), arrayList);
+		}
+	}
+	
+	/**
+	 * Traiter le message de type "GET".
+	 * 
+	 *  @param message
+	 *  <li> indexName
+	 *  <li> path
+	 *  
+	 * @author dcs
+	 * */
+	
+	private void treatGET(Message message, int pid)
+	{
+		String indexName = message.getIndexName();
+		BF key = message.getKey();
+		
+		ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
+		int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
+		
+		if (this.database.containsKey(indexID))
+		{			
+			Hashtable<String, ArrayList<BF>> data = (Hashtable<String, ArrayList<BF>>) this.database.get(indexID);
+			ArrayList<BF> arrayList = data.get(key.toString());
+						
+			Message rep = new Message();
+			
+			rep.setIndexName(indexName);
+			rep.setType("GET_OK");
+			rep.setKey(key);
+			rep.setBF(message.getBF());
+			rep.setRequestID(message.getRequestID());
+			rep.setData(arrayList);
+			rep.setSource(nodeIndex);
+			rep.setDestinataire(message.getSource());
+			rep.setOption(message.getOption());
+			
+			t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
 		}
 	}
 			
@@ -561,34 +604,19 @@ public class SystemIndexProtocol implements EDProtocol{
 	 * 	<li> {@code Hashtable<String, BF>}
 	 * 
 	 * @author dcs	
+	 * @throws ErrorException 
 	 * */
 	@SuppressWarnings("unchecked")
 
-	private void treatSearch(Message message, int pid)
+	private void treatSearch(Message message, int pid) throws ErrorException
 	{		
 		String indexName = message.getIndexName();
-		
-		long temps = Calendar.getInstance().getTimeInMillis();
-
-		if ((message.getData()) == null)
-		{
-			Message rep = new Message();
-			rep.setType("search_KO");
-			rep.setIndexName(indexName);
-			rep.setSource(nodeIndex);
-			rep.setDestinataire(message.getSource());
-			rep.setData("list path ou path == null");
-			rep.setRequestID(message.getRequestID());
-			
-			t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
+		int requestID = message.getRequestID();
+		BF bf = message.getBF();
+		BF key = bf.getKey(Config.sizeOfFragment, Config.numberOfBits, Config.pas);
 						
-			return;
-		}
-				
 		if (nodeIndex == message.getSource())
-		{
-			int requestID = message.getRequestID();
-									
+		{									
 			if (!ControlerNw.search_log.containsKey(requestID))
 			{
 				Config config = new Config();
@@ -603,8 +631,6 @@ public class SystemIndexProtocol implements EDProtocol{
 					recu[i] = 0;
 					total[i] = 0;
 				}
-				recu[nodeIndex] = -1;
-				total[nodeIndex] = -1;
 				
 				o[0] = recu;
 				o[1] = total;
@@ -627,213 +653,91 @@ public class SystemIndexProtocol implements EDProtocol{
 		{
 			SystemIndex systemIndexP2P = (SystemIndex) this.listSystemIndex.get(indexID);
 			
-			Hashtable<String, BF> htsbf = (Hashtable<String, BF>)message.getData();
+			Object o = systemIndexP2P.search(key);	
 			
-			Enumeration<String> enumeration = htsbf.keys();
-			
-			while(enumeration.hasMoreElements())
+			if (o == null)
 			{
-				String path_tmp = enumeration.nextElement();
-				Object o = systemIndexP2P.search(htsbf.get(path_tmp), path_tmp);
-				treatSearch(o, indexName, path_tmp, message, pid);
+				//******************Temps de calcul**********************
+				long temps = Calendar.getInstance().getTimeInMillis() - ControlerNw.search_log.get(requestID).getTime();
+
+				ControlerNw.search_log.remove(requestID);
+				
+				ControlerNw.config_log.addTimeCalcul(requestID, temps);
+				//*******************************************************
+				return;
 			}
-		}
-		
-		//******************Temps de calcul**********************
-		temps = Calendar.getInstance().getTimeInMillis() - temps;
-		// cette variable est vidée une fois on a reçu toutes les réponses
-		ControlerNw.search_log.get(message.getRequestID()).addTime_calcul(temps); 
-		// cette variable est permanante
-		ControlerNw.config_log.addTimeCalcul(message.getRequestID(), temps);
-		//*******************************************************
-	}
-	
-	/**
-	 * Traiter la valeur retournée par le système.
-	 * 
-	 * @param o
-	 * 	<li> {@code null}
-	 * 	<li> {@link Message} 
-	 * 		<ul>
-	 *		<li> liste de filtres trouvés {@code HashSet<BF>}
-	 *		<li> liste des servers à tranférer la requête {@code Hashtable<Integer, Hashtable<String, BF>>}
-	 *		</ul>
-	 *
-	 * @author dcs
-	 * */
-	
-	@SuppressWarnings("unchecked")
-	private void treatSearch(Object o, String indexName, String path, Message message, int pid)
-	{
-		ControlerNw.search_log.get(message.getRequestID()).addNodeVisited(1);
-		if (o == null)
-		{
-			if (message.getSource() != nodeIndex)
+			
+			if (o.getClass().getName().contains("BF"))
 			{
+				BF key_tmp = (BF) o;
+				
+				ControlerNw.config_log.getTranslate().setLength(Network.size());
+				int serverID = ControlerNw.config_log.getTranslate().translate(key_tmp.toString());
+				
 				Message rep = new Message();
-				rep.setType("search_OK");
-				rep.setIndexName(indexName);
+				
+				rep.setIndexName(message.getIndexName());
+				rep.setType("GET");
+				rep.setBF(message.getBF());
+				rep.setKey(key_tmp);
 				rep.setSource(nodeIndex);
-				rep.setDestinataire(message.getSource());
-				rep.setData(null);
+				rep.setDestinataire(serverID);
 				rep.setRequestID(message.getRequestID());
-			
-				t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
-			}
-			return;
-		}
-		
-		if (message.getSource() == nodeIndex) // c'est bien l'enquêteur
-		{
-			HashSet<BF> resultat = (HashSet<BF>)((Object[])o)[0];
-
-			//***************LOG*************************
-			
-			if (!resultat.isEmpty())
-			{
-				WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "_" + message.getRequestID(), true);
-
-				Iterator<BF> iterator = resultat.iterator();
+				rep.setOption("SEARCH");
 				
-				while (iterator.hasNext())
-				{
-					wf.write(((new BF()).pathToBF(path, 0, Config.numberOfFragment, Config.sizeOfFragment))
-							.toString());
-					wf.write(((BF)iterator.next()).toString() + "\n");
-				}
-				wf.close();
+				t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
 				
-				//*************Compter le nombre de filtres trouvés pour cette requête
-				ControlerNw.search_log.get(message.getRequestID()).addNumberOfFilters(resultat.size());
-				//********************************************************************
-				
-				String date = (new SimpleDateFormat("mm-ss-SSS")).format(new Date());
-				
-				WriteFile wf1 = new WriteFile(Config.peerSimLOG_resultat + "_node_" + message.getRequestID(), true);
-				wf1.write(date + "       Source : " + message.getSource() + "\n");
-				wf1.write("                              " 
-							+ ControlerNw.search_log.get(message.getRequestID()).getNumberOfFilters() 
-							+ " (" + resultat.size() +")\n");
-				wf1.close();
-			}
-			//*******************************************
-			
-			Hashtable<Integer, Hashtable<String, BF>> tmp = 
-					(Hashtable<Integer, Hashtable<String, BF>>)((Object[])o)[1];
-			Enumeration<Integer> enumeration = tmp.keys();
-			
-			while (enumeration.hasMoreElements())
-			{
-				Integer i = enumeration.nextElement();
-				
-				if (i == nodeIndex)
-				{
-					ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
-					int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
-					
-					Hashtable<String, BF> h_tmp = (Hashtable<String, BF>)tmp.get(i);
-					
-					Enumeration<String> s_tmp = h_tmp.keys();
-
-					while (s_tmp.hasMoreElements())
-					{
-						String tmp2 = s_tmp.nextElement();
-						Object o2 = (this.listSystemIndex.get(indexID)).search(h_tmp.get(tmp2), tmp2);		
-						
-						Message rep = new Message();
-						
-						rep.setType("search");
-						rep.setIndexName(indexName);
-						rep.setPath(tmp2);
-						rep.setSource(nodeIndex);
-						rep.setRequestID(message.getRequestID());
-
-						this.treatSearch(o2, indexName, tmp2, rep, pid);
-					}
-					continue;
-				}
-				
-				Hashtable<String, BF> h_tmp = (Hashtable<String, BF>)tmp.get(i);
-				
-				Enumeration<String> s_tmp = h_tmp.keys();
-				int j = 0;
-				while (s_tmp.hasMoreElements())
-				{
-					s_tmp.nextElement();
-					j++;					
-				}
-				
-				Object[] o_tmp = (Object[]) (ControlerNw.search_log
-						.get(message.getRequestID())).getListAnswer(message.getRequestID());
-								
+				Object[] o_tmp = (Object[]) ControlerNw.search_log.get(requestID).getListAnswer(requestID);
 				int[] total = (int[]) o_tmp[1];
-				total[i] += j;
+				total[serverID] = total[serverID] + 1;
 				
-				Message rep = new Message();
-				
-				rep.setType("search");
-				rep.setIndexName(indexName);
-				rep.setPath(path);
-				rep.setData(h_tmp);
-				rep.setSource(message.getSource());
-				rep.setDestinataire(i);
-				rep.setRequestID(message.getRequestID());
-				
-				t.send(Network.get(nodeIndex), Network.get(i), rep, pid);
-			}
-		}
-		else // message.getSource() != nodeIndex, répond au l'enquêteur
-		{
-			HashSet<BF> resultat = (HashSet<BF>)((Object[])o)[0];
-			Hashtable<Integer, Hashtable<String, BF>> tmp = 
-					(Hashtable<Integer, Hashtable<String, BF>>)((Object[])o)[1];
-			Enumeration<Integer> enumeration = tmp.keys();
+				//******************Temps de calcul**********************
+				long temps = Calendar.getInstance().getTimeInMillis() - ControlerNw.search_log.get(requestID).getTime();
 
-			String s = new String();
-			while (enumeration.hasMoreElements())
+				ControlerNw.config_log.addTimeCalcul(requestID, temps);
+				//*******************************************************
+				return;
+			}
+			
+			Iterator<BF> iterator = ((ArrayList<BF>)o).iterator();
+						
+			System.out.println("Nombre de requête GET : " + ((ArrayList<BF>)o).size());
+			
+			Object[] o_tmp = (Object[]) ControlerNw.search_log.get(requestID).getListAnswer(requestID);
+			int[] total = (int[]) o_tmp[1];
+						
+			while (iterator.hasNext())
 			{
-				Integer i = enumeration.nextElement();
+				BF key_tmp = iterator.next();
 				
-				Hashtable<String, BF> h_tmp = (Hashtable<String, BF>)tmp.get(i);
-				
-				Enumeration<String> s_tmp = h_tmp.keys();
-				while (s_tmp.hasMoreElements())
-				{
-					s += s_tmp.nextElement() + ";";
-				}
+				ControlerNw.config_log.getTranslate().setLength(Network.size());
+
+				int serverID = ControlerNw.config_log.getTranslate().translate(key_tmp.toString());
 				
 				Message rep = new Message();
 				
-				rep.setType("search");
-				rep.setIndexName(indexName);
-				rep.setData(h_tmp);
-				rep.setSource(message.getSource());
-				rep.setDestinataire(i);
+				rep.setIndexName(message.getIndexName());
+				rep.setType("GET");
+				rep.setBF(message.getBF());
+				rep.setKey(key_tmp);
+				rep.setSource(nodeIndex);
+				rep.setDestinataire(serverID);
 				rep.setRequestID(message.getRequestID());
+				rep.setOption("SEARCH");
 				
-				t.send(Network.get(nodeIndex), Network.get(i), rep, pid);
+				t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
+				
+				total[serverID] = total[serverID] + 1;
 			}
-			
-			//************************LOG********************************
-			if (!resultat.isEmpty())
-				ControlerNw.search_log.get(message.getRequestID()).addNodeMatched(path);
-			//************************************************************
-			
-			Message rep = new Message();
-			
-			rep.setType("search_OK");
-			rep.setIndexName(indexName);
-			rep.setPath(path);
-			rep.setData(resultat);
-			rep.setSource(nodeIndex);
-			rep.setDestinataire(message.getSource());
-			rep.setRequestID(message.getRequestID());
-			rep.setOption(s);
+		
+			//******************Temps de calcul**********************
+			long temps = Calendar.getInstance().getTimeInMillis() - ControlerNw.search_log.get(requestID).getTime();
 
-			t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
-		}	
+			ControlerNw.config_log.addTimeCalcul(requestID, temps);
+			//*******************************************************
+		}
 	}
-
+	
 	/**
 	 * Traiter le message de la recherche exacte.
 	 * 
@@ -843,37 +747,29 @@ public class SystemIndexProtocol implements EDProtocol{
 	 * 	<li> bf
 	 * 
 	 * @author dcs
+	 * @throws ErrorException 
 	 * */
 	
-	private void treatSearchExact(Message message, int pid)
+	private void treatSearchExact(Message message, int pid) throws ErrorException
 	{				
 		String indexName = message.getIndexName();
-		BF bf = (BF) message.getData();
-		String path = (String) message.getPath();
 		int requestID = message.getRequestID();
-				
-		if (message.getData() == null)
-		{
-			Message rep = new Message();
-			rep.setType("searchExact_KO");
-			rep.setIndexName(indexName);
-			rep.setPath(path);
-			rep.setSource(nodeIndex);
-			rep.setDestinataire(message.getSource());
-			rep.setData("list path ou path == null");
-			rep.setRequestID(requestID);
-			
-			t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
-			return;
-		}
-		
+		BF key = message.getKey();
+						
 		if (nodeIndex == message.getSource())
-		{			
+		{									
 			if (!ControlerNw.search_log.containsKey(requestID))
 			{
 				Config config = new Config();
-				config.setTime((Calendar.getInstance()).getTimeInMillis());
+				config.setTime(Calendar.getInstance().getTimeInMillis());
+				
 				ControlerNw.search_log.put(requestID, config);
+				
+				String date = (new SimpleDateFormat("mm-ss-SSS")).format(new Date());
+				
+				WriteFile wf1 = new WriteFile(Config.peerSimLOG_resultat + "_node_" + requestID, true);
+				wf1.write(date + "       Source : " + message.getSource() + "\n");
+				wf1.close();
 			}
 		}
 		
@@ -884,162 +780,45 @@ public class SystemIndexProtocol implements EDProtocol{
 		{
 			SystemIndex systemIndexP2P = (SystemIndex) this.listSystemIndex.get(indexID);
 			
-			//**************************log***********************************
-			ControlerNw.search_log.get(requestID).addNodeVisited(1);
-			ControlerNw.search_log.get(requestID).addNodeMatched(path);
-			//****************************************************************
-			Object o = systemIndexP2P.searchExact(bf, path);
+			Object o = systemIndexP2P.searchExact(key);	
 			
-			treatSearchExact(o, indexName, message, pid);
-		}	
-	}
-	
-	/**
-	 * Traiter la valeur retournée par le système.
-	 * 
-	 * @param o
-	 * 	<li> {@code null}
-	 * 	<li> {@link Message} 
-	 * 	
-	 * @author dcs
-	 * */
-	
-	private void treatSearchExact(Object o, String indexName, Message message, int pid)
-	{
-		if (o == null)
-		{
-			if (message.getSource() != nodeIndex)
-			{				
-				Message rep = new Message();
-				rep.setType("searchExact_OK");
-				rep.setIndexName(indexName);
-				rep.setPath(message.getPath());
-				rep.setRequestID(message.getRequestID());
-				rep.setSource(nodeIndex);
-				rep.setDestinataire(message.getSource());
-				rep.setData(null);
-			
-				t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
-			}
-			else // message.getSource == nodeIndex
-			{				
-				long time = (Calendar.getInstance()).getTimeInMillis() 
-						- ControlerNw.search_log.get(message.getRequestID()).getTime();
-				
-				ControlerNw.config_log.getTimeGlobal().put(message.getRequestID(), time);
-					
-				//*******LOG*******
-				ControlerNw.search_log.remove(message.getRequestID());
-				//*****************
-				for (int i = 0; i < Network.size(); i++)
-				{	
-					Message rep = new Message();
-					rep.setType("overview");
-					rep.setIndexName(message.getIndexName());
-					rep.setSource(nodeIndex);
-					rep.setDestinataire(i);
-					
-					t.send(Network.get(nodeIndex), Network.get(i), rep, pid);
-				}
-				
-				if (ControlerNw.search_log.isEmpty()) // si in n'y a aucune requête en cours, signaler
-				{
-					ControlerNw.config_log.setEnd_OK(true);
-				}
-			}
-			return;
-		}
-		else // o != null
-		{
-			Message resultat = (Message) o;
-			
-			if (resultat.getType().equals("searchExact_OK"))
+			if (o == null)
 			{
-				if (message.getSource() == nodeIndex)
-				{									
-					int requestID = message.getRequestID();
-					
-					long time = (Calendar.getInstance()).getTimeInMillis() 
-							- ControlerNw.search_log.get(requestID).getTime();
-					
-					ControlerNw.config_log.getTimeGlobal().put(requestID, time);
-					
-					//*******LOG*******
-					
-					ControlerNw.search_log.get(requestID).addNumberOfFilters(1);
-					ControlerNw.search_log.get(requestID).addNodeMatched(resultat.getPath());
-					
-					WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "Exact_" + requestID, true);
-					wf.write("BF source " + message.getSource() + "\n"
-							+ (new BF())
-								.pathToBF(resultat.getPath(), 0, Config.numberOfFragment, Config.sizeOfFragment)
-								.toString()
-							+ ((BF) resultat.getData()).toString() + "\n\n"
-							+ "\n\n");
-					
-					wf.write("Nœuds visités   : " 
-							+ ControlerNw.search_log.get(requestID).getNodeVisited() + "\n");
-					wf.write("Nœuds matched   : " 
-							+ ControlerNw.search_log.get(requestID).getNodeMatched().size() + "\n\n");
-				
-					wf.write("Temps de recherche : " + time + "ms\n\n");
-					wf.write("Trouvé : " 
-							+ ControlerNw.search_log.get(requestID).getNumberOfFilters() + " filtres\n\n");
-					wf.write("Liste des chemins matched: " 
-								+ ControlerNw.search_log.get(requestID).getNodeMatched() + "\n");
-					
-					wf.close();
-					
-					ControlerNw.search_log.remove(requestID);
+				//******************Temps de calcul**********************
+				long temps = Calendar.getInstance().getTimeInMillis() - ControlerNw.search_log.get(requestID).getTime();
 
-					//*****************
-					
-					for (int i = 0; i < Network.size(); i++)
-					{	
-						Message rep = new Message();
-						rep.setType("overview");
-						rep.setIndexName(message.getIndexName());
-						rep.setSource(nodeIndex);
-						rep.setDestinataire(i);
-						
-						t.send(Network.get(nodeIndex), Network.get(i), rep, pid);
-					}
-					
-					if (ControlerNw.search_log.isEmpty()) // si in n'y a aucune requête en cours, signaler
-					{
-						ControlerNw.config_log.setEnd_OK(true);
-					}
-				}
-				else // message.getSource() != nodeIndex
-				{
-					Message rep = new Message();
-					
-					rep.setType("searchExact_OK");
-					rep.setIndexName(indexName);
-					rep.setPath(resultat.getPath());
-					rep.setRequestID(message.getRequestID());
-					rep.setSource(nodeIndex);
-					rep.setDestinataire(message.getSource());
-					rep.setData(resultat.getData());
+				ControlerNw.search_log.remove(requestID);
 				
-					t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
-				}
+				ControlerNw.config_log.addTimeCalcul(requestID, temps);
+				//*******************************************************
+				
+				return;
 			}
-			else // message type search
-			{
-				Message rep = new Message();
-				
-				rep.setType("searchExact");
-				rep.setIndexName(indexName);
-				rep.setPath(resultat.getPath());
-				rep.setRequestID(message.getRequestID());
-				rep.setSource(message.getSource());
-				rep.setDestinataire(resultat.getDestinataire());
-				rep.setData(resultat.getData());
-				
-				t.send(Network.get(nodeIndex), Network.get(resultat.getDestinataire()), rep, pid);
-			}
-		}	
+			
+			BF key_tmp = (BF) o;
+			
+			ControlerNw.config_log.getTranslate().setLength(Network.size());
+			int serverID = ControlerNw.config_log.getTranslate().translate(key_tmp.toString());
+			
+			Message rep = new Message();
+			
+			rep.setIndexName(message.getIndexName());
+			rep.setType("GET");
+			rep.setBF(message.getBF());
+			rep.setKey(key_tmp);
+			rep.setSource(nodeIndex);
+			rep.setDestinataire(serverID);
+			rep.setRequestID(message.getRequestID());
+			rep.setOption("SEARCH_EXACT");
+			
+			t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
+			
+			//******************Temps de calcul**********************
+			long temps = Calendar.getInstance().getTimeInMillis() - ControlerNw.search_log.get(requestID).getTime();
+
+			ControlerNw.config_log.addTimeCalcul(requestID, temps);
+			//*******************************************************
+		}
 	}
 	
 	/**
@@ -1127,46 +906,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		}	
 	}
 	
-	/**
-	 * Traiter le message de suppression d'un système index provenant de la racine.
-	 * 
-	 * @author dcs
-	 * */
-
-	private void treatRemoveIndexSuite(Message message, int pid)
-	{
-		String indexName = message.getIndexName();
-		
-		ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
-		int indexID = ControlerNw.config_log.getTranslate().translate(indexName);
-		
-		if (listSystemIndex.containsKey(indexID))
-		{
-			listSystemIndex.remove(indexID);
-			
-			Message rep = new Message();
-
-			rep.setType("removeIndex_OK");
-			rep.setIndexName(indexName);
-			rep.setData("REMOVED");
-			rep.setSource(nodeIndex);
-			rep.setDestinataire(message.getSource());
-						
-			t.send(Network.get(nodeIndex), Network.get((int)message.getSource()), rep, pid);
-		}
-		else
-		{
-			Message rep = new Message();
-
-			rep.setType("removeIndex_OK");
-			rep.setIndexName(indexName);
-			rep.setData("NOT_EXISTED");
-			rep.setSource(nodeIndex);
-			rep.setDestinataire(message.getSource());
-			
-			t.send(Network.get(nodeIndex), Network.get((int)message.getSource()), rep, pid);
-		}
-	}
+	
 	
 	/**
 	 * Traiter le message de suppression d'un filtre du système index
@@ -1175,6 +915,7 @@ public class SystemIndexProtocol implements EDProtocol{
 	 * */
 	private void treatRemove(Message message, int pid)
 	{
+		/*
 		String indexName = message.getIndexName();
 		BF bf = (BF) message.getData();
 		String path = (String) message.getPath();
@@ -1204,52 +945,19 @@ public class SystemIndexProtocol implements EDProtocol{
 			Object o = systemIndexP2P.remove(bf, path);
 			treatRemove(o, indexName, message, pid);
 		}
+		*/
 	}
 
-	/**
-	 * Traiter la réponse du système index
-	 * 
-	 * @param o 
-	 * 	<li> null
-	 * 	<li> message
-	 * 		<ul>type <li> 'remove' 
-	 * 		<li>'removeNode'
-	 * 		</ul>
-	 * 
-	 * @author dcs
-	 * */
-	
-	private void treatRemove(Object o, String indexName, Message message, int pid)
-	{
-		if (o == null)
-			return;
-		
-		
-		if (o.getClass().getName().contains("Message"))
-		{
-			Message rep = new Message();
-			
-			rep.setType("remove");
-			rep.setIndexName(indexName);
-			rep.setRequestID(message.getRequestID());
-			rep.setSource(message.getSource());
-			
-			rep.setData(((Message) o).getData());
-			rep.setPath(((Message) o).getPath());
-			rep.setDestinataire(((Message) o).getDestinataire());
-			
-			t.send(Network.get(nodeIndex), Network.get(((Message) o).getDestinataire()), rep, pid);
-		}
-	}
-	
 	/**
 	 * Capturer l'état du système.
 	 * 
 	 * @author dcs
+	 * @throws ErrorException 
 	 * */
 		
-	private void treatOverview(Message message, int pid)
+	private void treatOverview(Message message, int pid) throws ErrorException
 	{	
+		
 		ControlerNw.config_log.getTranslate().setLength(Config.indexRand);
 		int indexID = ControlerNw.config_log.getTranslate().translate(message.getIndexName());
 		
@@ -1257,23 +965,26 @@ public class SystemIndexProtocol implements EDProtocol{
 		{
 			// procedure
 			SystemIndex systemIndex = (SystemIndex) this.listSystemIndex.get(indexID);
-						
-			ControlerNw.config_log.setNodePerServer(nodeIndex, systemIndex.size());		
-
-			Hashtable<String, SystemNode> htss = systemIndex.getListNode();
-			Enumeration<String> htEnumeration = htss.keys();
 			
-			while (htEnumeration.hasMoreElements())
+			if (systemIndex != null)
 			{
-				String s = htEnumeration.nextElement();
+				ControlerNw.config_log.setNodePerServer(nodeIndex, systemIndex.size());		
+
+				ArrayList<SystemNode> arrayList = systemIndex.getListNode();
+				Iterator<SystemNode> iterator = arrayList.iterator();
 				
-				SystemNode sn = htss.get(s);
-				
-				HashSet<BF> containerLocal = sn.getLocalContainer();
-				ControlerNw.config_log.getFilterPerNode().put(s, containerLocal.size());
-				
-				if (!ControlerNw.config_log.getIndexHeight().contains((new CalculRangP2P()).getRang(s)))
-					ControlerNw.config_log.getIndexHeight().put((new CalculRangP2P()).getRang(s), s);
+				while (iterator.hasNext())
+				{
+					SystemNode s = iterator.next();
+									
+					if (s.isLeafNode())
+					{
+						ControlerNw.config_log.getFilterPerNode().put(s.getPath(), s.getListKey().size());
+					}
+									
+					if (!ControlerNw.config_log.getIndexHeight().contains(s.getRang()))
+						ControlerNw.config_log.getIndexHeight().put(s.getRang(), s.getPath());
+				}
 			}
 		}
 		
@@ -1283,6 +994,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		rep.setDestinataire(message.getSource());
 		
 		t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
+		
 	}
 
 	@SuppressWarnings("static-access")
