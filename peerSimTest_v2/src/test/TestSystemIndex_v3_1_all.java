@@ -13,7 +13,7 @@ public class TestSystemIndex_v3_1_all {
 	public static void main(String[] args) throws ErrorException
 	{
 		int line = 0;
-		
+		int i = 0;
 		PHT pht= new PHT("dcs");
 		
 		try(BufferedReader reader = new BufferedReader(new FileReader("/Users/dcs/vrac/test/wikiDocs<60")))
@@ -31,13 +31,17 @@ public class TestSystemIndex_v3_1_all {
 					BF key = new BF(Config.sizeOfBF);
 					key.addAll(tmp[1]);
 					
-					System.out.println(key);
+		//			System.out.println(key);
 					line++;
-				//	pht.insert(key);
+					pht.insert(key);
+					
+		//			if (line == 11375)
+		//				System.out.println(key.toString());
 				}
 				
-				if (line == 3)
-					break;
+				System.out.println(line + " " + i++);	
+			//	if (line == 16000)
+			//		break;
 			}
 			reader.close();
 			
@@ -48,8 +52,10 @@ public class TestSystemIndex_v3_1_all {
 			e.printStackTrace();
 		}
 		
-		Hashtable<String, PHT_Node> hashtable = pht.getListNodes();
 		
+		Hashtable<String, PHT_Node> hashtable = pht.getListNodes();
+		System.out.println(hashtable.size());
+		/*
 		Enumeration<String> enumeration = hashtable.keys();
 		
 		while (enumeration.hasMoreElements())
@@ -71,10 +77,10 @@ public class TestSystemIndex_v3_1_all {
 			if (n.getListKeys() != null && n.getListKeys().size() != 0)
 			{
 				System.out.println(" " + s);
-				System.out.println(n.getListKeys().toString());
+				System.out.println(n.getListKeys().size());
 			}
 		}
-		
+		*/
 	}
 
 }

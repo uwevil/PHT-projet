@@ -80,24 +80,43 @@ public class PHT implements Serializable{
 			else
 			{				
 				BF bf_tmp = new BF(n.getPath());
-				System.out.println("-------IN--------");
+	//			System.out.println("-------IN--------");
 				if (key.equals(bf_tmp))
 				{					
 					if (n.isLeafNode())
 					{
-						System.out.println(path + " " + n.getPath());
+	//					System.out.println(path + " " + n.getPath());
 						return path;
 					}
 					else
 					{
-						path += key.getFragment(n.getRang() + 1, Config.sizeOfElement);
-						System.out.println("aaaaaaaaaaaaaaaa " + path);
+						int i = 1;
+						path += key.getFragment(n.getRang() + i++, Config.sizeOfElement);
+					//	while (this.listNodes.containsKey(path))
+					//	{
+					//		path += path.substring(0, path.length() - 1);
+					//	}
+						
+						/*
+						int i = 1;
+						while (true)
+						{
+							if (key.getFragment(n.getRang() + i, Config.sizeOfElement).toString() == "1")
+							{
+								path += key.getFragment(n.getRang() + i++, Config.sizeOfElement);
+								break;
+							}
+							
+							path += key.getFragment(n.getRang() + i++, Config.sizeOfElement);
+						}
+						*/
+	//					System.out.println("aaaaaaaaaaaaaaaa " + path);
 					}
 				}
 				else
 				{
-					System.out.println("qqqq " + "0001" + "0101" + "1101" + "1000");
-					System.out.println("ssss " + path + " " + n.getPath());
+	//				System.out.println("qqqq " + "0001" + "0101" + "1101" + "1000");
+	//				System.out.println("ssss " + path + " " + n.getPath());
 					
 					int rang = n.getRang();
 					char[] tmp = key.getSubFilter(0, rang*Config.sizeOfElement).toString().toCharArray();
@@ -107,17 +126,17 @@ public class PHT implements Serializable{
 						if (tmp[i] != '0')
 							break;
 					}
-					System.out.println(rang + " " + i);
+	//				System.out.println(rang + " " + i);
 					path = key.getSubFilter(0, i).toString();
-					System.out.println(path);
+	//				System.out.println(path);
 					
 					while (!this.listNodes.containsKey(path))
 					{
 						path = path.substring(0, path.length() - 1);
 					}
-					System.out.println("zzzz " + path);
+	//				System.out.println("zzzz " + path);
 				}
-				System.out.println("-------OUT--------");
+	//			System.out.println("-------OUT--------");
 			}
 		}
 	}
@@ -151,7 +170,7 @@ public class PHT implements Serializable{
 		}
 		else
 		{
-			String s_tmp = "0";
+			String s_tmp = n.getPath().substring(0, 1);
 			
 			String path = n.getPath();
 			
