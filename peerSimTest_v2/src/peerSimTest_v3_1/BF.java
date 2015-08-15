@@ -281,11 +281,11 @@ public class BF implements Serializable
 	 * 
 	 * @param index position du fragment dans le filtre.
 	 * @param sizeOfFragment taille du fragment.
-	 * @return {@link FragmentP2P}
+	 * @return {@link Fragment_v3_1}
 	 * 
 	 * @author dcs
 	 * */
-	public FragmentP2P getFragment(int index, int sizeOfFragment)
+	public Fragment_v3_1 getFragment(int index, int sizeOfFragment)
 	{
 		if (index * sizeOfFragment >= bitSetSize)
 		{
@@ -293,7 +293,7 @@ public class BF implements Serializable
 			return null;
 		}
 			
-		FragmentP2P f = new FragmentP2P(sizeOfFragment);
+		Fragment_v3_1 f = new Fragment_v3_1(sizeOfFragment);
 		int j = 0;
 		for (int i = index*sizeOfFragment ; i < (index + 1)*sizeOfFragment; i++)
 			f.setBit(j++, this.getBit(i));
@@ -356,7 +356,7 @@ public class BF implements Serializable
 			
 			String s_tmp = new String();
 			for (int i = start + 1; i <= stop + 1; i++)
-				s_tmp += ((new FragmentP2P(sizeOfFragment)).intToFragment(Integer.parseInt(s[i]))).toString();
+				s_tmp += ((new Fragment_v3_1(sizeOfFragment)).intToFragment(Integer.parseInt(s[i]))).toString();
 			
 			return (new BF(s_tmp));
 		} catch (ErrorException e) {

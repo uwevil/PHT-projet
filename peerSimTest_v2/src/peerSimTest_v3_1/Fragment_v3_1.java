@@ -3,7 +3,7 @@ package peerSimTest_v3_1;
 import java.io.Serializable;
 import java.util.BitSet;
 
-public class FragmentP2P implements Serializable{
+public class Fragment_v3_1 implements Serializable{
 
 	/**
 	 * Fragment
@@ -20,7 +20,7 @@ public class FragmentP2P implements Serializable{
 	 * @param nbits
 	 * @author dcs
 	 * */
-	public FragmentP2P(int nbits)
+	public Fragment_v3_1(int nbits)
 	{
 		bitset = new BitSet(nbits);
 		this.size = nbits;
@@ -74,7 +74,7 @@ public class FragmentP2P implements Serializable{
 		if (getClass() != o.getClass())
 			return false;
 		
-		final FragmentP2P other = (FragmentP2P) o;
+		final Fragment_v3_1 other = (Fragment_v3_1) o;
 		
 		if (this.size != other.size())
 			return false;
@@ -97,7 +97,7 @@ public class FragmentP2P implements Serializable{
 			return false;
 		if (getClass() != o.getClass())
 			return false;
-		final FragmentP2P other = (FragmentP2P) o;
+		final Fragment_v3_1 other = (Fragment_v3_1) o;
 		
 		if (this.size != other.size())
 			return false;
@@ -128,14 +128,14 @@ public class FragmentP2P implements Serializable{
 	/**
 	 * Convertir un entier 'a' en fragment de taille 'nbits'
 	 * 
-	 * @return {@link FragmentP2P}
+	 * @return {@link Fragment_v3_1}
 	 * @author dcs
 	 * */
 	
-	public FragmentP2P intToFragment(int a)
+	public Fragment_v3_1 intToFragment(int a)
 	{
 		int val = a;
-		FragmentP2P f = new FragmentP2P(this.size);
+		Fragment_v3_1 f = new Fragment_v3_1(this.size);
 		
 		for (int i = 0; i < this.size; i++)
 		{
@@ -182,11 +182,11 @@ public class FragmentP2P implements Serializable{
 	 * Rendre le fragment à partir du chemin
 	 * 
 	 * @param path
-	 * @return {@link FragmentP2P}
+	 * @return {@link Fragment_v3_1}
 	 * @author dcs
 	 * */
 	
-	public FragmentP2P pathToFragment(String path)
+	public Fragment_v3_1 pathToFragment(String path)
 	{		
 		char[] array = path.toCharArray();
 		String s = new String();
@@ -196,7 +196,7 @@ public class FragmentP2P implements Serializable{
 				s += array[i];
 		}
 		
-		FragmentP2P f = (new FragmentP2P(this.size)).intToFragment(Integer.parseInt(s));
+		Fragment_v3_1 f = (new Fragment_v3_1(this.size)).intToFragment(Integer.parseInt(s));
 		return f;
 	}
 }

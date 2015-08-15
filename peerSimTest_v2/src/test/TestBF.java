@@ -2,8 +2,9 @@ package test;
 
 import java.util.Calendar;
 
-import peerSimTest_v3.BF;
-import peerSimTest_v3.ErrorException;
+import peerSimTest_v3_1.Config;
+import peerSimTest_v3_1.ErrorException;
+import peerSimTest_v3_1.BF;
 
 public class TestBF {
 
@@ -30,10 +31,10 @@ public class TestBF {
 		
 	//	System.out.println(new BF(key.getSubFilter(2*4, 3*4 - 1), key2));
 		
-		BF key3 = new BF("0100"+"0000");
+		BF key3 = new BF("0");
 		System.out.println(key3.toString());
 		System.out.println(key.equals(key3));
-		System.out.println(key3.in(key));
+		System.out.println(key.getSubFilter(0, key.getRang(Config.sizeOfElement)));
 
 		System.out.println(Calendar.getInstance().getTimeInMillis() - time + "ms");
 	}

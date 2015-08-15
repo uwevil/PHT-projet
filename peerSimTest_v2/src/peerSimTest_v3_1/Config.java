@@ -26,7 +26,7 @@ public class Config {
 	public static int sizeOfElement = 1;
 	public static int numberOfBits = 2;
 	public static int pas = 2;
-	public static int gamma = 1000;
+	public static int gamma = 1;
 	public static boolean ObserverNw_OK = false;
 
 	private NameToID translate = new NameToID(0);
