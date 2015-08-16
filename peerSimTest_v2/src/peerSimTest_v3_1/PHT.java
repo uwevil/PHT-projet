@@ -41,16 +41,6 @@ public class PHT implements Serializable{
 		return this.listNodes;
 	}
 	
-	private boolean containsNode(String path)
-	{
-		return this.listNodes.containsKey(path);
-	}
-	
-	private boolean getNodeStatus(PHT_Node systemNode)
-	{
-		return systemNode.isLeafNode();
-	}
-	
 	/**
 	 * Recherche l'identifiant du nœud correspondant.
 	 * 
@@ -67,7 +57,7 @@ public class PHT implements Serializable{
 		{
 			PHT_Node n = this.listNodes.get(path);
 
-			if (n.getPath() == "/")
+			if (n.getPath().equals("/"))
 			{
 				if (n.isLeafNode())
 				{
@@ -160,7 +150,7 @@ public class PHT implements Serializable{
 		ArrayList<BF> listKeys = n.getListKeys();
 		n.setListKey(null);
 		
-		if (n.getPath() == "/")
+		if (n.getPath().equals("/"))
 		{
 			PHT_Node new0 = new PHT_Node("0");
 			PHT_Node new1 = new PHT_Node("1");
@@ -202,10 +192,159 @@ public class PHT implements Serializable{
 			this.insert(listKeys.get(j));
 		
 	}
+	
+	private ArrayList<BF> generatorBF(int size) throws ErrorException
+	{
+		ArrayList<BF> res = new ArrayList<BF>();
+		BinaryArray binaryArray = new BinaryArray(size);
+
+		for (int i = 0; i <= size; i++)
+		{		
+			binaryArray.setFirstBits(i);
+			do
+			{
+				String s = String.copyValueOf(binaryArray.next());
+				res.add(new BF(s));
+			} 
+			while(binaryArray.hasNext());
+		}
+
+		return res;
+	}
+	
+	private String reduce(String path)
+	{
+		if (path.length() <= 1)
+			return path;
+
+		char[] tmp = path.toCharArray();
+		
+		int i = 0;
+		for (i = tmp.length - 1; i >= 0; i--)
+		{
+			if (tmp[i] != '0')
+				break;
+		}
+		
+		return path.substring(0, i + 1);
+	}
 
 	public Object search(BF key) throws ErrorException
 	{
-		return null;
+		int pos = 0;
+		
+		ArrayList<BF> res = new ArrayList<BF>();
+		ArrayList<String> listPaths = new ArrayList<String>();
+		
+		listPaths.add("/");
+		int k = 0;
+		while (k < listPaths.size())
+		{
+			String path = listPaths.get(k);
+			PHT_Node n = this.listNodes.get(path);
+			
+			if (path == "/")
+			{
+				if (n != null && n.isLeafNode())
+				{
+					ArrayList<BF> listKeys = n.getListKeys();
+					if (listKeys != null && listKeys.size() != 0)
+					{
+						for (int j = 0; j < listKeys.size(); j++)
+						{
+							BF bf_tmp = listKeys.get(j);
+							
+							if (key.in(bf_tmp))
+								res.add(bf_tmp);
+						}
+
+						return res;
+					}
+				}
+				else // !n.isLeafNode
+				{
+					String s_tmp = key.getFragment(0, Config.sizeOfElement).toString();
+
+					if (s_tmp.equals("0"))
+					{
+						listPaths.add("0");
+						listPaths.add("1");
+					}
+					else
+					{
+						listPaths.add("1");
+					}
+					pos++;
+				}
+			}
+			else // path != "/"
+			{
+				if (n != null && n.isLeafNode())
+				{
+					if (key.in(new BF(n.getPath())))
+					{
+			//			System.out.println(key.toString());
+			//			System.out.println(path);
+			//			System.out.println(n.getPath() + "\n");
+						ArrayList<BF> listKeys = n.getListKeys();
+						for (int i = 0; i < listKeys.size(); i++)
+						{
+							BF bf_tmp = listKeys.get(i);
+							
+							if (key.in(bf_tmp))
+								res.add(bf_tmp);
+						}
+					}
+
+					if (key.in(new BF(n.getPath() + "1")))
+					{
+						listPaths.add(n.getPath() + "1");
+					}
+				}
+				else if (n != null)
+				{
+					if (key.in(new BF(n.getPath() + "1")))
+						listPaths.add(n.getPath() + "1");
+				}
+
+				if (pos < Config.sizeOfBF/Config.sizeOfElement - 1)
+				{
+					String s_tmp = key.getFragment(pos, Config.sizeOfElement).toString();
+					
+					if (s_tmp.equals("0"))
+					{
+						int i = 0;
+						for (i = pos + 1; i < Config.sizeOfBF/Config.sizeOfElement; i++)
+						{
+							if (key.getFragment(i, Config.sizeOfElement).toString() != "0")
+								break;
+						}
+						
+						if (!listPaths.contains(key.getSubFilter(0, i).toString()))
+							listPaths.add(key.getSubFilter(0, i).toString());
+						
+						listPaths.add(key.getSubFilter(0, (pos - 1)*Config.sizeOfElement).toString() + "1");
+					}
+					else
+					{
+						listPaths.add(key.getSubFilter(0, pos*Config.sizeOfElement).toString());
+					}
+					
+					ArrayList<BF> tmp = this.generatorBF(n.getRang());
+					System.out.println(pos + " " + tmp.size());
+					for (int i = 0; i < tmp.size(); i++)
+					{
+						if (key.in(tmp.get(i)))
+							listPaths.add(this.reduce(tmp.get(i).toString()));
+					}
+					
+					pos++;
+				}
+			}
+			k++;
+		}
+		System.out.println(listPaths);
+		return res;
 	}
 	 
 	/**

@@ -58,6 +58,9 @@ public class PHT_Node implements Serializable{
 	
 	public void insert(BF key)
 	{
+		if (this.listKeys.contains(key))
+			return;
+		
 		this.listKeys.add(key);
 	}
 	
