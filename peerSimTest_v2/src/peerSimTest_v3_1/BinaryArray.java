@@ -1,7 +1,5 @@
 package peerSimTest_v3_1;
 
-import java.util.ArrayList;
-
 public class BinaryArray
 {
 	char[] array;

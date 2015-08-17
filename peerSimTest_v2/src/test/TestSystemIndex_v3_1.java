@@ -33,37 +33,34 @@ public class TestSystemIndex_v3_1 {
 		systemIndex.insert(key8);
 
 		System.out.println();
-		Hashtable<String, PHT_Node> hashtable = systemIndex.getListNodes();
+		Hashtable<String, PHT_Node> listNodes = systemIndex.getListNodes();
 		
-		Enumeration<String> enumeration = hashtable.keys();
+		Enumeration<String> enumeration = listNodes.keys();
 		
 		while (enumeration.hasMoreElements())
 		{
 			String s = enumeration.nextElement();
+			
 			System.out.println(s);
-		//	if (n.getListKeys() != null)
-			//	System.out.println("   " + n.getListKeys().toString());
-		}
-		
-		System.out.println();
-		hashtable = systemIndex.getListNodes();
-		
-		enumeration = hashtable.keys();
-		
-		while (enumeration.hasMoreElements())
-		{
-			String s = enumeration.nextElement();
-			PHT_Node n = hashtable.get(s);
+			
+			PHT_Node n = listNodes.get(s);
+			
+			System.out.print(n.getPath());
+			
 			if (n.getListKeys() != null && n.getListKeys().size() != 0)
 			{
-				System.out.println(" " + s);
-				System.out.println(n.getListKeys().toString());
+				System.out.print(" : " +n.getListKeys().size() + "\n\n");
+			}
+			else
+			{
+				System.out.print(" : noeud\n\n");
 			}
 		}
+		
 		System.out.println("-------SEARCH-------");
 		System.out.println(" " + key4);
-	//	Object res = systemIndex.search(key4);
-	//	System.out.println(res);
+		Object res = systemIndex.search(key4);
+		System.out.println(res);
 	}
 
 }

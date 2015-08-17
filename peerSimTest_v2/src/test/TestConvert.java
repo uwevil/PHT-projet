@@ -1,5 +1,10 @@
 package test;
 
+import java.util.ArrayList;
+
+import peerSimTest_v3_1.BF;
+import peerSimTest_v3_1.ErrorException;
+
 public class TestConvert {
 
 	public static String computeEntry(String path)
@@ -27,8 +32,57 @@ public class TestConvert {
 		
 		return s_tmp;
 	}
+	
+	public static ArrayList<String> computePath(String entry, String path) throws ErrorException
+	{
+		if (entry.length() == path.length())
+			return null;
+		
+		ArrayList<String> res = new ArrayList<String>();
+		
+		int len = path.length() - entry.length();
 
-	public static void main(String[] args) {
+		if (path.charAt(entry.length()) == '0')
+		{
+			for (int i = entry.length(); i < entry.length() + len; i++)
+			{
+				BF bf_tmp = new BF(path);
+				bf_tmp.setBit(i, true);
+
+				String tmp = computeEntry(bf_tmp.toString());
+				if (i < entry.length() + len - 1)
+				{
+					res.add(tmp.substring(0, tmp.length() - 1));
+				}
+				else
+				{
+					res.add(tmp);
+				}
+			}
+		}
+		else // path.charAt(entry.length()) != '0'
+		{
+			for (int i = entry.length(); i < entry.length() + len; i++)
+			{
+				BF bf_tmp = new BF(path);
+				bf_tmp.setBit(i, false);
+
+				String tmp = computeEntry(bf_tmp.toString());
+				if (i < entry.length() + len - 1)
+				{
+					res.add(tmp.substring(0, tmp.length() - 1));
+				}
+				else
+				{
+					res.add(tmp);
+				}
+			}
+		}
+		
+		return res;
+	}
+
+	public static void main(String[] args) throws ErrorException {
 		System.out.println(computeEntry("01101011111"));
 		System.out.println(computeEntry("01101000000"));
 		System.out.println(computeEntry("01101010101"));
@@ -38,7 +92,15 @@ public class TestConvert {
 		System.out.println(computeEntry("011"));
 		System.out.println(computeEntry("100"));
 
-
+		System.out.println("**************");
+		String entry = "00010";
+		String path = "00010000000";
+		ArrayList<String> arrayList = computePath(entry, path);
+		
+		System.out.println(entry + "\n" + path + "\n");
+		
+		for (int i = 0; i < arrayList.size(); i++)
+			System.out.println(arrayList.get(i));
 
 	}
 	
