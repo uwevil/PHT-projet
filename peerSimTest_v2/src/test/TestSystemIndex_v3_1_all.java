@@ -45,8 +45,8 @@ public class TestSystemIndex_v3_1_all {
 				}
 				k++;
 				System.out.println(line + "/" + k);
-	//			if (line == 160)
-	//				break;
+		//		if (line == 1600)
+		//			break;
 			}
 			reader.close();
 			
@@ -96,22 +96,7 @@ public class TestSystemIndex_v3_1_all {
 		wf = new WriteFile(Config.peerSimLOG, true);
 		wf.write("Nombre de filtres totaux : " + total + "\n");
 		wf.close();
-		
-		enumeration = hashtable.keys();
-		
-		while (enumeration.hasMoreElements())
-		{
-			String s = enumeration.nextElement();
-			PHT_Node n = hashtable.get(s);
-			if (n.getListKeys() != null && n.getListKeys().size() != 0)
-			{
-				wf = new WriteFile(Config.peerSimLOG + "_BF", true);
-				wf.write(" " + s + "\n");
-				wf.write(n.getListKeys().toString() + "\n");
-				wf.close();
-			}
-		}
-		
+		/*
 		int experience = 0;
 		try 
 		{
@@ -127,7 +112,7 @@ public class TestSystemIndex_v3_1_all {
 
 	//		for (int i = experience*10; i < rf.size() && j < 10; i++)
 	//		{			
-				BF bf = new BF(Config.sizeOfBF);
+		/*		BF bf = new BF(Config.sizeOfBF);
 				bf.addAll(rf.getDescription(1));
 				
 				config_log.getTranslate().setLength(Config.requestRang);
@@ -150,6 +135,7 @@ public class TestSystemIndex_v3_1_all {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		*/
 	}
 
 }

@@ -18,13 +18,13 @@ import java.util.Hashtable;
  * @author dcs
  **/
 
-public class PHT implements Serializable{
+public class PHT_save implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 	private String indexName;
 	private Hashtable<String, PHT_Node> listNodes;
 	
-	public PHT(String indexName) {
+	public PHT_save(String indexName) {
 		// TODO Auto-generated constructor stub
 		this.indexName = indexName;
 		listNodes = new Hashtable<String, PHT_Node>();
@@ -55,54 +55,78 @@ public class PHT implements Serializable{
 		
 		while (true)
 		{
-	//		System.out.println(path);
 			PHT_Node n = this.listNodes.get(path);
 
 			if (n.getPath().equals("/"))
 			{
 				if (n.isLeafNode())
+				{
+			//		System.out.println(path + " " + n.getPath());
 					return path;
+				}
 				
 				path = key.getFragment(0, Config.sizeOfElement).toString();
 			}
-			else // !n.getPath().equals("/")
+			else
 			{				
 				BF bf_tmp = new BF(n.getPath());
+	//			System.out.println("-------IN--------");
 				if (key.equals(bf_tmp))
 				{					
 					if (n.isLeafNode())
 					{
+	//					System.out.println(path + " " + n.getPath());
 						return path;
 					}
-					else // !n.isLeafNode()
+					else
 					{
 						int i = 1;
 						path += key.getFragment(n.getRang() + i++, Config.sizeOfElement);
-					}
-				}
-				else // !key.equals(bf_tmp)
-				{
-					int rang = n.getRang();
-			//		System.out.println("sssss" + path + " " + rang + " " + n.getPath());
-
-					String s = new String();
-					for (int i = 0; i <= rang; i++)
-					{
-						if (key.getBit(i) == bf_tmp.getBit(i))
-							s += (key.getBit(i)) ? "1" : "0";
+					//	while (this.listNodes.containsKey(path))
+					//	{
+					//		path += path.substring(0, path.length() - 1);
+					//	}
 						
-						if (key.getBit(i) == !bf_tmp.getBit(i))
+						/*
+						int i = 1;
+						while (true)
 						{
-							s += (key.getBit(i)) ? "1" : "0";
-			//				System.out.println("sssszzzzzzzzzzs" + s);
-
-							break;
+							if (key.getFragment(n.getRang() + i, Config.sizeOfElement).toString() == "1")
+							{
+								path += key.getFragment(n.getRang() + i++, Config.sizeOfElement);
+								break;
+							}
+							
+							path += key.getFragment(n.getRang() + i++, Config.sizeOfElement);
 						}
+						*/
+	//					System.out.println("aaaaaaaaaaaaaaaa " + path);
 					}
-			//		System.out.println("ssssssszz" + s);
-
-					path = s;
 				}
+				else
+				{
+	//				System.out.println("qqqq " + "0001" + "0101" + "1101" + "1000");
+	//				System.out.println("ssss " + path + " " + n.getPath());
+					
+					int rang = n.getRang();
+					char[] tmp = key.getSubFilter(0, rang*Config.sizeOfElement).toString().toCharArray();
+					int i = 0;
+					for (i = rang;i >= 0; i--)
+					{
+						if (tmp[i] != '0')
+							break;
+					}
+	//				System.out.println(rang + " " + i);
+					path = key.getSubFilter(0, i).toString();
+	//				System.out.println(path);
+					
+					while (!this.listNodes.containsKey(path))
+					{
+						path = path.substring(0, path.length() - 1);
+					}
+	//				System.out.println("zzzz " + path);
+				}
+	//			System.out.println("-------OUT--------");
 			}
 		}
 	}
@@ -134,55 +158,39 @@ public class PHT implements Serializable{
 			this.listNodes.put("0", new0);
 			this.listNodes.put("1", new1);
 		}
-		else // !n.getPath().equals("/")
+		else
 		{
+			String s_tmp = n.getPath().substring(0, 1);
+			
 			String path = n.getPath();
 			
+			if (path.length() > 1)
+			{
+				char[] tmp = path.toCharArray();
+				
+				int i = 0;
+				for (i = tmp.length - 1; i >= 0; i--)
+				{
+					if (tmp[i] != '0')
+						break;
+				}
+				
+				if (i != -1)
+					s_tmp = path.substring(0, i + 1);
+			}
+
 			PHT_Node new0 = new PHT_Node(path + "0");
 			PHT_Node new1 = new PHT_Node(path + "1");
 			
-			String s_tmp = this.computeEntry(path + "0");
-			if (this.listNodes.containsKey(s_tmp))
-				this.listNodes.remove(s_tmp);
+			this.listNodes.remove(s_tmp);
 			
 			this.listNodes.put(s_tmp, new0);
-			
-			s_tmp = this.computeEntry(path + "1");
-			if (this.listNodes.containsKey(s_tmp))
-				this.listNodes.remove(s_tmp);
-			
-			this.listNodes.put(s_tmp, new1);
+			this.listNodes.put(path + "1", new1);
 		}
 		
 		for (int j = 0; j < listKeys.size(); j++)
 			this.insert(listKeys.get(j));
 		
-	}
-	
-	private String computeEntry(String path)
-	{
-		String s_tmp = new String();
-		
-		if (path.length() > 1)
-		{
-			char[] tmp = path.toCharArray();
-			
-			int i = 0;
-			for (i = tmp.length - 1; i > 0; i--)
-			{
-				if (tmp[i] != tmp[i - 1])
-					break;
-			}
-			
-			if (i != -1)
-				s_tmp = path.substring(0, i + 1);
-		}
-		else
-		{
-			return path;
-		}
-		
-		return s_tmp;
 	}
 	
 	private ArrayList<BF> generatorBF(int size) throws ErrorException

@@ -62,8 +62,8 @@ public class TestSystemIndex_v3_1 {
 		}
 		System.out.println("-------SEARCH-------");
 		System.out.println(" " + key4);
-		Object res = systemIndex.search(key4);
-		System.out.println(res);
+	//	Object res = systemIndex.search(key4);
+	//	System.out.println(res);
 	}
 
 }
