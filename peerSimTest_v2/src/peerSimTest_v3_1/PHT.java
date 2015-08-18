@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import test.TestSystemIndex_v3_1_all;
+
 /**
  * 
  * SystèmeIndexP2P gère les nœuds
@@ -68,7 +70,6 @@ public class PHT implements Serializable{
 		
 		while (true)
 		{
-	//		System.out.println(path);
 			PHT_Node n = this.listNodes.get(path);
 
 			if (n.getPath().equals("/"))
@@ -96,7 +97,6 @@ public class PHT implements Serializable{
 				else // !key.equals(bf_tmp)
 				{
 					int rang = n.getRang();
-			//		System.out.println("sssss" + path + " " + rang + " " + n.getPath());
 
 					String s = new String();
 					for (int i = 0; i <= rang; i++)
@@ -107,13 +107,10 @@ public class PHT implements Serializable{
 						if (key.getBit(i) == !bf_tmp.getBit(i))
 						{
 							s += (key.getBit(i)) ? "1" : "0";
-			//				System.out.println("sssszzzzzzzzzzs" + s);
-
 							break;
 						}
 					}
-			//		System.out.println("ssssssszz" + s);
-
+					
 					path = s;
 				}
 			}
@@ -277,9 +274,9 @@ public class PHT implements Serializable{
 							if (key.in(bf_tmp))
 								res.add(bf_tmp);
 						}
-
-						return res;
 					}
+					
+					return res;
 				}
 				else if (n != null) // !n.isLeafNode
 				{
@@ -334,18 +331,22 @@ public class PHT implements Serializable{
 			}
 			k++;
 		}
+		
 		//*******************LOG**********************
 		Config config_log = new Config();
 		config_log.getTranslate().setLength(Config.requestRang);
 		int requestID = config_log.getTranslate().translate(key.toString());
 		
-		WriteFile wf = new WriteFile(Config.peerSimLOG + requestID + "_path", true);
-		wf.write(listPaths.size() + "\n\n");
-
-		for (int i = 0; i < listPaths.size(); i++)
-			wf.write(listPaths.get(i) + "\n");
+		@SuppressWarnings("unchecked")
+		Hashtable<Integer, Object> hashtable = (Hashtable<Integer, Object>) TestSystemIndex_v3_1_all.config_log.getListAnswer(requestID);
 		
-		wf.close();
+		if (hashtable == null)
+		{
+			hashtable = new Hashtable<Integer, Object>();
+			hashtable.put(requestID, listPaths);
+			
+			TestSystemIndex_v3_1_all.config_log.putListAnswer(requestID, hashtable);
+		}
 		//*******************************************
 
 		return res;

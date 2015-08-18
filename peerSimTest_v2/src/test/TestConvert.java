@@ -93,8 +93,8 @@ public class TestConvert {
 		System.out.println(computeEntry("100"));
 
 		System.out.println("**************");
-		String entry = "00010";
-		String path = "00010000000";
+		String entry = "011001";
+		String path = "011001111111";
 		ArrayList<String> arrayList = computePath(entry, path);
 		
 		System.out.println(entry + "\n" + path + "\n");
