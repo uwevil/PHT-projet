@@ -1,9 +1,9 @@
-package peerSimTest_v3_1;
+package peerSimTest_v3_1_1;
 
 import java.io.Serializable;
 import java.util.BitSet;
 
-public class Fragment_v3_1 implements Serializable{
+public class Fragment implements Serializable{
 
 	/**
 	 * Fragment
@@ -20,7 +20,7 @@ public class Fragment_v3_1 implements Serializable{
 	 * @param nbits
 	 * @author dcs
 	 * */
-	public Fragment_v3_1(int nbits)
+	public Fragment(int nbits)
 	{
 		bitset = new BitSet(nbits);
 		this.size = nbits;
@@ -74,7 +74,7 @@ public class Fragment_v3_1 implements Serializable{
 		if (getClass() != o.getClass())
 			return false;
 		
-		final Fragment_v3_1 other = (Fragment_v3_1) o;
+		final Fragment other = (Fragment) o;
 		
 		if (this.size != other.size())
 			return false;
@@ -97,7 +97,7 @@ public class Fragment_v3_1 implements Serializable{
 			return false;
 		if (getClass() != o.getClass())
 			return false;
-		final Fragment_v3_1 other = (Fragment_v3_1) o;
+		final Fragment other = (Fragment) o;
 		
 		if (this.size != other.size())
 			return false;
@@ -128,14 +128,14 @@ public class Fragment_v3_1 implements Serializable{
 	/**
 	 * Convertir un entier 'a' en fragment de taille 'nbits'
 	 * 
-	 * @return {@link Fragment_v3_1}
+	 * @return {@link Fragment}
 	 * @author dcs
 	 * */
 	
-	public Fragment_v3_1 intToFragment(int a)
+	public Fragment intToFragment(int a)
 	{
 		int val = a;
-		Fragment_v3_1 f = new Fragment_v3_1(this.size);
+		Fragment f = new Fragment(this.size);
 		
 		for (int i = 0; i < this.size; i++)
 		{
@@ -182,11 +182,11 @@ public class Fragment_v3_1 implements Serializable{
 	 * Rendre le fragment à partir du chemin
 	 * 
 	 * @param path
-	 * @return {@link Fragment_v3_1}
+	 * @return {@link Fragment}
 	 * @author dcs
 	 * */
 	
-	public Fragment_v3_1 pathToFragment(String path)
+	public Fragment pathToFragment(String path)
 	{		
 		char[] array = path.toCharArray();
 		String s = new String();
@@ -196,7 +196,7 @@ public class Fragment_v3_1 implements Serializable{
 				s += array[i];
 		}
 		
-		Fragment_v3_1 f = (new Fragment_v3_1(this.size)).intToFragment(Integer.parseInt(s));
+		Fragment f = (new Fragment(this.size)).intToFragment(Integer.parseInt(s));
 		return f;
 	}
 }

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import peerSimTest_v3_1.BF;
 import peerSimTest_v3_1.ErrorException;
 
-public class TestConvert {
+public class TestConvert_3_1_1 {
 
 	public static String computeEntry(String path)
 	{
@@ -81,8 +81,80 @@ public class TestConvert {
 		
 		return res;
 	}
+	
+	public static String lpp(String str, String seq)
+	{		
+		if (str == null)
+			return null;
+		
+		if (str.length() <= seq.length())
+		{
+			if (str.equals(seq))
+				return str;
+			return null;
+		}
+		else
+		{
+			int occ = str.lastIndexOf(seq);
+			
+			if (occ != -1)
+				return str.substring(0, occ + seq.length());
+			
+			return null;
+		}
+	}
+	
+	public static String skey(String path)
+	{		
+		String rootPath = "/";
+		String zeroSeq = "0*";
+		String oneSeq = "1*";
+		
+		if (path.length() <= 0)
+			return null;
+		
+		if (path.equals(rootPath))
+			return path;
+		
+		if (path.matches(zeroSeq))
+			return "0";
+		
+		if (path.matches(oneSeq))
+			return "1";
+		
+		if (path.charAt(path.length() - 1) == '1')
+			return lpp(path, "01");
+		
+		return lpp(path, "10");
+	}
+	
+	public static int nextZeroPos(BF key, int pos)
+	{
+		for (int i = pos + 1; i < key.size(); i++)
+			if (!key.getBit(i))
+				return i;
+		
+		return -1;
+	}
 
-	public static void main(String[] args) throws ErrorException {
+	public static int nextZeroEnd(BF key, int pos)
+	{
+		int rep = -1;
+		for (int i = pos + 1; i < key.size(); i++)
+		{
+			if (!key.getBit(i))
+				rep = i;
+			
+			if (rep != -1 && key.getBit(i))
+				break;
+		}
+
+		return rep;
+	}
+	
+	public static void main(String[] args) throws ErrorException
+	{
+		/*
 		System.out.println(computeEntry("01101011111"));
 		System.out.println(computeEntry("01101000000"));
 		System.out.println(computeEntry("01101010101"));
@@ -123,6 +195,20 @@ public class TestConvert {
 		System.out.println(test.size());
 //		for (int i = 0; i < test.size(); i++)
 //			System.out.println(test.get(i));
+ 
+ */
+		
+		System.out.println(lpp("0100010111111", "01"));
+		String zeroSeq = "000000000";
+		String oneSeq = "1";
+		System.out.println(zeroSeq.matches("0*"));
+		System.out.println(oneSeq.matches("1*"));
+		
+		System.out.println(skey("010111111"));
+		System.out.println(skey("10101000101000"));
+		System.out.println(nextZeroPos(new BF("0110000"), 0));
+		System.out.println(nextZeroEnd(new BF("01100000"), 0));
+
 	}
 	
 }
