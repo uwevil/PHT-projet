@@ -1,10 +1,12 @@
 package peerSimTest_v3_1_1;
 
 import java.io.Serializable;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Iterator;
 
-import test.TestSystemIndex_v3_1_all;
+import peerSimTest_v3_1_1.Config;
 
 /**
  * 
@@ -217,6 +219,7 @@ public class PHT implements Serializable{
 	
 	private LookUpRep lookup(String path)
 	{
+		TestSystemIndex_v3_1_1_all.config_log.addNodeVisited(1);
 		PHT_Node n;
 		if (path.equals("/"))
 		{
@@ -231,9 +234,9 @@ public class PHT implements Serializable{
 			return new LookUpRep("ExternalNode", null);
 		
 		if (n.isLeafNode())
-			return new LookUpRep("LeafNode", n.getPath());
+			return new LookUpRep("LeafNode", "/" + n.getPath());
 		
-		return new LookUpRep("InternalNode", n.getPath());
+		return new LookUpRep("InternalNode", "/" + n.getPath());
 	}
 	
 	private int nextZeroPos(BF key, int pos)
@@ -260,12 +263,16 @@ public class PHT implements Serializable{
 		
 		return pos + res;
 	}
+	
+	public ArrayList<BF> get(String path)
+	{
+		return this.listNodes.get(path).getListKeys();
+	}
 
-	public Object ssSearch(BF key) throws ErrorException
+	public ArrayList<BF> ssSearch(BF key) throws ErrorException
 	{		
 		ArrayList<String> leafNodes = new ArrayList<String>();
 		String rootName = "/";
-		
 		LookUpRep rep = this.lookup(rootName);
 		
 		if (rep.status.equals("LeafNode"))
@@ -287,32 +294,159 @@ public class PHT implements Serializable{
 					String sb = csbTrees.get(i);
 					int l = sb.length() - 1;
 					int start = this.nextZeroPos(key, l);
+					if (start >= 0)
+					{
+						int end = this.nextZeroEnd(key, l);
+						int nbZero = end - start + 1;
+						String prefix = sb + key.toString().substring(l, start);
+						
+						ArrayList<String> root1 = search1TerRoots(prefix, nbZero, leafNodes);
+						ArrayList<String> root0 = search0TerRoots(prefix, nbZero, leafNodes);
+						
+						sbTrees.addAll(root1);
+						sbTrees.addAll(root0);
+					}
+					else
+					{
+						String temp = key.toString().substring(l, key.toString().length());
+						String prefix = sb + temp;
+						
+						LookUpRep rep_tmp = this.lookup(prefix);
+						if (rep_tmp.status.equals("LeafNode"))
+							leafNodes.add(prefix);
+					}
 				}
 			}
 		}
 		
+		ArrayList<BF> bfs = new ArrayList<BF>();
 		
-		
-		/*
-		//*******************LOG**********************
-		Config config_log = new Config();
-		config_log.getTranslate().setLength(Config.requestRang);
-		int requestID = config_log.getTranslate().translate(key.toString());
-		
-		@SuppressWarnings("unchecked")
-		Hashtable<Integer, Object> hashtable = (Hashtable<Integer, Object>) TestSystemIndex_v3_1_all.config_log.getListAnswer(requestID);
-		
-		if (hashtable == null)
+		if (!leafNodes.isEmpty())
 		{
-			hashtable = new Hashtable<Integer, Object>();
-			hashtable.put(requestID, listPaths);
+			Iterator<String> iterator = leafNodes.iterator();
 			
-			TestSystemIndex_v3_1_all.config_log.putListAnswer(requestID, hashtable);
+			while (iterator.hasNext())
+			{
+				String path = iterator.next();
+				String tmp;
+				if (path.equals("/"))
+				{
+					tmp = path;
+				}
+				else
+				{
+					tmp = this.skey(path.substring(1, path.length()));
+				}
+				
+				ArrayList<BF> storedBF = this.get(tmp);
+				for (int i = 0; i < storedBF.size(); i++)
+				{
+					BF bf = storedBF.get(i);
+					if (key.in(bf))
+						bfs.add(bf);
+				}
+			}
 		}
-		//*******************************************
+		
+		return bfs;
+	}
+	
+	private ArrayList<String> search1TerRoots(String ancestor, int nbZero, ArrayList<String> leafNodes)
+	{
+		ArrayList<String> newRoots = new ArrayList<String>();
+		ArrayDeque<String> candidates = new ArrayDeque<String>();
+		candidates.add(ancestor);
+		
+		int n = ancestor.length() + nbZero;
+		
+		while (!candidates.isEmpty())
+		{
+			String anc = candidates.poll();
+			String prefix = anc + "1";
+			LookUpRep rep = this.lookup(prefix);
 
-		return res;
-		*/
+			String label = rep.label;
+			if (label != null)
+			{
+				if (label.length() <= n)
+				{
+					leafNodes.add(label);
+				}
+				else
+				{
+					String sb = label.substring(0, n + 1);
+					newRoots.add(sb);
+					label = sb.substring(0, n);
+				}
+				
+				String sibling = label;
+				sibling = sibling.substring(0, sibling.length() - 1) + "0";
+				candidates.add(sibling);
+				System.out.println(sibling);
+				if (label.length() > anc.length())
+				{
+					String spx = label.substring(0, label.length() - 1);
+					while (spx.length() > anc.length())
+					{
+						spx = spx.substring(0, spx.length() - 1) + "0";
+						candidates.add(spx);
+						System.out.println("   " + spx);
+						spx = spx.substring(0, spx.length() - 1);
+					}
+				}
+				System.out.println();
+			}
+			
+		// candidates.remove(anc)
+		}
+		
+		return newRoots;
+	}
+	
+	private ArrayList<String> search0TerRoots(String ancestor, int nbZero, ArrayList<String> leafNodes)
+	{
+		ArrayList<String> newRoots = new ArrayList<String>();
+		ArrayDeque<String> candidates = new ArrayDeque<String>();
+		candidates.add(ancestor);
+		int n = ancestor.length() + nbZero;
+		
+		while (!candidates.isEmpty())
+		{
+			String anc = candidates.poll();
+			String prefix = anc + "0";
+			LookUpRep rep = this.lookup(prefix);
+			String label = rep.label;
+			if (label != null)
+			{
+				if (label.length() <= n)
+				{
+					leafNodes.add(label);
+				}
+				else
+				{
+					String sb = label.substring(0, n + 1);
+					sb = sb.substring(0, sb.length() - 1) + "1";
+					newRoots.add(sb);
+					sb = sb.substring(0, sb.length() - 1);
+					label = sb;
+				}
+				label = label.substring(0, label.length() - 1) + "1";
+				candidates.add(label);
+				if (label.length() > anc.length())
+				{
+					String spx = label.substring(0, label.length() - 1);
+					while (spx.length() > anc.length())
+					{
+						spx = spx.substring(0, spx.length() - 1) + "1";
+						candidates.add(spx);
+						spx = spx.substring(0, spx.length() - 1);
+					}
+				}
+			}
+			
+		//	candidates.remove(anc);
+		}
+		return newRoots;
 	}
 	 
 	/**

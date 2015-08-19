@@ -1,14 +1,9 @@
-package test;
+package peerSimTest_v3_1_1;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import peerSimTest_v3_1.BF;
-import peerSimTest_v3_1.ErrorException;
-import peerSimTest_v3_1.PHT;
-import peerSimTest_v3_1.PHT_Node;
-
-public class TestSystemIndex_v3_1 {
+public class TestSystemIndex_v3_1_1 {
 
 	public static void main(String[] args) throws ErrorException
 	{
@@ -59,7 +54,7 @@ public class TestSystemIndex_v3_1 {
 		
 		System.out.println("-------SEARCH-------");
 		System.out.println(" " + key4);
-		Object res = systemIndex.search(key4);
+		Object res = systemIndex.ssSearch(key4);
 		System.out.println(res);
 	}
 

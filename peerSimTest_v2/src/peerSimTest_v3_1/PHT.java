@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import test.TestSystemIndex_v3_1_all;
-
 /**
  * 
  * SystèmeIndexP2P gère les nœuds

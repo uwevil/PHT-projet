@@ -206,8 +206,8 @@ public class TestConvert_3_1_1 {
 		
 		System.out.println(skey("010111111"));
 		System.out.println(skey("10101000101000"));
-		System.out.println(nextZeroPos(new BF("0110000"), 0));
-		System.out.println(nextZeroEnd(new BF("01100000"), 0));
+		System.out.println(nextZeroPos(new BF("0110000"), 2));
+		System.out.println(nextZeroEnd(new BF("01100000"), 2));
 
 	}
 	
