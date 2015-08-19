@@ -1,4 +1,4 @@
-package peerSimTest_v3_1;
+package peerSimTest_v3_1_0_1;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -12,10 +12,10 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.concurrent.TimeUnit;
 
-import peerSimTest_v3_1.*;
+import peerSimTest_v3_1_0.*;
 
 @SuppressWarnings("unused")
-public class TestSystemIndex_v3_1_all {
+public class TestSystemIndex_v3_1_0_1_all {
 
 	public static Config config_log = new Config();
 	
@@ -26,7 +26,7 @@ public class TestSystemIndex_v3_1_all {
 		int k = 0;
 		PHT pht= new PHT("dcs");
 		
-		/*
+		
 		System.out.println("Lecture wiki");
 		
 		try(BufferedReader reader = new BufferedReader(new FileReader("/Users/dcs/vrac/test/wikiDocs<60")))
@@ -61,14 +61,14 @@ public class TestSystemIndex_v3_1_all {
 		{
 			e.printStackTrace();
 		}
-		*/
+		
 		
 		long time = System.currentTimeMillis();
 		System.out.println("Désérialisation");
-		pht.deserializeListNodes("/Users/dcs/vrac/test/listNodes");
+//		pht.deserializeListNodes("/Users/dcs/vrac/test/listNodes");
 		System.out.println("Fin de désérialisation " + (System.currentTimeMillis() - time) + " ms");
 		
-		/*
+		
 		Hashtable<String, PHT_Node> listNodes = pht.getListNodes();		
 	
 		String date = (new SimpleDateFormat("dd-MM-yyyy")).format(new Date());
@@ -109,16 +109,18 @@ public class TestSystemIndex_v3_1_all {
 		wf.write("Nombre total de nœuds    : " + listNodes.size() + "\n");
 		wf.write("Nombre total de feuilles : " + nbLeafs + "\n");
 		wf.close();
-		*/
 		
-	//	pht.serializeListNodes("/Users/dcs/vrac/test/listNodes");
+		
+		pht.serializeListNodes("/Users/dcs/vrac/test/listNodes_v3_1_0_1");
 		
 		int experience = 0;
 		try 
 		{
 			ReadFile rf = new ReadFile("/Users/dcs/vrac/test/wikiDocs<60_500_request");
 						
-			String date = (new SimpleDateFormat("dd-MM-yyyy/HH-mm-ss")).format(new Date());
+		//	String date = (new SimpleDateFormat("dd-MM-yyyy/HH-mm-ss")).format(new Date());
+			date = (new SimpleDateFormat("dd-MM-yyyy/HH-mm-ss")).format(new Date());
+
 			Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "/";
 			
 			while (experience < 50)
@@ -141,8 +143,9 @@ public class TestSystemIndex_v3_1_all {
 					Hashtable<Integer, Object> hashtable = (Hashtable<Integer, Object>) config_log.getListAnswer(requestID);
 					ArrayList<String> arrayList = (ArrayList<String>) hashtable.get(requestID);
 					
-					WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "_path_" + requestID, true);
-					
+			//		WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "_path_" + requestID, true);
+					wf = new WriteFile(Config.peerSimLOG_resultat + "_path_" + requestID, true);
+	
 					for (int l = 0; l < arrayList.size(); l++)
 					{
 						wf.write(arrayList.get(l) + "\n");

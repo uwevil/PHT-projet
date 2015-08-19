@@ -2,8 +2,8 @@ package test;
 
 import java.util.ArrayList;
 
-import peerSimTest_v3_1.BF;
-import peerSimTest_v3_1.ErrorException;
+import peerSimTest_v3_1_0.BF;
+import peerSimTest_v3_1_0.ErrorException;
 
 public class TestConvert_3_1_1 {
 

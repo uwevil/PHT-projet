@@ -299,7 +299,6 @@ public class PHT implements Serializable{
 						int end = this.nextZeroEnd(key, l);
 						int nbZero = end - start + 1;
 						String prefix = sb + key.toString().substring(l, start);
-						
 						ArrayList<String> root1 = search1TerRoots(prefix, nbZero, leafNodes);
 						ArrayList<String> root0 = search0TerRoots(prefix, nbZero, leafNodes);
 						
@@ -358,10 +357,11 @@ public class PHT implements Serializable{
 		candidates.add(ancestor);
 		
 		int n = ancestor.length() + nbZero;
-		
+	//	System.out.println(ancestor);
 		while (!candidates.isEmpty())
 		{
 			String anc = candidates.poll();
+	//		System.out.println(anc);
 			String prefix = anc + "1";
 			LookUpRep rep = this.lookup(prefix);
 
@@ -382,7 +382,7 @@ public class PHT implements Serializable{
 				String sibling = label;
 				sibling = sibling.substring(0, sibling.length() - 1) + "0";
 				candidates.add(sibling);
-				System.out.println(sibling);
+	//			System.out.println(sibling);
 				if (label.length() > anc.length())
 				{
 					String spx = label.substring(0, label.length() - 1);
@@ -390,11 +390,11 @@ public class PHT implements Serializable{
 					{
 						spx = spx.substring(0, spx.length() - 1) + "0";
 						candidates.add(spx);
-						System.out.println("   " + spx);
+		//				System.out.println("   " + spx);
 						spx = spx.substring(0, spx.length() - 1);
 					}
 				}
-				System.out.println();
+	//			System.out.println();
 			}
 			
 		// candidates.remove(anc)

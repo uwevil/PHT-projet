@@ -1,9 +1,9 @@
-package peerSimTest_v3_1;
+package peerSimTest_v3_1_0;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-public class TestSystemIndex_v3_1 {
+public class TestSystemIndex_v3_1_0 {
 
 	public static void main(String[] args) throws ErrorException
 	{

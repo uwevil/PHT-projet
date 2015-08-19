@@ -1,4 +1,4 @@
-package peerSimTest_v3_1;
+package peerSimTest_v3_1_0;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -331,21 +331,21 @@ public class PHT implements Serializable{
 		}
 		
 		//*******************LOG**********************
-		Config config_log = new Config();
-		config_log.getTranslate().setLength(Config.requestRang);
-		int requestID = config_log.getTranslate().translate(key.toString());
-		
-		@SuppressWarnings("unchecked")
-		Hashtable<Integer, Object> hashtable = (Hashtable<Integer, Object>) TestSystemIndex_v3_1_all.config_log.getListAnswer(requestID);
-		
-		if (hashtable == null)
-		{
-			hashtable = new Hashtable<Integer, Object>();
-			hashtable.put(requestID, listPaths);
-			
-			TestSystemIndex_v3_1_all.config_log.putListAnswer(requestID, hashtable);
-		}
-		//*******************************************
+				Config config_log = new Config();
+				config_log.getTranslate().setLength(Config.requestRang);
+				int requestID = config_log.getTranslate().translate(key.toString());
+				
+				@SuppressWarnings("unchecked")
+				Hashtable<Integer, Object> hashtable = (Hashtable<Integer, Object>) TestSystemIndex_v3_1_0_all.config_log.getListAnswer(requestID);
+				
+				if (hashtable == null)
+				{
+					hashtable = new Hashtable<Integer, Object>();
+					hashtable.put(requestID, listPaths);
+					
+					TestSystemIndex_v3_1_0_all.config_log.putListAnswer(requestID, hashtable);
+				}
+				//*******************************************
 
 		return res;
 	}

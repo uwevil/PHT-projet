@@ -1,4 +1,4 @@
-package peerSimTest_v3_1;
+package peerSimTest_v3_1_0;
 
 /**Type de message :
  * <ul>

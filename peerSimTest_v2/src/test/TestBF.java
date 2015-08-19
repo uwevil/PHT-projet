@@ -2,9 +2,9 @@ package test;
 
 import java.util.Calendar;
 
-import peerSimTest_v3_1.Config;
-import peerSimTest_v3_1.ErrorException;
-import peerSimTest_v3_1.BF;
+import peerSimTest_v3_1_0.BF;
+import peerSimTest_v3_1_0.Config;
+import peerSimTest_v3_1_0.ErrorException;
 
 public class TestBF {
 
