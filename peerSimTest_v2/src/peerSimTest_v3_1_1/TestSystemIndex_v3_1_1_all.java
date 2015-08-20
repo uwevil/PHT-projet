@@ -140,20 +140,20 @@ public class TestSystemIndex_v3_1_1_all {
 					Object res = pht.ssSearch(bf);
 					temps = Calendar.getInstance().getTimeInMillis() - temps;
 					
-					Hashtable<Integer, Object> hashtable = (Hashtable<Integer, Object>) config_log.getListAnswer(requestID);
-					ArrayList<String> arrayList = (ArrayList<String>) hashtable.get(requestID);
+		//			Hashtable<Integer, Object> hashtable = (Hashtable<Integer, Object>) config_log.getListAnswer(requestID);
+		//			ArrayList<String> arrayList = (ArrayList<String>) hashtable.get(requestID);
 					
-					WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "_path_" + requestID, true);
-					
+		//			WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "_path_" + requestID, true);
+		/*			
 					for (int l = 0; l < arrayList.size(); l++)
 					{
 						wf.write(arrayList.get(l) + "\n");
 					}
 					wf.close();
-					
+			*/		
 					if (((ArrayList<BF>) res).size() != 0)
 					{	
-						wf = new WriteFile(Config.peerSimLOG_resultat + "_" + requestID, true);
+						WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "_" + requestID, true);
 		//				wf.write(rf.getDescription(i) + "\n");
 						wf.write(rf.getDescription(0) + "\n");
 						wf.write("request : " + bf.toString() + "\n\n");
@@ -186,7 +186,7 @@ public class TestSystemIndex_v3_1_1_all {
 					}
 					else // non trouvé
 					{
-						wf = new WriteFile(Config.peerSimLOG_resultat + "_null_" + requestID, true);
+						WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "_null_" + requestID, true);
 		//				wf.write(rf.getDescription(i) + "\n");
 						wf.write(rf.getDescription(0) + "\n");
 						wf.write("request : " + bf.toString() + "\n\n");
@@ -216,8 +216,8 @@ public class TestSystemIndex_v3_1_1_all {
 						wf.write("Filtres trouvés         : " + ((ArrayList<BF>) res).size() + "\n");
 						wf.close();
 					}
-					
-					wf = new WriteFile(Config.peerSimLOG + "_log_time", true);
+				/*	
+					WriteFile wf = new WriteFile(Config.peerSimLOG + "_log_time", true);
 					if (requestID < 10000)
 					{
 						wf.write(requestID + "    ");
@@ -285,6 +285,7 @@ public class TestSystemIndex_v3_1_1_all {
 					
 		//			j++;
 		//		}
+		  */
 				experience++;
 			}
 

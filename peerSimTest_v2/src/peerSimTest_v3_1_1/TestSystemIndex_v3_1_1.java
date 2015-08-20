@@ -28,7 +28,7 @@ public class TestSystemIndex_v3_1_1 {
 		systemIndex.insert(key8);
 
 		System.out.println();
-		Hashtable<String, PHT_Node> listNodes = systemIndex.getListNodes();
+	/*	Hashtable<String, PHT_Node> listNodes = systemIndex.getListNodes();
 		
 		Enumeration<String> enumeration = listNodes.keys();
 		
@@ -44,14 +44,14 @@ public class TestSystemIndex_v3_1_1 {
 			
 			if (n.getListKeys() != null && n.getListKeys().size() != 0)
 			{
-				System.out.print(" : " +n.getListKeys().size() + "\n\n");
+				System.out.print(" : " +n.getListKeys().size() + " " + n.getListKeys().toString()+ "\n\n");
 			}
 			else
 			{
 				System.out.print(" : noeud\n\n");
 			}
 		}
-		
+	*/	
 		System.out.println("-------SEARCH-------");
 		System.out.println(" " + key4);
 		Object res = systemIndex.ssSearch(key4);

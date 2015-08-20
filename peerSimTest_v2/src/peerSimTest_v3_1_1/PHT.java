@@ -171,7 +171,7 @@ public class PHT implements Serializable{
 		
 	}
 	
-	private String skey(String path)
+	private String skey(String path) throws ErrorException
 	{		
 		String rootPath = "/";
 		String zeroSeq = "0*";
@@ -195,16 +195,15 @@ public class PHT implements Serializable{
 		return this.lpp(path, "10");
 	}
 	
-	private String lpp(String str, String seq)
+	private String lpp(String str, String seq) throws ErrorException
 	{		
 		if (str == null)
 			return null;
 		
-		if (str.length() <= seq.length())
+		if (str.length() < seq.length())
 		{
-			if (str.equals(seq))
-				return str;
-			return null;
+			System.out.println(str + " " + seq);
+			throw new ErrorException("lpp : str.length <= seq.length");
 		}
 		else
 		{
@@ -217,17 +216,21 @@ public class PHT implements Serializable{
 		}
 	}
 	
-	private LookUpRep lookup(String path)
+	private LookUpRep lookup(String path) throws ErrorException
 	{
 		TestSystemIndex_v3_1_1_all.config_log.addNodeVisited(1);
 		PHT_Node n;
 		if (path.equals("/"))
 		{
 			n = this.listNodes.get(path);
+			if (n.isLeafNode())
+				return new LookUpRep("LeafNode", "/");
+			
+			return new LookUpRep("InternalNode", "/");
 		}
 		else
 		{
-			n = this.listNodes.get(path.substring(1, path.length()));
+			n = this.listNodes.get(this.skey(path.substring(1, path.length())));
 		}
 		
 		if (n == null)
@@ -239,15 +242,24 @@ public class PHT implements Serializable{
 		return new LookUpRep("InternalNode", "/" + n.getPath());
 	}
 	
-	private int nextZeroPos(BF key, int pos)
+	private int nextZero(BF key, int pos)
 	{
-		for (int i = pos + 1; i < key.size(); i++)
+		for (int i = pos; i < key.size(); i++)
 			if (!key.getBit(i))
 				return i;
 		
 		return -1;
 	}
 	
+	private int nextOne(BF key, int pos)
+	{
+		for (int i = pos; i < key.size(); i++)
+			if (key.getBit(i))
+				return i;
+		
+		return -1;
+	}
+	/*
 	private int nextZeroEnd(BF key, int pos)
 	{
 		int res = 0;
@@ -263,7 +275,7 @@ public class PHT implements Serializable{
 		
 		return pos + res;
 	}
-	
+	*/
 	public ArrayList<BF> get(String path)
 	{
 		return this.listNodes.get(path).getListKeys();
@@ -286,38 +298,20 @@ public class PHT implements Serializable{
 			
 			while (sbTrees.size() != 0)
 			{
-				ArrayList<String> csbTrees = new ArrayList<String>(sbTrees);
+				ArrayDeque<String> currentStep = new ArrayDeque<String>(sbTrees);
 				sbTrees.clear();
 				
-				for (int i = 0; i < csbTrees.size(); i++)
+				while (!currentStep.isEmpty())
 				{
-					String sb = csbTrees.get(i);
-					int l = sb.length() - 1;
-					int start = this.nextZeroPos(key, l);
-					if (start >= 0)
-					{
-						int end = this.nextZeroEnd(key, l);
-						int nbZero = end - start + 1;
-						String prefix = sb + key.toString().substring(l, start);
-						ArrayList<String> root1 = search1TerRoots(prefix, nbZero, leafNodes);
-						ArrayList<String> root0 = search0TerRoots(prefix, nbZero, leafNodes);
-						
-						sbTrees.addAll(root1);
-						sbTrees.addAll(root0);
-					}
-					else
-					{
-						String temp = key.toString().substring(l, key.toString().length());
-						String prefix = sb + temp;
-						
-						LookUpRep rep_tmp = this.lookup(prefix);
-						if (rep_tmp.status.equals("LeafNode"))
-							leafNodes.add(prefix);
-					}
+					String sbroot = currentStep.poll();
+					int nbStep = 1;
+					ArrayList<String> newRoots = this.searchMatchedSubtrees(key, nbStep, sbroot, leafNodes);
+					if (newRoots != null)
+						sbTrees.addAll(newRoots);
 				}
 			}
 		}
-		
+				
 		ArrayList<BF> bfs = new ArrayList<BF>();
 		
 		if (!leafNodes.isEmpty())
@@ -350,21 +344,17 @@ public class PHT implements Serializable{
 		return bfs;
 	}
 	
-	private ArrayList<String> search1TerRoots(String ancestor, int nbZero, ArrayList<String> leafNodes)
+	private ArrayList<String> next1MatchedRoots(String ancestor, int nbZero, ArrayList<String> leafNodes) throws ErrorException
 	{
 		ArrayList<String> newRoots = new ArrayList<String>();
 		ArrayDeque<String> candidates = new ArrayDeque<String>();
 		candidates.add(ancestor);
-		
 		int n = ancestor.length() + nbZero;
-	//	System.out.println(ancestor);
 		while (!candidates.isEmpty())
 		{
 			String anc = candidates.poll();
-	//		System.out.println(anc);
 			String prefix = anc + "1";
 			LookUpRep rep = this.lookup(prefix);
-
 			String label = rep.label;
 			if (label != null)
 			{
@@ -374,79 +364,81 @@ public class PHT implements Serializable{
 				}
 				else
 				{
-					String sb = label.substring(0, n + 1);
-					newRoots.add(sb);
-					label = sb.substring(0, n);
+					if (label.length() == n + 1)
+					{
+						leafNodes.add(label);
+					}
+					else
+					{
+						String sb = label.substring(0, n + 1);
+						newRoots.add(sb);
+					}
+					label = label.substring(0, n);
 				}
 				
-				String sibling = label;
-				sibling = sibling.substring(0, sibling.length() - 1) + "0";
-				candidates.add(sibling);
-	//			System.out.println(sibling);
-				if (label.length() > anc.length())
+				String spx = label;
+				while (spx.length() > anc.length())
 				{
-					String spx = label.substring(0, label.length() - 1);
-					while (spx.length() > anc.length())
-					{
-						spx = spx.substring(0, spx.length() - 1) + "0";
-						candidates.add(spx);
-		//				System.out.println("   " + spx);
-						spx = spx.substring(0, spx.length() - 1);
-					}
+					spx = spx.substring(0, spx.length() - 1) + "0";
+					candidates.add(spx);
+					spx = spx.substring(0, spx.length() - 1);
 				}
-	//			System.out.println();
 			}
-			
-		// candidates.remove(anc)
+			else
+			{
+				leafNodes.add(anc);
+			}			
 		}
 		
 		return newRoots;
 	}
 	
-	private ArrayList<String> search0TerRoots(String ancestor, int nbZero, ArrayList<String> leafNodes)
+	private ArrayList<String> searchMatchedSubtrees(BF key, int nbStep, String sbroot, ArrayList<String> leafNodes) 
+			throws ErrorException
 	{
-		ArrayList<String> newRoots = new ArrayList<String>();
-		ArrayDeque<String> candidates = new ArrayDeque<String>();
-		candidates.add(ancestor);
-		int n = ancestor.length() + nbZero;
-		
-		while (!candidates.isEmpty())
+		int matchedFragSize = sbroot.length() - 1;
+		String prefix = sbroot;
+		int nextZ = this.nextZero(key, matchedFragSize);
+		int nbOnes = 0;
+		if (nextZ < 0)
 		{
-			String anc = candidates.poll();
-			String prefix = anc + "0";
-			LookUpRep rep = this.lookup(prefix);
-			String label = rep.label;
-			if (label != null)
-			{
-				if (label.length() <= n)
-				{
-					leafNodes.add(label);
-				}
-				else
-				{
-					String sb = label.substring(0, n + 1);
-					sb = sb.substring(0, sb.length() - 1) + "1";
-					newRoots.add(sb);
-					sb = sb.substring(0, sb.length() - 1);
-					label = sb;
-				}
-				label = label.substring(0, label.length() - 1) + "1";
-				candidates.add(label);
-				if (label.length() > anc.length())
-				{
-					String spx = label.substring(0, label.length() - 1);
-					while (spx.length() > anc.length())
-					{
-						spx = spx.substring(0, spx.length() - 1) + "1";
-						candidates.add(spx);
-						spx = spx.substring(0, spx.length() - 1);
-					}
-				}
-			}
-			
-		//	candidates.remove(anc);
+			nbOnes = key.size() - matchedFragSize;
 		}
-		return newRoots;
+		else
+		{
+			nbOnes = nextZ - matchedFragSize;
+		}
+		if (nbOnes > 0)
+		{
+			prefix = prefix + "1";
+			LookUpRep rep = this.lookup(prefix);
+		
+			if (rep.label.length() <= (sbroot.length() + nbOnes))
+			{
+				leafNodes.add(rep.label);
+				return null;
+			}
+			else
+			{
+				prefix = sbroot;
+				for (int i = 1; i < nbOnes; i++)
+				{
+					prefix += "1";
+				}
+				matchedFragSize = prefix.length() - 1;
+			}	
+		}
+		int n1 = nextOne(key, matchedFragSize);
+		int nbZero = 0;
+		if (n1 > 0)
+		{
+			nbZero = n1 - matchedFragSize;
+		}
+		else
+		{
+			nbZero = key.size() - matchedFragSize;
+		}
+		return this.next1MatchedRoots(prefix, nbZero, leafNodes);
 	}
 	 
 	/**
