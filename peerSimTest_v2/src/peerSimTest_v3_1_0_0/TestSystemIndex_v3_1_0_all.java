@@ -1,4 +1,4 @@
-package peerSimTest_v3_1_0;
+package peerSimTest_v3_1_0_0;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -12,7 +12,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.concurrent.TimeUnit;
 
-import peerSimTest_v3_1_0.*;
+import peerSimTest_v3_1_0_0.*;
 
 @SuppressWarnings("unused")
 public class TestSystemIndex_v3_1_0_all {

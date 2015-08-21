@@ -212,11 +212,13 @@ public class PHT implements Serializable{
 				String tmp = computeEntry(bf_tmp.toString());
 				if (i < entry.length() + len - 1)
 				{
-					res.add(tmp.substring(0, tmp.length() - 1));
+					if (!res.contains(tmp.substring(0, tmp.length() - 1)))
+						res.add(tmp.substring(0, tmp.length() - 1));
 				}
 				else
 				{
-					res.add(tmp);
+					if (!res.contains(tmp))
+						res.add(tmp);
 				}
 			}
 		}
@@ -234,11 +236,13 @@ public class PHT implements Serializable{
 				String tmp = computeEntry(bf_tmp.toString());
 				if (i < entry.length() + len - 1)
 				{
-					res.add(tmp.substring(0, tmp.length() - 1));
+					if (res.contains(tmp.substring(0, tmp.length() - 1)))
+						res.add(tmp.substring(0, tmp.length() - 1));
 				}
 				else
 				{
-					res.add(tmp);
+					if (!res.contains(tmp))
+						res.add(tmp);
 				}
 			}
 		}
@@ -263,21 +267,6 @@ public class PHT implements Serializable{
 				if (n != null && n.isLeafNode())
 				{
 					listLeafs.add(path);
-					
-				/*	ArrayList<BF> listKeys = n.getListKeys();
-					if (listKeys != null && listKeys.size() != 0)
-					{
-						for (int j = 0; j < listKeys.size(); j++)
-						{
-							BF bf_tmp = listKeys.get(j);
-							
-							if (key.in(bf_tmp))
-								res.add(bf_tmp);
-						}
-					}
-					
-					return res;
-					*/
 				}
 				else if (n != null) // !n.isLeafNode
 				{
@@ -299,25 +288,8 @@ public class PHT implements Serializable{
 				if (n != null) 
 				{
 					if (key.in(new BF(n.getPath())))
-					{
 						if (n.isLeafNode())
-						{
 							listLeafs.add(path);
-							/*
-							ArrayList<BF> listKeys = n.getListKeys();
-							if (listKeys != null && listKeys.size() != 0)
-							{
-								for (int j = 0; j < listKeys.size(); j++)
-								{
-									BF bf_tmp = listKeys.get(j);
-									
-									if (key.in(bf_tmp))
-										res.add(bf_tmp);
-								}
-							}
-							*/
-						}
-					}
 					
 					ArrayList<String> tmp = this.computePath(path, n.getPath());
 					
@@ -360,7 +332,8 @@ public class PHT implements Serializable{
 		int requestID = config_log.getTranslate().translate(key.toString());
 		
 		@SuppressWarnings("unchecked")
-		Hashtable<Integer, Object> hashtable = (Hashtable<Integer, Object>) TestSystemIndex_v3_1_0_1_all.config_log.getListAnswer(requestID);
+		Hashtable<Integer, Object> hashtable = 
+			(Hashtable<Integer, Object>) TestSystemIndex_v3_1_0_1_all.config_log.getListAnswer(requestID);
 		
 		if (hashtable == null)
 		{

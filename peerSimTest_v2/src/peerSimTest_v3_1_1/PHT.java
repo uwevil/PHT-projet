@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import peerSimTest_v3_1_1.Config;
-
 /**
  * 
  * SystèmeIndexP2P gère les nœuds
@@ -216,9 +214,28 @@ public class PHT implements Serializable{
 		}
 	}
 	
-	private LookUpRep lookup(String path) throws ErrorException
+	@SuppressWarnings("unchecked")
+	private LookUpRep lookup(String path, int requestID) throws ErrorException
 	{
-		TestSystemIndex_v3_1_1_all.config_log.addNodeVisited(1);
+		//*******************LOG**********************								
+		Hashtable<Integer, Object> hashtable = (Hashtable<Integer, Object>) 
+			TestSystemIndex_v3_1_1_all.config_log.getListAnswer(requestID);
+								
+		if (hashtable == null)
+		{
+			hashtable = new Hashtable<Integer, Object>();
+			ArrayList<String> arrayList = new ArrayList<String>();
+			arrayList.add(path);
+			hashtable.put(requestID, arrayList);
+									
+			TestSystemIndex_v3_1_1_all.config_log.putListAnswer(requestID, hashtable);
+		}
+		else
+		{
+			((ArrayList<String>) hashtable.get(requestID)).add(path);
+		}
+		//*******************************************
+				
 		PHT_Node n;
 		if (path.equals("/"))
 		{
@@ -259,59 +276,42 @@ public class PHT implements Serializable{
 		
 		return -1;
 	}
-	/*
-	private int nextZeroEnd(BF key, int pos)
-	{
-		int res = 0;
-		for (int i = pos + 1; i < key.size(); i++)
-		{
-			if (!key.getBit(i))
-				res++;
-			if (res != 0 && key.getBit(i))
-				break;
-		}
-		if (res == 0)
-			return -1;
-		
-		return pos + res;
-	}
-	*/
+	
 	public ArrayList<BF> get(String path)
 	{
 		return this.listNodes.get(path).getListKeys();
 	}
 
 	public ArrayList<BF> ssSearch(BF key) throws ErrorException
-	{		
+	{			
 		ArrayList<String> leafNodes = new ArrayList<String>();
 		String rootName = "/";
-		LookUpRep rep = this.lookup(rootName);
 		
-		if (rep.status.equals("LeafNode"))
+		//*************************************************
+		Config config = new Config();
+		config.getTranslate().setLength(Config.requestRang);
+		int requestID = config.getTranslate().translate(key.toString());
+		//*************************************************
+		
+		ArrayList<String> sbTrees = new ArrayList<String>();
+		sbTrees.add(rootName);
+		
+		while (sbTrees.size() != 0)
 		{
-			leafNodes.add(rootName);
-		}
-		else
-		{
-			ArrayList<String> sbTrees = new ArrayList<String>();
-			sbTrees.add(rootName);
+			ArrayDeque<String> currentStep = new ArrayDeque<String>(sbTrees);
+			sbTrees.clear();
 			
-			while (sbTrees.size() != 0)
+			while (!currentStep.isEmpty())
 			{
-				ArrayDeque<String> currentStep = new ArrayDeque<String>(sbTrees);
-				sbTrees.clear();
-				
-				while (!currentStep.isEmpty())
-				{
-					String sbroot = currentStep.poll();
-					int nbStep = 1;
-					ArrayList<String> newRoots = this.searchMatchedSubtrees(key, nbStep, sbroot, leafNodes);
-					if (newRoots != null)
-						sbTrees.addAll(newRoots);
-				}
+				String sbroot = currentStep.poll();
+				int nbStep = 1;
+				ArrayList<String> newRoots = 
+						this.searchMatchedSubtrees(key, nbStep, sbroot, leafNodes, requestID);
+				if (newRoots != null)
+					sbTrees.addAll(newRoots);
 			}
 		}
-				
+		
 		ArrayList<BF> bfs = new ArrayList<BF>();
 		
 		if (!leafNodes.isEmpty())
@@ -344,7 +344,9 @@ public class PHT implements Serializable{
 		return bfs;
 	}
 	
-	private ArrayList<String> next1MatchedRoots(String ancestor, int nbZero, ArrayList<String> leafNodes) throws ErrorException
+	private ArrayList<String> next1MatchedRoots(String ancestor, int nbZero, ArrayList<String> leafNodes
+			, int requestID) 
+			throws ErrorException
 	{
 		ArrayList<String> newRoots = new ArrayList<String>();
 		ArrayDeque<String> candidates = new ArrayDeque<String>();
@@ -354,7 +356,7 @@ public class PHT implements Serializable{
 		{
 			String anc = candidates.poll();
 			String prefix = anc + "1";
-			LookUpRep rep = this.lookup(prefix);
+			LookUpRep rep = this.lookup(prefix, requestID);
 			String label = rep.label;
 			if (label != null)
 			{
@@ -393,7 +395,8 @@ public class PHT implements Serializable{
 		return newRoots;
 	}
 	
-	private ArrayList<String> searchMatchedSubtrees(BF key, int nbStep, String sbroot, ArrayList<String> leafNodes) 
+	private ArrayList<String> searchMatchedSubtrees(BF key, int nbStep, String sbroot, ArrayList<String> leafNodes
+			, int requestID) 
 			throws ErrorException
 	{
 		int matchedFragSize = sbroot.length() - 1;
@@ -411,8 +414,12 @@ public class PHT implements Serializable{
 		if (nbOnes > 0)
 		{
 			prefix = prefix + "1";
-			LookUpRep rep = this.lookup(prefix);
-		
+			LookUpRep rep = this.lookup(prefix, requestID);
+			if (rep.label == null)
+			{
+				leafNodes.add(prefix.substring(0, prefix.length() - 1));
+				return null;
+			}
 			if (rep.label.length() <= (sbroot.length() + nbOnes))
 			{
 				leafNodes.add(rep.label);
@@ -438,7 +445,7 @@ public class PHT implements Serializable{
 		{
 			nbZero = key.size() - matchedFragSize;
 		}
-		return this.next1MatchedRoots(prefix, nbZero, leafNodes);
+		return this.next1MatchedRoots(prefix, nbZero, leafNodes, requestID);
 	}
 	 
 	/**

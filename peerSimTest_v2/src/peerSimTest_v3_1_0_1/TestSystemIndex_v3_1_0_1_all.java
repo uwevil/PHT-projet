@@ -12,7 +12,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.concurrent.TimeUnit;
 
-import peerSimTest_v3_1_0.*;
+import peerSimTest_v3_1_0_1.*;
 
 @SuppressWarnings("unused")
 public class TestSystemIndex_v3_1_0_1_all {
@@ -65,14 +65,15 @@ public class TestSystemIndex_v3_1_0_1_all {
 		
 		long time = System.currentTimeMillis();
 		System.out.println("Désérialisation");
-//		pht.deserializeListNodes("/Users/dcs/vrac/test/listNodes");
+		pht.serializeListNodes("/Users/dcs/vrac/test/listNodes_v3_1_0_1");
+//		pht.deserializeListNodes("/Users/dcs/vrac/test/listNodes_v3_1_0_1");
 		System.out.println("Fin de désérialisation " + (System.currentTimeMillis() - time) + " ms");
 		
 		
 		Hashtable<String, PHT_Node> listNodes = pht.getListNodes();		
 	
 		String date = (new SimpleDateFormat("dd-MM-yyyy")).format(new Date());
-		Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "/" + "_log";
+		Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "/" + "_log_v3_1_0_1";
 		
 		WriteFile wf = new WriteFile(Config.peerSimLOG, false);
 		wf.close();
@@ -109,19 +110,15 @@ public class TestSystemIndex_v3_1_0_1_all {
 		wf.write("Nombre total de nœuds    : " + listNodes.size() + "\n");
 		wf.write("Nombre total de feuilles : " + nbLeafs + "\n");
 		wf.close();
-		
-		
-		pht.serializeListNodes("/Users/dcs/vrac/test/listNodes_v3_1_0_1");
-		
+				
 		int experience = 0;
 		try 
 		{
 			ReadFile rf = new ReadFile("/Users/dcs/vrac/test/wikiDocs<60_500_request");
 						
-		//	String date = (new SimpleDateFormat("dd-MM-yyyy/HH-mm-ss")).format(new Date());
 			date = (new SimpleDateFormat("dd-MM-yyyy/HH-mm-ss")).format(new Date());
 
-			Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "/";
+			Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "_v3_1_0_1" + "/";
 			
 			while (experience < 50)
 			{
@@ -140,10 +137,10 @@ public class TestSystemIndex_v3_1_0_1_all {
 					Object res = pht.search(bf);
 					temps = Calendar.getInstance().getTimeInMillis() - temps;
 					
-					Hashtable<Integer, Object> hashtable = (Hashtable<Integer, Object>) config_log.getListAnswer(requestID);
+					Hashtable<Integer, Object> hashtable = 
+							(Hashtable<Integer, Object>) config_log.getListAnswer(requestID);
 					ArrayList<String> arrayList = (ArrayList<String>) hashtable.get(requestID);
 					
-			//		WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "_path_" + requestID, true);
 					wf = new WriteFile(Config.peerSimLOG_resultat + "_path_" + requestID, true);
 	
 					for (int l = 0; l < arrayList.size(); l++)
@@ -212,7 +209,7 @@ public class TestSystemIndex_v3_1_0_1_all {
 						wf.close();
 					}
 					
-					wf = new WriteFile(Config.peerSimLOG + "_log_time", true);
+					wf = new WriteFile(Config.peerSimLOG + "_log_time_v3_1_0_1", true);
 					if (requestID < 10000)
 					{
 						wf.write(requestID + "    ");
@@ -289,7 +286,6 @@ public class TestSystemIndex_v3_1_0_1_all {
 		} 
 		catch (FileNotFoundException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

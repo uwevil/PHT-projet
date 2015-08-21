@@ -2,8 +2,8 @@ package test;
 
 import java.util.ArrayList;
 
-import peerSimTest_v3_1_0.BF;
-import peerSimTest_v3_1_0.ErrorException;
+import peerSimTest_v3_1_0_0.BF;
+import peerSimTest_v3_1_0_0.ErrorException;
 
 public class TestConvert_3_1_1 {
 
@@ -32,6 +32,23 @@ public class TestConvert_3_1_1 {
 		
 		return s_tmp;
 	}
+	/*
+	private int nextZeroEnd(BF key, int pos)
+	{
+		int res = 0;
+		for (int i = pos + 1; i < key.size(); i++)
+		{
+			if (!key.getBit(i))
+				res++;
+			if (res != 0 && key.getBit(i))
+				break;
+		}
+		if (res == 0)
+			return -1;
+		
+		return pos + res;
+	}
+	*/
 	
 	public static ArrayList<String> computePath(String entry, String path) throws ErrorException
 	{

@@ -26,7 +26,7 @@ public class TestSystemIndex_v3_1_1_all {
 		int k = 0;
 		PHT pht= new PHT("dcs");
 		
-		
+		/*
 		System.out.println("Lecture wiki");
 		
 		try(BufferedReader reader = new BufferedReader(new FileReader("/Users/dcs/vrac/test/wikiDocs<60")))
@@ -49,8 +49,8 @@ public class TestSystemIndex_v3_1_1_all {
 				}
 				k++;
 				System.out.println(line + "/" + k);
-			if (line == 1600)
-					break;
+		//	if (line == 1600)
+		//			break;
 			}
 			reader.close();
 			
@@ -61,18 +61,19 @@ public class TestSystemIndex_v3_1_1_all {
 		{
 			e.printStackTrace();
 		}
-		
+		*/
 		
 		long time = System.currentTimeMillis();
 		System.out.println("Désérialisation");
-	//	pht.deserializeListNodes("/Users/dcs/vrac/test/listNodes");
+		pht.deserializeListNodes("/Users/dcs/vrac/test/listNodes_v3_1_1");
+	//	pht.serializeListNodes("/Users/dcs/vrac/test/listNodes_v3_1_1");
 		System.out.println("Fin de désérialisation " + (System.currentTimeMillis() - time) + " ms");
 		
 		/*
 		Hashtable<String, PHT_Node> listNodes = pht.getListNodes();		
 	
 		String date = (new SimpleDateFormat("dd-MM-yyyy")).format(new Date());
-		Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "/" + "_log";
+		Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "/" + "_log_v3_1_1";
 		
 		WriteFile wf = new WriteFile(Config.peerSimLOG, false);
 		wf.close();
@@ -109,30 +110,25 @@ public class TestSystemIndex_v3_1_1_all {
 		wf.write("Nombre total de nœuds    : " + listNodes.size() + "\n");
 		wf.write("Nombre total de feuilles : " + nbLeafs + "\n");
 		wf.close();
-		*/
-		
-	//	pht.serializeListNodes("/Users/dcs/vrac/test/listNodes");
-		
+			*/
 		int experience = 0;
 		try 
 		{
 			ReadFile rf = new ReadFile("/Users/dcs/vrac/test/wikiDocs<60_500_request");
 						
 			String date = (new SimpleDateFormat("dd-MM-yyyy/HH-mm-ss")).format(new Date());
-			Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "/";
+			Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "_v3_1_1" + "/";
 			
-		//	while (experience < 50)
+			while (experience < 50)
 			{
 				Config.peerSimLOG_resultat = Config.peerSimLOG + experience + "_resultat_log";
 
-		//		int j = 0;
-	//			for (int i = experience*10; i < rf.size() && j < 10; i++)
-	//			{			
+				int j = 0;
+				for (int i = experience*10; i < rf.size() && j < 10; i++)
+				{			
 					BF bf = new BF(Config.sizeOfBF);
-		//			bf.addAll(rf.getDescription(i));
-					
-					bf.addAll(rf.getDescription(0));
-					
+					bf.addAll(rf.getDescription(i));
+										
 					config_log.getTranslate().setLength(Config.requestRang);
 					int requestID = config_log.getTranslate().translate(bf.toString());
 					
@@ -140,22 +136,22 @@ public class TestSystemIndex_v3_1_1_all {
 					Object res = pht.ssSearch(bf);
 					temps = Calendar.getInstance().getTimeInMillis() - temps;
 					
-		//			Hashtable<Integer, Object> hashtable = (Hashtable<Integer, Object>) config_log.getListAnswer(requestID);
-		//			ArrayList<String> arrayList = (ArrayList<String>) hashtable.get(requestID);
+					Hashtable<Integer, Object> hashtable = 
+							(Hashtable<Integer, Object>) config_log.getListAnswer(requestID);
+					ArrayList<String> arrayList = (ArrayList<String>) hashtable.get(requestID);
 					
-		//			WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "_path_" + requestID, true);
-		/*			
+					WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "_path_" + requestID, true);
+					
 					for (int l = 0; l < arrayList.size(); l++)
 					{
 						wf.write(arrayList.get(l) + "\n");
 					}
 					wf.close();
-			*/		
+					
 					if (((ArrayList<BF>) res).size() != 0)
 					{	
-						WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "_" + requestID, true);
-		//				wf.write(rf.getDescription(i) + "\n");
-						wf.write(rf.getDescription(0) + "\n");
+						wf = new WriteFile(Config.peerSimLOG_resultat + "_" + requestID, true);
+						wf.write(rf.getDescription(i) + "\n");
 						wf.write("request : " + bf.toString() + "\n\n");
 						
 						if (temps >= 1000)
@@ -177,18 +173,15 @@ public class TestSystemIndex_v3_1_1_all {
 							wf.write("Temps de recherche      : " + temps + "ms\n");
 						}
 						
-					//	wf.write("Nombre de nœuds visités : " + arrayList.size() + "\n");
-						wf.write("Nombre de nœuds visités : " + config_log.getNodeVisited() + "\n");
-
+						wf.write("Nombre de nœuds visités : " + arrayList.size() + "\n");
 						wf.write("Filtres trouvés         : " + ((ArrayList<BF>) res).size() + "\n");
 						wf.write("  " + res + "\n");
 						wf.close();
 					}
 					else // non trouvé
 					{
-						WriteFile wf = new WriteFile(Config.peerSimLOG_resultat + "_null_" + requestID, true);
-		//				wf.write(rf.getDescription(i) + "\n");
-						wf.write(rf.getDescription(0) + "\n");
+						wf = new WriteFile(Config.peerSimLOG_resultat + "_null_" + requestID, true);
+						wf.write(rf.getDescription(i) + "\n");
 						wf.write("request : " + bf.toString() + "\n\n");
 						
 						if (temps >= 1000)
@@ -210,14 +203,12 @@ public class TestSystemIndex_v3_1_1_all {
 							wf.write("Temps de recherche      : " + temps + "ms\n");
 						}
 						
-				//		wf.write("Nombre de nœuds visités : " + arrayList.size() + "\n");
-						wf.write("Nombre de nœuds visités : " + config_log.getNodeVisited() + "\n");
-
+						wf.write("Nombre de nœuds visités : " + arrayList.size() + "\n");
 						wf.write("Filtres trouvés         : " + ((ArrayList<BF>) res).size() + "\n");
 						wf.close();
 					}
-				/*	
-					WriteFile wf = new WriteFile(Config.peerSimLOG + "_log_time", true);
+				
+					wf = new WriteFile(Config.peerSimLOG + "_log_time_v3_1_1", true);
 					if (requestID < 10000)
 					{
 						wf.write(requestID + "    ");
@@ -283,9 +274,9 @@ public class TestSystemIndex_v3_1_1_all {
 					}
 					wf.close();
 					
-		//			j++;
-		//		}
-		  */
+					j++;
+				}
+		  
 				experience++;
 			}
 
@@ -295,7 +286,6 @@ public class TestSystemIndex_v3_1_1_all {
 		} 
 		catch (FileNotFoundException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
