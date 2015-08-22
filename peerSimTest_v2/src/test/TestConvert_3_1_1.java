@@ -2,8 +2,8 @@ package test;
 
 import java.util.ArrayList;
 
-import peerSimTest_v3_1_0_0.BF;
-import peerSimTest_v3_1_0_0.ErrorException;
+import peerSimTest_v3_1_1.BF;
+import peerSimTest_v3_1_1.ErrorException;
 
 public class TestConvert_3_1_1 {
 
@@ -226,6 +226,9 @@ public class TestConvert_3_1_1 {
 		System.out.println(nextZeroPos(new BF("0110000"), 2));
 		System.out.println(nextZeroEnd(new BF("01100000"), 2));
 
+		BF bf = new BF("101000");
+		System.out.println(bf.getKey());
+		
 	}
 	
 }

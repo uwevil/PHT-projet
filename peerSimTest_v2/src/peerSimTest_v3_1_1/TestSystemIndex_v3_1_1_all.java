@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -45,7 +46,7 @@ public class TestSystemIndex_v3_1_1_all {
 					key.addAll(tmp[1]);
 					
 					line++;
-					pht.insert(key);					
+					pht.insert(key.getKey());					
 				}
 				k++;
 				System.out.println(line + "/" + k);
@@ -65,8 +66,8 @@ public class TestSystemIndex_v3_1_1_all {
 		
 		long time = System.currentTimeMillis();
 		System.out.println("Désérialisation");
-		pht.deserializeListNodes("/Users/dcs/vrac/test/listNodes_v3_1_1");
-	//	pht.serializeListNodes("/Users/dcs/vrac/test/listNodes_v3_1_1");
+		pht.deserializeListNodes("/Users/dcs/vrac/test/listNodes_v3_1_1_newBF");
+	//	pht.serializeListNodes("/Users/dcs/vrac/test/listNodes_v3_1_1_newBF");
 		System.out.println("Fin de désérialisation " + (System.currentTimeMillis() - time) + " ms");
 		
 		/*
@@ -110,7 +111,7 @@ public class TestSystemIndex_v3_1_1_all {
 		wf.write("Nombre total de nœuds    : " + listNodes.size() + "\n");
 		wf.write("Nombre total de feuilles : " + nbLeafs + "\n");
 		wf.close();
-			*/
+		*/	
 		int experience = 0;
 		try 
 		{
@@ -271,6 +272,25 @@ public class TestSystemIndex_v3_1_1_all {
 						{
 							wf.write(arrayList.size() + " " + temps + "ms\n");
 						}
+					}
+					wf.close();
+					
+					wf = new WriteFile(Config.peerSimLOG_resultat + "_retrieve_" + requestID, true);
+					ArrayDeque<String> tmp = config_log.getRetrieveState(requestID);
+					
+					int r = 0;
+					while (!tmp.isEmpty())
+					{
+						String s_tmp = tmp.poll();
+						if (s_tmp.contains("      "))
+						{
+							wf.write(s_tmp + "  " + r + "\n");
+						}
+						else
+						{
+							wf.write(s_tmp + "\n");
+						}
+						r++;
 					}
 					wf.close();
 					

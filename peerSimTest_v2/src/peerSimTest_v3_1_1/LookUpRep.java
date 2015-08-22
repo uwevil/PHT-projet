@@ -1,5 +1,12 @@
 package peerSimTest_v3_1_1;
 
+/**
+ * LookUpRep a 2 champs :
+ * <li> status
+ * <li> label
+ * 
+ * @author dcs
+ * */
 public class LookUpRep {
 
 	public String status;

@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
 
 /**
  * 
@@ -57,7 +56,7 @@ public class PHT implements Serializable{
 	}
 	
 	/**
-	 * Recherche l'identifiant du nœud correspondant.
+	 * Recherche l'identifiant du nœud pour l'insertion.
 	 * 
 	 * @return {@link String}
 	 * 	
@@ -117,6 +116,12 @@ public class PHT implements Serializable{
 		}
 	}
 	
+	/**
+	 * Insère dans le système.
+	 * 
+	 * @author dcs
+	 * */
+	
 	public void insert(BF key) throws ErrorException
 	{				
 		String path = this.lookup_insert(key);
@@ -130,6 +135,12 @@ public class PHT implements Serializable{
 			split(systemNode);
 		}
 	}
+	
+	/**
+	 * Eclater d'un nœud, appelé par la méthode {@code insert}.
+	 * 
+	 * @author dcs
+	 * */
 	
 	private void split(PHT_Node n) throws ErrorException
 	{		
@@ -169,6 +180,13 @@ public class PHT implements Serializable{
 		
 	}
 	
+	/**
+	 * Calcule la clé de stockage.
+	 * 
+	 * @return {@link String}
+	 * @author dcs
+	 * */
+	
 	private String skey(String path) throws ErrorException
 	{		
 		String rootPath = "/";
@@ -193,6 +211,13 @@ public class PHT implements Serializable{
 		return this.lpp(path, "10");
 	}
 	
+	/**
+	 * Calcule le plus long préfix de {@code str} qui matche avec la séquence {@code seq}.
+	 * 
+	 * @return {@link String}
+	 * @author dcs
+	 * */
+	
 	private String lpp(String str, String seq) throws ErrorException
 	{		
 		if (str == null)
@@ -200,7 +225,6 @@ public class PHT implements Serializable{
 		
 		if (str.length() < seq.length())
 		{
-			System.out.println(str + " " + seq);
 			throw new ErrorException("lpp : str.length <= seq.length");
 		}
 		else
@@ -213,6 +237,13 @@ public class PHT implements Serializable{
 			return null;
 		}
 	}
+	
+	/**
+	 * Recherche un nœud précis.
+	 * 
+	 * @return {@link LookUpRep}
+	 * @author dcs
+	 * */
 	
 	@SuppressWarnings("unchecked")
 	private LookUpRep lookup(String path, int requestID) throws ErrorException
@@ -259,6 +290,14 @@ public class PHT implements Serializable{
 		return new LookUpRep("InternalNode", "/" + n.getPath());
 	}
 	
+	/**
+	 * Retourne la position de bit '0' à partir de la position 'pos' précise (inclus).
+	 * 
+	 * @return int
+	 * 
+	 * @author dcs
+	 * */
+	
 	private int nextZero(BF key, int pos)
 	{
 		for (int i = pos; i < key.size(); i++)
@@ -267,6 +306,14 @@ public class PHT implements Serializable{
 		
 		return -1;
 	}
+	
+	/**
+	 * Retourne la position de bit '1' à partir de la position 'pos' précise (inclus).
+	 * 
+	 * @return int
+	 * 
+	 * @author dcs
+	 * */
 	
 	private int nextOne(BF key, int pos)
 	{
@@ -277,14 +324,30 @@ public class PHT implements Serializable{
 		return -1;
 	}
 	
+	/**
+	 * Récupère la liste des filtres à partir d'un nom du nœud.
+	 * 
+	 * @return {@code ArrayList<BF>}
+	 * 
+	 * @author dcs
+	 * */
+	
 	public ArrayList<BF> get(String path)
 	{
 		return this.listNodes.get(path).getListKeys();
 	}
 
+	/**
+	 * Recherche tous les filtres qui correspondent avec le filtre de la requête.
+	 * 
+	 * @return {@code ArrayList<BF>}
+	 * 
+	 * @author dcs
+	 * */
+	
 	public ArrayList<BF> ssSearch(BF key) throws ErrorException
 	{			
-		ArrayList<String> leafNodes = new ArrayList<String>();
+		ArrayList<BF> bfs = new ArrayList<BF>();
 		String rootName = "/";
 		
 		//*************************************************
@@ -306,45 +369,72 @@ public class PHT implements Serializable{
 				String sbroot = currentStep.poll();
 				int nbStep = 1;
 				ArrayList<String> newRoots = 
-						this.searchMatchedSubtrees(key, nbStep, sbroot, leafNodes, requestID);
+						this.searchMatchedSubtrees(key, nbStep, sbroot, bfs, requestID);
 				if (newRoots != null)
 					sbTrees.addAll(newRoots);
-			}
-		}
-		
-		ArrayList<BF> bfs = new ArrayList<BF>();
-		
-		if (!leafNodes.isEmpty())
-		{
-			Iterator<String> iterator = leafNodes.iterator();
-			
-			while (iterator.hasNext())
-			{
-				String path = iterator.next();
-				String tmp;
-				if (path.equals("/"))
-				{
-					tmp = path;
-				}
-				else
-				{
-					tmp = this.skey(path.substring(1, path.length()));
-				}
-				
-				ArrayList<BF> storedBF = this.get(tmp);
-				for (int i = 0; i < storedBF.size(); i++)
-				{
-					BF bf = storedBF.get(i);
-					if (key.in(bf))
-						bfs.add(bf);
-				}
 			}
 		}
 		
 		return bfs;
 	}
 	
-	private ArrayList<String> next1MatchedRoots(String ancestor, int nbZero, ArrayList<String> leafNodes
+	/**
+	 * Ajoute les filtres qui correspondent avec celui de la requête dans la liste des filtres.
+	 * 
+	 * @author dcs
+	 * */
+	
+	@SuppressWarnings("unchecked")
+	public void retrieve(BF key, ArrayList<BF> bfs, String nodePath, int requestID) throws ErrorException
+	{
+		int found = 0;
+		String tmp;
+		if (nodePath.equals("/"))
+		{
+			tmp = nodePath;
+		}
+		else
+		{
+			tmp = this.skey(nodePath.substring(1, nodePath.length()));
+		}
+		
+		ArrayList<BF> storedBF = this.get(tmp);
+		for (int i = 0; i < storedBF.size(); i++)
+		{
+			BF bf = storedBF.get(i);
+			if (key.in(bf))
+			{
+				found++;
+				bfs.add(bf);
+			}
+		}
+		//*******************LOG**********************								
+		ArrayDeque<String> arrayDeque = 
+				TestSystemIndex_v3_1_1_all.config_log.getRetrieveState(requestID);
+												
+		if (arrayDeque == null)
+		{
+			arrayDeque = new ArrayDeque<String>();
+			Hashtable<Integer, Object> hashtable = 
+				(Hashtable<Integer, Object>) TestSystemIndex_v3_1_1_all.config_log.getListAnswer(requestID);
+			ArrayList<String> arrayList = (ArrayList<String>) hashtable.get(requestID);
+			String s = (found != 0) ? ("      " + arrayList.size() + "  "+found) : arrayList.size() + "";
+			arrayDeque.add(s);
+			TestSystemIndex_v3_1_1_all.config_log.putRetrieveState(requestID, arrayDeque);
+		}
+		else
+		{
+			Hashtable<Integer, Object> hashtable = 
+				(Hashtable<Integer, Object>) TestSystemIndex_v3_1_1_all.config_log.getListAnswer(requestID);
+			ArrayList<String> arrayList = (ArrayList<String>) hashtable.get(requestID);	
+			String s = (found != 0) ? ("      " + arrayList.size() + "  "+found) : arrayList.size() + "";
+			arrayDeque.add(s);
+		}
+		//*******************************************
+				
+	}
+	
+	private ArrayList<String> next1MatchedRoots(BF key, String ancestor, int nbZero, ArrayList<BF> bfs
 			, int requestID) 
 			throws ErrorException
 	{
@@ -362,13 +452,13 @@ public class PHT implements Serializable{
 			{
 				if (label.length() <= n)
 				{
-					leafNodes.add(label);
+					retrieve(key, bfs, label, requestID);
 				}
 				else
 				{
 					if (label.length() == n + 1)
 					{
-						leafNodes.add(label);
+						retrieve(key, bfs, label, requestID);
 					}
 					else
 					{
@@ -388,14 +478,14 @@ public class PHT implements Serializable{
 			}
 			else
 			{
-				leafNodes.add(anc);
+				retrieve(key, bfs, anc, requestID);
 			}			
 		}
 		
 		return newRoots;
 	}
 	
-	private ArrayList<String> searchMatchedSubtrees(BF key, int nbStep, String sbroot, ArrayList<String> leafNodes
+	private ArrayList<String> searchMatchedSubtrees(BF key, int nbStep, String sbroot, ArrayList<BF> bfs
 			, int requestID) 
 			throws ErrorException
 	{
@@ -417,12 +507,12 @@ public class PHT implements Serializable{
 			LookUpRep rep = this.lookup(prefix, requestID);
 			if (rep.label == null)
 			{
-				leafNodes.add(prefix.substring(0, prefix.length() - 1));
+				retrieve(key, bfs, prefix.substring(0, prefix.length() - 1), requestID);
 				return null;
 			}
 			if (rep.label.length() <= (sbroot.length() + nbOnes))
 			{
-				leafNodes.add(rep.label);
+				retrieve(key, bfs, rep.label, requestID);
 				return null;
 			}
 			else
@@ -445,7 +535,7 @@ public class PHT implements Serializable{
 		{
 			nbZero = key.size() - matchedFragSize;
 		}
-		return this.next1MatchedRoots(prefix, nbZero, leafNodes, requestID);
+		return this.next1MatchedRoots(key, prefix, nbZero, bfs, requestID);
 	}
 	 
 	/**
@@ -462,6 +552,7 @@ public class PHT implements Serializable{
 	 * @author dcs
 	 * @throws ErrorException 
 	 * */
+	
 	public Object searchExact(BF key) throws ErrorException
 	{		
 		return null;

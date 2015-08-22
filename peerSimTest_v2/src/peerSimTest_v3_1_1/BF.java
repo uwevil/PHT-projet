@@ -385,23 +385,24 @@ public class BF implements Serializable
 	/**
 	 * Retourne une clé sous forme le filtre.
 	 * 
-	 * @param sizeOfFragment taille d'un fragment.
-	 * @param numberOfBits nombre de bits récupérés pour chaque fragment.
-	 * @param pas distance entre 2 bits récupérés pour chaque fragment.
 	 * @return {@link BF}
 	 * @author dcs
 	 * */
 	
-	public BF getKey(int sizeOfFragment, int numberOfBits, int pas)
+	public BF getKey()
 	{
-		int numberOfFragment = this.bitSetSize/sizeOfFragment;
-		BF rep = new BF(numberOfBits*numberOfFragment);
-		int k = 0;
-		for (int i = 0; i < this.bitSetSize; i += sizeOfFragment)
+		BF rep = new BF(this.bitSetSize);
+
+		for (int i = 0; i < this.bitSetSize; i++)
 		{
-			for (int j = 0; j < numberOfBits; j++)
-				rep.setBit(k + j, this.getBit(i + j*pas));
-			k += numberOfBits;
+			if (i % 2 == 0)
+			{
+				rep.setBit(i, this.getBit(i));
+			}
+			else
+			{
+				rep.setBit(i, !this.getBit(i));
+			}
 		}
 		return rep;
 	}
