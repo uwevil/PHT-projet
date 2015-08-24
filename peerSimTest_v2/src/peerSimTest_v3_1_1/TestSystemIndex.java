@@ -1,9 +1,6 @@
-package peerSimTest_v3_1_0_0;
+package peerSimTest_v3_1_1;
 
-import java.util.Enumeration;
-import java.util.Hashtable;
-
-public class TestSystemIndex_v3_1_0 {
+public class TestSystemIndex {
 
 	public static void main(String[] args) throws ErrorException
 	{
@@ -17,7 +14,9 @@ public class TestSystemIndex_v3_1_0 {
 		BF key6 = new BF("0000000000000000000000000000001");
 		BF key7 = new BF("0000000001000000000000010000001");
 		BF key8 = new BF("0001000010010001000001000000000");
-
+		BF key9 = new BF("111111000000000000000");
+		BF key10 = new BF("1111111111111111111");
+		
 		systemIndex.insert(key1);
 		systemIndex.insert(key2);
 		systemIndex.insert(key3);
@@ -26,9 +25,11 @@ public class TestSystemIndex_v3_1_0 {
 		systemIndex.insert(key6);
 		systemIndex.insert(key7);
 		systemIndex.insert(key8);
+		systemIndex.insert(key9);
+		systemIndex.insert(key10);
 
 		System.out.println();
-		Hashtable<String, PHT_Node> listNodes = systemIndex.getListNodes();
+	/*	Hashtable<String, PHT_Node> listNodes = systemIndex.getListNodes();
 		
 		Enumeration<String> enumeration = listNodes.keys();
 		
@@ -44,17 +45,17 @@ public class TestSystemIndex_v3_1_0 {
 			
 			if (n.getListKeys() != null && n.getListKeys().size() != 0)
 			{
-				System.out.print(" : " +n.getListKeys().size() + "\n\n");
+				System.out.print(" : " +n.getListKeys().size() + " " + n.getListKeys().toString()+ "\n\n");
 			}
 			else
 			{
 				System.out.print(" : noeud\n\n");
 			}
 		}
-		
+	*/	
 		System.out.println("-------SEARCH-------");
-		System.out.println(" " + key4);
-		Object res = systemIndex.search(key4);
+		System.out.println(" " + key9);
+		Object res = systemIndex.ssSearch(key9);
 		System.out.println(res);
 	}
 

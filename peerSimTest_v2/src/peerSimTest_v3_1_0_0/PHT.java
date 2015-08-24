@@ -336,14 +336,14 @@ public class PHT implements Serializable{
 				int requestID = config_log.getTranslate().translate(key.toString());
 				
 				@SuppressWarnings("unchecked")
-				Hashtable<Integer, Object> hashtable = (Hashtable<Integer, Object>) TestSystemIndex_v3_1_0_all.config_log.getListAnswer(requestID);
+				Hashtable<Integer, Object> hashtable = (Hashtable<Integer, Object>) TestSystemIndex_all.config_log.getListAnswer(requestID);
 				
 				if (hashtable == null)
 				{
 					hashtable = new Hashtable<Integer, Object>();
 					hashtable.put(requestID, listPaths);
 					
-					TestSystemIndex_v3_1_0_all.config_log.putListAnswer(requestID, hashtable);
+					TestSystemIndex_all.config_log.putListAnswer(requestID, hashtable);
 				}
 				//*******************************************
 

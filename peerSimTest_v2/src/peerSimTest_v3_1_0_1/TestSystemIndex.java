@@ -3,7 +3,7 @@ package peerSimTest_v3_1_0_1;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-public class TestSystemIndex_v3_1_0_1 {
+public class TestSystemIndex {
 
 	public static void main(String[] args) throws ErrorException
 	{

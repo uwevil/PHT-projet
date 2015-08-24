@@ -2,10 +2,10 @@ package test;
 
 import java.util.ArrayList;
 
-import peerSimTest_v3_1_1.BF;
-import peerSimTest_v3_1_1.ErrorException;
+import peerSimTest_v3_1_2.BF;
+import peerSimTest_v3_1_2.ErrorException;
 
-public class TestConvert_3_1_1 {
+public class TestConvert_3_1_2 {
 
 	public static String computeEntry(String path)
 	{
@@ -226,8 +226,8 @@ public class TestConvert_3_1_1 {
 		System.out.println(nextZeroPos(new BF("0110000"), 2));
 		System.out.println(nextZeroEnd(new BF("01100000"), 2));
 
-		BF bf = new BF("101000");
-		System.out.println(bf.getKey());
+		BF bf = new BF("10101111010101010101010101010111111100");
+		System.out.println(bf.getKey(20));
 		
 	}
 	

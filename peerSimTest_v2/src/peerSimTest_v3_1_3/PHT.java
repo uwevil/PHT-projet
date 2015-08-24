@@ -1,9 +1,10 @@
-package peerSimTest_v3_1_1;
+package peerSimTest_v3_1_3;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Iterator;
 
 /**
  * 
@@ -76,7 +77,7 @@ public class PHT implements Serializable{
 				if (n.isLeafNode())
 					return path;
 				
-				path = key.getFragment(0, Config.sizeOfElement).toString();
+				path = key.getFragment(0, 1).toString();
 			}
 			else // !n.getPath().equals("/")
 			{				
@@ -90,7 +91,7 @@ public class PHT implements Serializable{
 					else // !n.isLeafNode()
 					{
 						int i = 1;
-						path += key.getFragment(n.getRang() + i++, Config.sizeOfElement);
+						path += key.getFragment(n.getRang() + i++, 1);
 					}
 				}
 				else // !key.equals(bf_tmp)
@@ -122,12 +123,13 @@ public class PHT implements Serializable{
 	 * @author dcs
 	 * */
 	
-	public void insert(BF key) throws ErrorException
+	public void insert(BF bf) throws ErrorException
 	{				
+		BF key = bf.getKey(Config.sizeOfKey);
 		String path = this.lookup_insert(key);
 		
 		PHT_Node systemNode = this.listNodes.get(path);
-		systemNode.insert(key);
+		systemNode.insert(bf);
 		
 		if (systemNode.size() > Config.gamma)
 		{
@@ -345,33 +347,42 @@ public class PHT implements Serializable{
 	 * @author dcs
 	 * */
 	
-	public ArrayList<BF> ssSearch(BF key) throws ErrorException
+	public ArrayList<BF> supersetSearch(BF bf) throws ErrorException
 	{			
-		ArrayList<BF> bfs = new ArrayList<BF>();
-		String rootName = "/";
+		ArrayList<String> leafNodes = new ArrayList<String>();
+		String sbroot = "/";
 		
 		//*************************************************
 		Config config = new Config();
 		config.getTranslate().setLength(Config.requestRang);
-		int requestID = config.getTranslate().translate(key.toString());
+		int requestID = config.getTranslate().translate(bf.toString());
 		//*************************************************
 		
-		ArrayList<String> sbTrees = new ArrayList<String>();
-		sbTrees.add(rootName);
-		
-		while (sbTrees.size() != 0)
+		BF key = bf.getKey(Config.sizeOfKey);
+		int nextZ = this.nextZero(key, 0);
+		int nbOnes = 0;
+		if (nextZ < 0)
 		{
-			ArrayDeque<String> currentStep = new ArrayDeque<String>(sbTrees);
-			sbTrees.clear();
-			
-			while (!currentStep.isEmpty())
+			nbOnes = key.size();
+		}
+		else
+		{
+			nbOnes = nextZ;
+		}
+		if (nbOnes > 0)
+		{
+			for (int i = 0; i < nbOnes; i++)
+				sbroot += "1";
+		}
+		this.exploreSubtree(sbroot, bf, leafNodes);
+		
+		ArrayList<BF> bfs = new ArrayList<BF>();
+		if (!leafNodes.isEmpty())
+		{
+			Iterator<String> iterator = leafNodes.iterator();
+			while (iterator.hasNext())
 			{
-				String sbroot = currentStep.poll();
-				int nbStep = 1;
-				ArrayList<String> newRoots = 
-						this.searchMatchedSubtrees(key, nbStep, sbroot, bfs, requestID);
-				if (newRoots != null)
-					sbTrees.addAll(newRoots);
+				this.retrieveSuperset(iterator.next(), bf, bfs, requestID);
 			}
 		}
 		
@@ -385,27 +396,27 @@ public class PHT implements Serializable{
 	 * */
 	
 	@SuppressWarnings("unchecked")
-	public void retrieve(BF key, ArrayList<BF> bfs, String nodePath, int requestID) throws ErrorException
+	public void retrieveSuperset(String path, BF bf, ArrayList<BF> bfs, int requestID) throws ErrorException
 	{
 		int found = 0;
 		String tmp;
-		if (nodePath.equals("/"))
+		if (path.equals("/"))
 		{
-			tmp = nodePath;
+			tmp = path;
 		}
 		else
 		{
-			tmp = this.skey(nodePath.substring(1, nodePath.length()));
+			tmp = this.skey(path.substring(1, path.length()));
 		}
 		
 		ArrayList<BF> storedBF = this.get(tmp);
 		for (int i = 0; i < storedBF.size(); i++)
 		{
-			BF bf = storedBF.get(i);
-			if (key.in(bf))
+			BF bf_tmp = storedBF.get(i);
+			if (bf.in(bf_tmp))
 			{
 				found++;
-				bfs.add(bf);
+				bfs.add(bf_tmp);
 			}
 		}
 		//*******************LOG**********************								
@@ -434,110 +445,11 @@ public class PHT implements Serializable{
 				
 	}
 	
-	private ArrayList<String> next1MatchedRoots(BF key, String ancestor, int nbZero, ArrayList<BF> bfs
-			, int requestID) 
-			throws ErrorException
+	private void exploreSubtree(String sbroot, BF bf, ArrayList<String> leafNodes)
 	{
-		ArrayList<String> newRoots = new ArrayList<String>();
-		ArrayDeque<String> candidates = new ArrayDeque<String>();
-		candidates.add(ancestor);
-		int n = ancestor.length() + nbZero;
-		while (!candidates.isEmpty())
-		{
-			String anc = candidates.poll();
-			String prefix = anc + "1";
-			LookUpRep rep = this.lookup(prefix, requestID);
-			String label = rep.label;
-			if (label != null)
-			{
-				if (label.length() <= n)
-				{
-					retrieve(key, bfs, label, requestID);
-				}
-				else
-				{
-					if (label.length() == n + 1)
-					{
-						retrieve(key, bfs, label, requestID);
-					}
-					else
-					{
-						String sb = label.substring(0, n + 1);
-						newRoots.add(sb);
-					}
-					label = label.substring(0, n);
-				}
-				
-				String spx = label;
-				while (spx.length() > anc.length())
-				{
-					spx = spx.substring(0, spx.length() - 1) + "0";
-					candidates.add(spx);
-					spx = spx.substring(0, spx.length() - 1);
-				}
-			}
-			else
-			{
-				retrieve(key, bfs, anc, requestID);
-			}			
-		}
 		
-		return newRoots;
 	}
 	
-	private ArrayList<String> searchMatchedSubtrees(BF key, int nbStep, String sbroot, ArrayList<BF> bfs
-			, int requestID) 
-			throws ErrorException
-	{
-		int matchedFragSize = sbroot.length() - 1;
-		String prefix = sbroot;
-		int nextZ = this.nextZero(key, matchedFragSize);
-		int nbOnes = 0;
-		if (nextZ < 0)
-		{
-			nbOnes = key.size() - matchedFragSize;
-		}
-		else
-		{
-			nbOnes = nextZ - matchedFragSize;
-		}
-		if (nbOnes > 0)
-		{
-			prefix = prefix + "1";
-			LookUpRep rep = this.lookup(prefix, requestID);
-			if (rep.label == null)
-			{
-				retrieve(key, bfs, prefix.substring(0, prefix.length() - 1), requestID);
-				return null;
-			}
-			if (rep.label.length() <= (sbroot.length() + nbOnes))
-			{
-				retrieve(key, bfs, rep.label, requestID);
-				return null;
-			}
-			else
-			{
-				prefix = sbroot;
-				for (int i = 1; i < nbOnes; i++)
-				{
-					prefix += "1";
-				}
-				matchedFragSize = prefix.length() - 1;
-			}	
-		}
-		int n1 = nextOne(key, matchedFragSize);
-		int nbZero = 0;
-		if (n1 > 0)
-		{
-			nbZero = n1 - matchedFragSize;
-		}
-		else
-		{
-			nbZero = key.size() - matchedFragSize;
-		}
-		return this.next1MatchedRoots(key, prefix, nbZero, bfs, requestID);
-	}
-	 
 	/**
 	 * Rechercher le filtre précise
 	 * 
