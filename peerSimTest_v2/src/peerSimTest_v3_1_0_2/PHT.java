@@ -1,4 +1,4 @@
-package peerSimTest_v3_1_0_1;
+package peerSimTest_v3_1_0_2;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -75,7 +75,7 @@ public class PHT implements Serializable{
 				if (n.isLeafNode())
 					return path;
 				
-				path = key.getFragment(0, Config.sizeOfElement).toString();
+				path = key.getFragment(0, 1).toString();
 			}
 			else // !n.getPath().equals("/")
 			{				
@@ -89,7 +89,7 @@ public class PHT implements Serializable{
 					else // !n.isLeafNode()
 					{
 						int i = 1;
-						path += key.getFragment(n.getRang() + i++, Config.sizeOfElement);
+						path += key.getFragment(n.getRang() + i++, 1);
 					}
 				}
 				else // !key.equals(bf_tmp)
@@ -115,17 +115,18 @@ public class PHT implements Serializable{
 		}
 	}
 	
-	public void insert(BF key) throws ErrorException
+	public void insert(BF bf) throws ErrorException
 	{				
+		BF key = bf.getKey(Config.sizeOfKey);
 		String path = this.lookup(key);
 		
-		PHT_Node systemNode = this.listNodes.get(path);
-		systemNode.insert(key);
+		PHT_Node n = this.listNodes.get(path);
+		n.insert(bf);
 		
-		if (systemNode.size() > Config.gamma)
+		if (n.size() > Config.gamma)
 		{
-			systemNode.setLeafNode(false);
-			split(systemNode);
+			n.setLeafNode(false);
+			split(n);
 		}
 	}
 	
@@ -242,8 +243,10 @@ public class PHT implements Serializable{
 		return res;
 	}
 
-	public Object search(BF key) throws ErrorException
+	public Object search(BF bf) throws ErrorException
 	{		
+		BF key = bf.getKey(Config.sizeOfKey);
+		
 		ArrayList<String> listPaths = new ArrayList<String>();
 		ArrayList<String> listLeafs = new ArrayList<String>();
 		
@@ -262,7 +265,7 @@ public class PHT implements Serializable{
 				}
 				else if (n != null) // !n.isLeafNode
 				{
-					String s_tmp = key.getFragment(0, Config.sizeOfElement).toString();
+					String s_tmp = key.getFragment(0, 1).toString();
 
 					if (s_tmp.equals("0"))
 					{
@@ -312,7 +315,7 @@ public class PHT implements Serializable{
 				{
 					BF bf_tmp = listKeys.get(j);
 					
-					if (key.in(bf_tmp))
+					if (bf.in(bf_tmp))
 						res.add(bf_tmp);
 				}
 			}
@@ -321,7 +324,7 @@ public class PHT implements Serializable{
 		//*******************LOG**********************
 		Config config_log = new Config();
 		config_log.getTranslate().setLength(Config.requestRang);
-		int requestID = config_log.getTranslate().translate(key.toString());
+		int requestID = config_log.getTranslate().translate(bf.toString());
 		
 		@SuppressWarnings("unchecked")
 		Hashtable<Integer, Object> hashtable = 

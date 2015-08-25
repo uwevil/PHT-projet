@@ -1,11 +1,10 @@
-package peerSimTest_v3_1_3;
+package peerSimTest_v3_1_0_2;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -13,6 +12,9 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.concurrent.TimeUnit;
 
+import peerSimTest_v3_1_0_1.*;
+
+@SuppressWarnings("unused")
 public class TestSystemIndex_all {
 
 	public static Config config_log = new Config();
@@ -40,16 +42,16 @@ public class TestSystemIndex_all {
 				
 				if (tmp.length >= 2 && tmp[1].length() > 2 )
 				{
-					BF bf = new BF(Config.sizeOfBF);
-					bf.addAll(tmp[1]);
+					BF key = new BF(Config.sizeOfBF);
+					key.addAll(tmp[1]);
 					
 					line++;
-					pht.insert(bf);					
+					pht.insert(key);					
 				}
 				k++;
 				System.out.println(line + "/" + k);
-			if (line == 1600)
-					break;
+		//		if (line == 1600)
+			//		break;
 			}
 			reader.close();
 			
@@ -64,8 +66,8 @@ public class TestSystemIndex_all {
 		
 		long time = System.currentTimeMillis();
 		System.out.println("Désérialisation");
-	//	pht.deserializeListNodes("/Users/dcs/vrac/test/listNodes_" + version);
-	//	pht.serializeListNodes("/Users/dcs/vrac/test/listNodes_" + version);
+		pht.serializeListNodes("/Users/dcs/vrac/test/listNodes_" + version);
+//		pht.deserializeListNodes("/Users/dcs/vrac/test/listNodes_" + version);
 		System.out.println("Fin de désérialisation " + (System.currentTimeMillis() - time) + " ms");
 		
 		
@@ -96,9 +98,6 @@ public class TestSystemIndex_all {
 				nbLeafs++;
 				total += n.getListKeys().size();
 				wf.write(" : " +n.getListKeys().size() + "\n\n");
-/**/			WriteFile wf1 = new WriteFile(Config.peerSimLOG + "_" + version + "_BF", true);
-				wf1.write(n.getPath() + "\n" + n.getListKeys().toString() + "\n\n");
-				wf1.close();
 			}
 			else
 			{
@@ -112,27 +111,29 @@ public class TestSystemIndex_all {
 		wf.write("Nombre total de nœuds    : " + listNodes.size() + "\n");
 		wf.write("Nombre total de feuilles : " + nbLeafs + "\n");
 		wf.close();
-		
+				
 		int experience = 0;
 		try 
 		{
 			ReadFile rf = new ReadFile("/Users/dcs/vrac/test/wikiDocs<60_500_request");
-						
-	/**/	while (experience < 1)
+									
+			while (experience < 50)
 			{
 				Config.peerSimLOG_resultat = Config.peerSimLOG + experience + "_resultat_log";
 
 				int j = 0;
-	/**/		for (int i = experience*10; i < 1 && j < 10; i++)
+				for (int i = experience*10; i < rf.size() && j < 10; i++)
 				{			
 					BF bf = new BF(Config.sizeOfBF);
 					bf.addAll(rf.getDescription(i));
-										
+					
 					config_log.getTranslate().setLength(Config.requestRang);
 					int requestID = config_log.getTranslate().translate(bf.toString());
 					
 					long temps = Calendar.getInstance().getTimeInMillis();
-					Object res = pht.supersetSearch(bf);
+					
+					Object res = pht.search(bf);
+					
 					temps = Calendar.getInstance().getTimeInMillis() - temps;
 					
 					Hashtable<Integer, Object> hashtable = 
@@ -140,7 +141,7 @@ public class TestSystemIndex_all {
 					ArrayList<String> arrayList = (ArrayList<String>) hashtable.get(requestID);
 					
 					wf = new WriteFile(Config.peerSimLOG_resultat + "_path_" + requestID, true);
-					
+	
 					for (int l = 0; l < arrayList.size(); l++)
 					{
 						wf.write(arrayList.get(l) + "\n");
@@ -206,7 +207,7 @@ public class TestSystemIndex_all {
 						wf.write("Filtres trouvés         : " + ((ArrayList<BF>) res).size() + "\n");
 						wf.close();
 					}
-				
+					
 					wf = new WriteFile(Config.peerSimLOG + "_log_time_" + version, true);
 					if (requestID < 10000)
 					{
@@ -273,32 +274,14 @@ public class TestSystemIndex_all {
 					}
 					wf.close();
 					
-					wf = new WriteFile(Config.peerSimLOG_resultat + "_retrieve_" + requestID, true);
-					ArrayDeque<String> tmp = config_log.getRetrieveState(requestID);
-					
-					int r = 0;
-					while (!tmp.isEmpty())
-					{
-						String s_tmp = tmp.poll();
-						if (s_tmp.contains("      "))
-						{
-							wf.write(s_tmp + "  " + r + "\n");
-						}
-						else
-						{
-							wf.write(s_tmp + "\n");
-						}
-						r++;
-					}
-					wf.close();
-					
 					j++;
 				}
-		  
 				experience++;
 			}
 
-			System.out.println("NOMBRE de requete = " + rf.size());			
+			
+			System.out.println("NOMBRE de requete = " + rf.size());
+			
 		} 
 		catch (FileNotFoundException e)
 		{
@@ -307,12 +290,16 @@ public class TestSystemIndex_all {
 	}
 }
 /*
-0000000000000000000000000000000000000000
-0000000000000000000000000000000000000
-77
-
-0100000000000010001000000000000001010000
-0010100000000000000000000000000000000000
 0000000000
-90
+0000000000
+0000000000
+0000000000
+0000000000
+000000    56
+
+00000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000
+0000000000
+00000
 */

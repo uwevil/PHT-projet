@@ -317,11 +317,24 @@ public class PHT implements Serializable{
 	 * @author dcs
 	 * */
 	
+	@SuppressWarnings("unused")
 	private int nextOne(BF key, int pos)
 	{
 		for (int i = pos; i < key.size(); i++)
 			if (key.getBit(i))
 				return i;
+		
+		return -1;
+	}
+	
+	private int lastBitSet(BF key)
+	{
+		int i;
+		for (i = key.size() - 1; i >= 0; i--)
+		{
+			if (key.getBit(i))
+				return i;
+		}
 		
 		return -1;
 	}
@@ -349,7 +362,6 @@ public class PHT implements Serializable{
 	
 	public ArrayList<BF> supersetSearch(BF bf) throws ErrorException
 	{			
-		ArrayList<String> leafNodes = new ArrayList<String>();
 		String sbroot = "/";
 		
 		//*************************************************
@@ -371,10 +383,10 @@ public class PHT implements Serializable{
 		}
 		if (nbOnes > 0)
 		{
-			for (int i = 0; i < nbOnes; i++)
-				sbroot += "1";
+			sbroot += key.toString().substring(0, nbOnes);
 		}
-		this.exploreSubtree(sbroot, bf, leafNodes);
+		ArrayList<String> leafNodes = new ArrayList<String>();
+		this.exploreSubtree(sbroot, key, leafNodes, requestID);
 		
 		ArrayList<BF> bfs = new ArrayList<BF>();
 		if (!leafNodes.isEmpty())
@@ -398,7 +410,6 @@ public class PHT implements Serializable{
 	@SuppressWarnings("unchecked")
 	public void retrieveSuperset(String path, BF bf, ArrayList<BF> bfs, int requestID) throws ErrorException
 	{
-		int found = 0;
 		String tmp;
 		if (path.equals("/"))
 		{
@@ -409,6 +420,7 @@ public class PHT implements Serializable{
 			tmp = this.skey(path.substring(1, path.length()));
 		}
 		
+		int found = 0;
 		ArrayList<BF> storedBF = this.get(tmp);
 		for (int i = 0; i < storedBF.size(); i++)
 		{
@@ -419,6 +431,7 @@ public class PHT implements Serializable{
 				bfs.add(bf_tmp);
 			}
 		}
+		
 		//*******************LOG**********************								
 		ArrayDeque<String> arrayDeque = 
 				TestSystemIndex_all.config_log.getRetrieveState(requestID);
@@ -441,15 +454,78 @@ public class PHT implements Serializable{
 			String s = (found != 0) ? ("      " + arrayList.size() + "  "+found) : arrayList.size() + "";
 			arrayDeque.add(s);
 		}
-		//*******************************************
-				
+		//*******************************************		
 	}
 	
-	private void exploreSubtree(String sbroot, BF bf, ArrayList<String> leafNodes)
+	private void exploreSubtree(String sbroot, BF bf, ArrayList<String> leafNodes, int requestID) throws ErrorException
 	{
-		
+		int toMatchLen = this.lastBitSet(bf) + 1;
+		String prefix;
+		if (sbroot.charAt(sbroot.length() - 1) == '1')
+		{
+			prefix = "/" + this.skey(sbroot.substring(1, sbroot.length()));
+		}
+		else
+		{
+			prefix = sbroot + "1";
+		}
+
+		LookUpRep rep = this.lookup(prefix, requestID);
+		if (rep.status.equals("ExternalNode"))
+		{
+			leafNodes.add(prefix.substring(0, prefix.length() - 1));
+		}
+		else
+		{
+			if (rep.label.length() > (toMatchLen + 1))
+			{
+				rep.label = rep.label.substring(0, toMatchLen + 1);
+				this.collectLeaves(rep.label, leafNodes, requestID);
+				rep.label = rep.label.substring(0, toMatchLen);
+			}
+			else
+			{
+				leafNodes.add(rep.label);
+			}
+			if (rep.label.length() > sbroot.length())
+			{
+				int minLen = sbroot.length();
+				String bs_label = rep.label.substring(1, rep.label.length() - 1);
+				while (bs_label.length() >= minLen)
+				{
+					BF qprefix = bf.getSubFilter(0, bs_label.length() - 1 - 1);
+					bs_label = bs_label.substring(0, bs_label.length() - 1) + "0";
+					if (qprefix.in(new BF(bs_label)))
+					{
+						this.exploreSubtree("/" + bs_label, bf, leafNodes, requestID);
+					}
+					bs_label = bs_label.substring(0, bs_label.length() - 1);
+				}
+			}
+		}
 	}
 	
+	private void collectLeaves(String sbroot, ArrayList<String> leafNodes, int requestID) throws ErrorException
+	{
+		String prefix = sbroot + "1";
+		LookUpRep rep = this.lookup(sbroot, requestID);
+		if (rep.status.equals("ExternalNode"))
+		{
+			leafNodes.add(prefix.substring(0, prefix.length() - 1));
+		}
+		else
+		{
+			leafNodes.add(rep.label);
+			int minLen = sbroot.length();
+			String bs_label = rep.label.substring(1, rep.label.length() - 1);
+			while (bs_label.length() >= minLen)
+			{
+				this.collectLeaves("/" + bs_label, leafNodes, requestID);
+				bs_label = bs_label.substring(0, bs_label.length() - 1);
+			}
+		}
+	}
+
 	/**
 	 * Rechercher le filtre précise
 	 * 

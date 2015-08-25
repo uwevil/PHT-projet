@@ -99,6 +99,63 @@ public class TestConvert_3_1_2 {
 		return res;
 	}
 	
+	public static ArrayList<String> computePath2(String entry, String path) throws ErrorException
+	{
+		if (entry.length() == path.length())
+			return null;
+		
+		ArrayList<String> res = new ArrayList<String>();
+		
+		int len = path.length() - entry.length();
+
+		if (path.charAt(entry.length()) == '0')
+		{
+			for (int i = entry.length(); i < entry.length() + len; i++)
+			{
+				BF bf_tmp = new BF(entry + new BF(len).toString());
+				bf_tmp.setBit(i, true);
+
+				String tmp = computeEntry(bf_tmp.toString());
+				if (i < entry.length() + len - 1)
+				{
+					if (!res.contains(tmp.substring(0, tmp.length() - 1)))
+						res.add(tmp.substring(0, tmp.length() - 1));
+				}
+				else
+				{
+					if (!res.contains(tmp))
+						res.add(tmp);
+				}
+			}
+		}
+		else // path.charAt(entry.length()) != '0'
+		{
+			String s_tmp = new String();
+			for (int i = 0; i < len; i++)
+				s_tmp += "1";
+			
+			for (int i = entry.length(); i < entry.length() + len; i++)
+			{	
+				BF bf_tmp = new BF(entry + s_tmp);
+				bf_tmp.setBit(i, false);
+				
+				String tmp = computeEntry(bf_tmp.toString());
+				if (i < entry.length() + len - 1)
+				{
+					if (res.contains(tmp.substring(0, tmp.length() - 1)))
+						res.add(tmp.substring(0, tmp.length() - 1));
+				}
+				else
+				{
+					if (!res.contains(tmp))
+						res.add(tmp);
+				}
+			}
+		}
+		
+		return res;
+	}
+	
 	public static String lpp(String str, String seq)
 	{		
 		if (str == null)
@@ -169,6 +226,18 @@ public class TestConvert_3_1_2 {
 		return rep;
 	}
 	
+	public static int lastBitSet(BF key)
+	{
+		int i;
+		for (i = key.size() - 1; i >= 0; i--)
+		{
+			if (key.getBit(i))
+				return i;
+		}
+		
+		return i;
+	}
+	
 	public static void main(String[] args) throws ErrorException
 	{
 		/*
@@ -182,6 +251,7 @@ public class TestConvert_3_1_2 {
 		System.out.println(computeEntry("100"));
 
 		System.out.println("**************");
+		*/
 		BF key = new BF("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001"
 				+ "000000000000000000100000000100000000000000000000000000000000000000100000000000000000000000000000000000000000000001"
 				+ "0000000000000000000000000000010000000000000000000000000000000000000010000000000000000000000000000000000000000000000"
@@ -191,15 +261,12 @@ public class TestConvert_3_1_2 {
 	//	String path = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 	//			+ "00000000000000000000000000000000000000000000000000000000000000000000000000000";
 
-		String entry = "010";		
-		String path  = "01000000000000000000000000000000000000000000000000000000000000";
+		String entry = "100";		
+		String path  = "100000";
 		ArrayList<String> arrayList = computePath(entry, path);
-		
 		System.out.println(entry + "\n" + path + "\n");
-		System.out.println(arrayList.size());
-		
-	//	for (int i = 0; i < arrayList.size(); i++)
-	//		System.out.println(arrayList.get(i));
+		for (int i = 0; i < arrayList.size(); i++)
+			System.out.println(arrayList.get(i));
 
 		ArrayList<String> test = new ArrayList<String>();
 		for (int i = 0; i < arrayList.size(); i++)
@@ -213,8 +280,8 @@ public class TestConvert_3_1_2 {
 //		for (int i = 0; i < test.size(); i++)
 //			System.out.println(test.get(i));
  
- */
-		
+ 
+		/*
 		System.out.println(lpp("0100010111111", "01"));
 		String zeroSeq = "000000000";
 		String oneSeq = "1";
@@ -226,9 +293,13 @@ public class TestConvert_3_1_2 {
 		System.out.println(nextZeroPos(new BF("0110000"), 2));
 		System.out.println(nextZeroEnd(new BF("01100000"), 2));
 
-		BF bf = new BF("10101111010101010101010101010111111100");
+		BF bf = new BF("1010111101"
+					 + "0101010101"
+					 + "0101010101"
+					 + "11111100");
 		System.out.println(bf.getKey(20));
-		
+		System.out.println(lastBitSet(bf));
+		*/
 	}
 	
 }
