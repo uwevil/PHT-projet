@@ -25,7 +25,7 @@ public class TestSystemIndex_all {
 		PHT pht= new PHT("dcs");
 		
 		String version = Config.version;
-		
+		/*
 		System.out.println("Lecture wiki");
 		
 		try(BufferedReader reader = new BufferedReader(new FileReader("/Users/dcs/vrac/test/wikiDocs<60")))
@@ -48,7 +48,7 @@ public class TestSystemIndex_all {
 				}
 				k++;
 				System.out.println(line + "/" + k);
-			if (line == 1600)
+				if (line == 1600)
 					break;
 			}
 			reader.close();
@@ -60,11 +60,11 @@ public class TestSystemIndex_all {
 		{
 			e.printStackTrace();
 		}
-		
+		*/
 		
 		long time = System.currentTimeMillis();
 		System.out.println("Désérialisation");
-	//	pht.deserializeListNodes("/Users/dcs/vrac/test/listNodes_" + version);
+		pht.deserializeListNodes("/Users/dcs/vrac/test/listNodes_" + version);
 	//	pht.serializeListNodes("/Users/dcs/vrac/test/listNodes_" + version);
 		System.out.println("Fin de désérialisation " + (System.currentTimeMillis() - time) + " ms");
 		
@@ -96,9 +96,10 @@ public class TestSystemIndex_all {
 				nbLeafs++;
 				total += n.getListKeys().size();
 				wf.write(" : " +n.getListKeys().size() + "\n\n");
-/**/			WriteFile wf1 = new WriteFile(Config.peerSimLOG + "_" + version + "_BF", true);
+/**/	/*		WriteFile wf1 = new WriteFile(Config.peerSimLOG + "_" + version + "_BF", true);
 				wf1.write(n.getPath() + "\n" + n.getListKeys().toString() + "\n\n");
 				wf1.close();
+				*/
 			}
 			else
 			{
@@ -118,12 +119,12 @@ public class TestSystemIndex_all {
 		{
 			ReadFile rf = new ReadFile("/Users/dcs/vrac/test/wikiDocs<60_500_request");
 						
-	/**/	while (experience < 1)
+	/**/	while (experience < 50)
 			{
 				Config.peerSimLOG_resultat = Config.peerSimLOG + experience + "_resultat_log";
 
 				int j = 0;
-	/**/		for (int i = experience*10; i < 1 && j < 10; i++)
+	/**/		for (int i = experience*10; i < rf.size() && j < 10; i++)
 				{			
 					BF bf = new BF(Config.sizeOfBF);
 					bf.addAll(rf.getDescription(i));
@@ -271,27 +272,8 @@ public class TestSystemIndex_all {
 							wf.write(arrayList.size() + " " + temps + "ms\n");
 						}
 					}
-					wf.close();
-					
-					wf = new WriteFile(Config.peerSimLOG_resultat + "_retrieve_" + requestID, true);
-					ArrayDeque<String> tmp = config_log.getRetrieveState(requestID);
-					
-					int r = 0;
-					while (!tmp.isEmpty())
-					{
-						String s_tmp = tmp.poll();
-						if (s_tmp.contains("      "))
-						{
-							wf.write(s_tmp + "  " + r + "\n");
-						}
-						else
-						{
-							wf.write(s_tmp + "\n");
-						}
-						r++;
-					}
-					wf.close();
-					
+					wf.close();					
+			
 					j++;
 				}
 		  

@@ -1,7 +1,6 @@
 package peerSimTest_v3_1_3;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
@@ -14,7 +13,6 @@ public class Config {
 
 	private ArrayList<String> nodeMatched = new ArrayList<String>();
 	private Hashtable<Integer, Object> listAnswers = new Hashtable<Integer, Object>();
-	private Hashtable<Integer, ArrayDeque<String>> retrieveState = new Hashtable<Integer, ArrayDeque<String>>();
 	private Hashtable<String, Integer> filterPerNode = new Hashtable<String, Integer>();
 	private int[] nodePerServer = new int[Network.size()];
 	
@@ -49,7 +47,6 @@ public class Config {
 		nodeVisited = 0;
 		nodeMatched = new ArrayList<String>();
 		listAnswers = new Hashtable<Integer, Object>();
-		retrieveState = new Hashtable<Integer, ArrayDeque<String>>();
 		date = (new SimpleDateFormat("dd/MM/yyyy/HH-mm-ss")).format(new Date());
 		totalFilterCreated = 0;
 		nodePerServer = new int[Network.size()];
@@ -179,15 +176,5 @@ public class Config {
 	public Hashtable<String, Integer> getFilterPerNode()
 	{
 		return this.filterPerNode;
-	}
-	
-	public ArrayDeque<String> getRetrieveState(int key)
-	{
-		return this.retrieveState.get(key);
-	}
-	
-	public void putRetrieveState(int key, ArrayDeque<String> value)
-	{
-		this.retrieveState.put(key, value);
 	}
 }
