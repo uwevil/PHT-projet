@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -25,7 +24,7 @@ public class TestSystemIndex_all {
 		PHT pht= new PHT("dcs");
 		
 		String version = Config.version;
-		/*
+		
 		System.out.println("Lecture wiki");
 		
 		try(BufferedReader reader = new BufferedReader(new FileReader("/Users/dcs/vrac/test/wikiDocs<60")))
@@ -48,8 +47,8 @@ public class TestSystemIndex_all {
 				}
 				k++;
 				System.out.println(line + "/" + k);
-				if (line == 1600)
-					break;
+		//		if (line == 1600)
+			//		break;
 			}
 			reader.close();
 			
@@ -60,12 +59,12 @@ public class TestSystemIndex_all {
 		{
 			e.printStackTrace();
 		}
-		*/
+		
 		
 		long time = System.currentTimeMillis();
 		System.out.println("Désérialisation");
-		pht.deserializeListNodes("/Users/dcs/vrac/test/listNodes_" + version);
-	//	pht.serializeListNodes("/Users/dcs/vrac/test/listNodes_" + version);
+	//	pht.deserializeListNodes("/Users/dcs/vrac/test/listNodes_" + version);
+		pht.serializeListNodes("/Users/dcs/vrac/test/listNodes_" + version);
 		System.out.println("Fin de désérialisation " + (System.currentTimeMillis() - time) + " ms");
 		
 		
