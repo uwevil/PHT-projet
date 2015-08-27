@@ -42,7 +42,7 @@ public class ObserverNw implements Control {
 			
 			System.out.println("Expérience n° " + experience);
 			
-			String essai = "0" + Config.version;
+			String essai = "0" + "_" + Config.version;
 			String date = (new SimpleDateFormat("dd-MM-yyyy")).format(new Date());
 			Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "/Essai" + essai 
 					+ "/" + experience + "_log";

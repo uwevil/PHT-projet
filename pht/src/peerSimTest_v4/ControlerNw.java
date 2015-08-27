@@ -66,56 +66,20 @@ public class ControlerNw implements Control {
 		}
 		else if (ok2)
 		{
-			System.out.println("Lecture n°1");
 			n = Network.get(23);
-			try(BufferedReader reader = new BufferedReader(new FileReader("/Users/dcs/vrac/test/wikiDocs<60")))
-			{
-				while (true)
-				{
-					String s = new String();
-					s = reader.readLine();
-					if (s == null)
-						break;
-					String[] tmp = s.split(";");
-					
-					if (tmp.length >= 2 && tmp[1].length() > 2 )
-					{
-						@SuppressWarnings("static-access")
-						BF bf_tmp = new BF(config_log.sizeOfBF);
-						bf_tmp.addAll(tmp[1]);
+			
+			Message message = new Message();
+			message.setType("init");
+			message.setDestinataire(23);
 
-						ControlerNw.config_log.getTranslate().setLength(Config.requestRang);
-						int requestID = ControlerNw.config_log.getTranslate().translate(bf_tmp.toString());
-
-						Message message = new Message();
-
-						message.setRequestID(requestID);
-						message.setType("insert");
-						message.setBF(bf_tmp);
-						message.setKey(bf_tmp.getKey(Config.sizeOfKey));
-						message.setDestinataire(23);
-						line++;
-						ControlerNw.config_log.addTotalFilterCreated(1);;
-						EDSimulator.add(0, message, n, pid);
-					}
-					
-					if (line == 1600)
-						break;
-				}
-				reader.close();
-				ok2 = false;
+			EDSimulator.add(0, message, n, pid);
+			
+			ok2 = false;
 				
-				/**************/
+			/**************/
 		//		ok3 = true;
 		//		Config.ObserverNw_OK = true;
-				/**************/
-				
-				System.out.println("Fini de lecture " + line + " lignes");
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
+			/**************/			
 		}
 		else if (ok3)
 		{

@@ -16,14 +16,14 @@ import java.io.Serializable;
 *
  **/
 
-public class PHT_IndexNode implements Serializable{
+public class PHT_Node implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 	private String path;
 	private DataStore data;
 	private boolean isLeafNode = true;
 	
-	public PHT_IndexNode(String path) {
+	public PHT_Node(String path) {
 		// TODO Auto-generated constructor stub
 		this.path = path;
 		data = new DataStore();
@@ -62,7 +62,7 @@ public class PHT_IndexNode implements Serializable{
 	{
 		if (data == null)
 		{
-			System.out.println("            "+ this.path + " size "+this.data.size() + "//////" );
+	//		System.out.println("            "+ this.path + " size "+this.data.size() + "//////" );
 		}
 		this.data = data;
 	}

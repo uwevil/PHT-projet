@@ -23,11 +23,12 @@ public class DataStore implements Serializable{
 		this.listKeys = listKeys;
 	}
 	
+	@SuppressWarnings("static-access")
 	public void insert(BF key)
 	{
 		if (this.listKeys.contains(key))
 			return;
-		
+		System.out.println("Total filters added : " + ControlerNw.config_log.totalFilterAdded++);
 		this.listKeys.add(key);
 	}
 	

@@ -1,5 +1,8 @@
 package peerSimTest_v4;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -25,14 +28,18 @@ public class SystemIndexProtocol implements EDProtocol{
 	private Transport t;
 	private int id;
 	
-	private Hashtable<String, PHT_IndexNode> list = new Hashtable<String, PHT_IndexNode>();
+	private Hashtable<String, PHT_Node> list = new Hashtable<String, PHT_Node>();
 	private Hashtable<Integer, Object> listRequestRemaining = new Hashtable<Integer, Object>();
-	private ArrayDeque<Message> fifo = new ArrayDeque<Message>();
+	private ArrayDeque<BF> fifo = new ArrayDeque<BF>();
+	
+	private Hashtable<Integer, Object> listResponseRemaining = new Hashtable<Integer, Object>();
+	private Message currentMessage;
+	
+	private int a = 0;
 	
 	private int[] recu = new int[Network.size()];
 	private boolean recu_OK = false;
 	private boolean ok = true;
-	private int createNode_OK = 0;
 	
 	public SystemIndexProtocol(String prefix) {
 		// TODO Auto-generated constructor stub
@@ -65,6 +72,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		return s;
 	}
 	
+	@SuppressWarnings("static-access")
 	@Override
 	public void processEvent(Node node, int pid, Object event) {
 		// TODO Auto-generated method stub
@@ -76,6 +84,13 @@ public class SystemIndexProtocol implements EDProtocol{
 		WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG, true);
 		wf.write(message + "\n");
 		wf.close();
+		
+		if (message.getRequestID() == 173011)
+		{
+			WriteFile wf1 = new WriteFile(ControlerNw.config_log.peerSimLOG + "_tmp", true);
+			wf1.write(message.getSource() + "=>" + message.getDestinataire() + "\n");
+			wf1.close();
+		}
 		//*********************************************************************
 
 		switch(message.getType())
@@ -84,6 +99,17 @@ public class SystemIndexProtocol implements EDProtocol{
 			break;
 			
 		case "removeIndex": //removeIndex, Name
+			break;
+			
+		case "init" :
+			try
+			{
+				treatInit(message, pid);
+			}
+			catch (ErrorException e3)
+			{
+				e3.printStackTrace();
+			}
 			break;
 			
 		case "insert": // add, Name, path, BF
@@ -613,7 +639,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			rep.setSource(nodeIndex);
 			rep.setDestinataire(serverID);
 			
-			PHT_IndexNode n = this.list.get(path);
+			PHT_Node n = this.list.get(path);
 
 			rep.setPath(n.getPath());
 			rep.setIsLeafNode(n.isLeafNode());
@@ -623,7 +649,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			treatLookupPathResponse(rep, pid);
 			return;
 		}
-		
+
 		Message rep = new Message();
 		
 		rep.setType("lookupPath");
@@ -634,6 +660,8 @@ public class SystemIndexProtocol implements EDProtocol{
 		rep.setPath(path);
 		rep.setRequestID(requestID);
 		
+		this.listResponseRemaining.put(serverID, "OK");
+
 		t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
 	}
 	
@@ -647,6 +675,9 @@ public class SystemIndexProtocol implements EDProtocol{
 	
 	private void treatLookupPathResponse(Message message, int pid) throws ErrorException
 	{
+		if (message.getSource() != nodeIndex)
+			this.listResponseRemaining.remove(message.getSource());
+		
 		BF bf = message.getBF();
 		BF key = message.getKey();
 		
@@ -726,7 +757,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		if (this.list.containsKey(path))
 		{
-			PHT_IndexNode n = this.list.get(path);
+			PHT_Node n = this.list.get(path);
 			
 			Message rep = new Message();
 			rep.setType("lookupPathResponse");
@@ -756,37 +787,62 @@ public class SystemIndexProtocol implements EDProtocol{
 	}
 
 	private void launchRequest(int pid) throws ErrorException
+	{		
+		BF bf = this.fifo.getFirst();
+		BF key = bf.getKey(Config.sizeOfKey);
+
+		ControlerNw.config_log.getTranslate().setLength(Config.requestRang);
+		int requestID = ControlerNw.config_log.getTranslate().translate(bf.toString());
+		
+		if (ok)
+		{
+			ok = false;
+			System.out.println(a++);
+			this.lookupPath(bf, key, "/", requestID, pid);
+		}
+	}
+	
+	private void treatInit(Message message, int pid) throws ErrorException
 	{
-		Message message = this.fifo.getFirst();
+		System.out.println("Lecture n°1");
+		try(BufferedReader reader = new BufferedReader(new FileReader("/Users/dcs/vrac/test/wikiDocs<60")))
+		{
+			int line = 0;
+			while (true)
+			{
+				String s = new String();
+				s = reader.readLine();
+				if (s == null)
+					break;
+				String[] tmp = s.split(";");
+				
+				if (tmp.length >= 2 && tmp[1].length() > 2 )
+				{
+					BF bf_tmp = new BF(Config.sizeOfBF);
+					bf_tmp.addAll(tmp[1]);
+
+					fifo.add(bf_tmp);
+					line++;
+				}
+				
+				if (line == 1600)
+					break;
+			}
+			reader.close();
+			System.out.println("Fini de lecture " + line + " lignes");
+			Config.ObserverNw_OK = true;	
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 		
-		BF bf = message.getBF();
-		BF key = message.getKey();
-		int requestID = message.getRequestID();
-		
-		this.lookupPath(bf, key, "/", requestID, pid);
+		this.launchRequest(pid);
 	}
 	
 	private void treatInsert(Message message, int pid) throws ErrorException
 	{		
-		if (ok)
-		{
-	/**//*	WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG + "_tmp", true);
-			wf.write(message + "\n");
-			wf.close();
-		*/
-			this.fifo.add(message);
-			
-			launchRequest(pid);
-			ok = false;
-		}
-		else
-		{
-	/**/	/*WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG + "_tmp", true);
-			wf.write(message + "\n");
-			wf.close();
-			*/
-			this.fifo.add(message);
-		}
+		
 	}
 	
 	private void insertPath(Message message, int pid)
@@ -802,6 +858,8 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		if (this.listRequestRemaining.containsKey(message.getRequestID()))
 			this.listRequestRemaining.remove(message.getRequestID());
+		
+		this.listResponseRemaining.put(message.getSource(), "OK");
 		
 		t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
 	}
@@ -826,7 +884,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				
 		if (this.list.containsKey(path))
 		{
-			PHT_IndexNode n = this.list.get(path);
+			PHT_Node n = this.list.get(path);
 			n.insert(bf);
 
 			if (n.size() > Config.gamma)
@@ -850,9 +908,16 @@ public class SystemIndexProtocol implements EDProtocol{
 	
 	private void treatPUT_OK(Message message, int pid) throws ErrorException
 	{
+		if (message.getSource() != nodeIndex)
+			this.listResponseRemaining.remove(message.getSource());
+		
+		if (!this.listResponseRemaining.isEmpty())
+			return;
+		
+		ok = true;
+
 		if (this.fifo.isEmpty())
 		{
-			ok = true;
 			return;
 		}
 		
@@ -865,12 +930,16 @@ public class SystemIndexProtocol implements EDProtocol{
 	}
 
 	
+	@SuppressWarnings("static-access")
 	private void split(Message message, int pid) throws ErrorException
 	{		
-		createNode_OK = 0;
+		ControlerNw.config_log.totalFilterAdded = ControlerNw.config_log.totalFilterAdded - Config.gamma - 1;
+
+		currentMessage = message;
+		
 		String path = (String) message.getPath();
 
-		PHT_IndexNode n = this.list.get(path);
+		PHT_Node n = this.list.get(path);
 		n.setLeafNode(false);
 
 		DataStore data = n.getDataStore();
@@ -890,8 +959,9 @@ public class SystemIndexProtocol implements EDProtocol{
 			for (int j = 0; j < listKeys.size(); j++)
 			{
 				BF bf_tmp = listKeys.get(j);
+				BF key = bf_tmp.getKey(Config.sizeOfKey);
 				
-				if (bf_tmp.equals(bf_tmp0))
+				if (key.equals(bf_tmp0))
 				{
 					l0.add(bf_tmp);
 				}
@@ -916,6 +986,9 @@ public class SystemIndexProtocol implements EDProtocol{
 			else
 				t.send(Network.get(nodeIndex), Network.get(serverID0), rep, pid);
 						
+			if (serverID0 != nodeIndex)
+				this.listResponseRemaining.put(serverID0, "OK");
+			
 			Message rep1 = new Message();
 			
 			int serverID1 = ControlerNw.config_log.getTranslate().translate("1");
@@ -929,9 +1002,12 @@ public class SystemIndexProtocol implements EDProtocol{
 			rep1.setRequestID(message.getRequestID());
 			
 			if (serverID1 == nodeIndex)
-				treatCreateNode(rep, pid);
+				treatCreateNode(rep1, pid);
 			else
-				t.send(Network.get(nodeIndex), Network.get(serverID1), rep1, pid);			
+				t.send(Network.get(nodeIndex), Network.get(serverID1), rep1, pid);	
+			
+			if (serverID1 != nodeIndex)
+				this.listResponseRemaining.put(serverID1, "OK");
 		}
 		else // !n.getPath().equals("/")
 		{			
@@ -946,8 +1022,9 @@ public class SystemIndexProtocol implements EDProtocol{
 			for (int j = 0; j < listKeys.size(); j++)
 			{
 				BF bf_tmp = listKeys.get(j);
-				
-				if (bf_tmp.equals(bf_tmp0))
+				BF key = bf_tmp.getKey(Config.sizeOfKey);
+
+				if (key.equals(bf_tmp0))
 				{
 					l0.add(bf_tmp);
 				}
@@ -975,6 +1052,9 @@ public class SystemIndexProtocol implements EDProtocol{
 			else
 				t.send(Network.get(nodeIndex), Network.get(serverID0), rep, pid);
 			
+			if (serverID0 != nodeIndex)
+				this.listResponseRemaining.put(serverID0, "OK");
+			
 			String s_tmp1 = this.skey(path + "1");
 			Message rep1 = new Message();
 			
@@ -989,42 +1069,80 @@ public class SystemIndexProtocol implements EDProtocol{
 			rep1.setDestinataire(serverID1);
 			rep1.setRequestID(message.getRequestID());
 			
-			System.out.println(s_tmp0 + " " + path + "0");
-			System.out.println(s_tmp1 + " " + path + "1");
-			
 			if (serverID1 == nodeIndex)
-				treatCreateNode(rep, pid);
+				treatCreateNode(rep1, pid);
 			else
-				t.send(Network.get(nodeIndex), Network.get(serverID1), rep1, pid);				
+				t.send(Network.get(nodeIndex), Network.get(serverID1), rep1, pid);	
+		
+			if (serverID1 != nodeIndex)
+				this.listResponseRemaining.put(serverID1, "OK");
 		}
-		createNode_OK += 2;
 	}
 	
 	private void treatCreateNode_OK(Message message, int pid) throws ErrorException
-	{			
-		createNode_OK--;
-		System.out.println(nodeIndex + " recu " + message.getSource());
-		if (this.fifo.isEmpty())
+	{		
+		if (message.getSource() != nodeIndex)
 		{
-			ok = true;
+			if (message.getPath() != null && ((String) message.getPath()).equals("/"))
+			{
+				return;
+			}
+			else
+			{
+				this.listResponseRemaining.remove(message.getSource());
+			}
+		}
+			
+		if (nodeIndex == 23)
+		{
+			System.out.println(message.getSource());
+			System.out.println(this.listResponseRemaining);
+		}
+		
+		if (!this.listResponseRemaining.isEmpty())
+			return;
+	
+		ok = true;
+		
+		if (currentMessage != null && currentMessage.getSource() != nodeIndex)
+		{
+			Message rep = new Message();
+			rep.setType("createNode_OK");
+			rep.setRequestID(message.getRequestID());
+			rep.setSource(nodeIndex);
+			rep.setDestinataire(currentMessage.getSource());
+			System.out.print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa " + nodeIndex + " " + currentMessage.getSource());
+
+			t.send(Network.get(nodeIndex), Network.get(currentMessage.getSource()), rep, pid);
+			currentMessage = null;
 			return;
 		}
-		else if (createNode_OK == 0)
-		{
 		
+		System.out.println("eeeeeeeeeeeeeeeeeeeeeeeeffffffffffffffaaaaaaaaaaaaaaaaaa");
+
 /**//*	WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG + "_tmp1", true);
 		wf.write(this.fifo.getFirst() + "\n");
 		wf.close();
 		*/
-			this.fifo.removeFirst();
-			this.launchRequest(pid);	
+		if (this.fifo.isEmpty())
+		{
+			return;
 		}
+			
+		this.fifo.removeFirst();
+		this.launchRequest(pid);	
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "static-access" })
 	private void treatCreateNode(Message message, int pid) throws ErrorException
 	{
-		createNode_OK--;
+		WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG + "_createNode", true);
+		wf.write(message + "\n");
+		wf.close();
+		
+		if (message.getSource() != nodeIndex)
+			currentMessage = message;
+		
 		String path = (String) message.getPath();
 		String realPath = (String) message.getOption();
 		ArrayList<BF> arrayList = (ArrayList<BF>) message.getData();
@@ -1034,17 +1152,19 @@ public class SystemIndexProtocol implements EDProtocol{
 			this.list.remove(path);
 		}
 
-		PHT_IndexNode n = new PHT_IndexNode(realPath);
+		PHT_Node n = new PHT_Node(realPath);
 		
 		if (arrayList != null)
 			for (int i = 0; i < arrayList.size(); i++)
-				n.insert(arrayList.get(i));
+			{
+				BF bf_tmp = arrayList.get(i);
+				n.insert(bf_tmp);
+			}
 		
 		this.list.put(path, n);
 		
-		if (arrayList != null && arrayList.size() > Config.gamma)
+		if (n.size() > Config.gamma)
 		{
-			System.out.println(this.skey(realPath) + " " + realPath + " zzzzzzzzzzz");
 			Message rep = new Message();
 			rep.setPath(realPath);
 			rep.setData(arrayList);
@@ -1057,6 +1177,8 @@ public class SystemIndexProtocol implements EDProtocol{
 
 		if (message.getSource() != nodeIndex)
 		{
+			currentMessage = null;
+			
 			Message rep = new Message();
 			rep.setType("createNode_OK");
 			rep.setRequestID(message.getRequestID());
@@ -1068,14 +1190,15 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "static-access" })
 	private void split2(Message message, int pid) throws ErrorException
 	{		
-		createNode_OK += 2;
+		ControlerNw.config_log.totalFilterAdded = ControlerNw.config_log.totalFilterAdded - Config.gamma - 1;
+		
 		String path = (String) message.getPath();
 		ArrayList<BF> listKeys = (ArrayList<BF>) message.getData();
 		
-		PHT_IndexNode n = this.list.get(this.skey(path));
+		PHT_Node n = this.list.get(this.skey(path));
 		n.setLeafNode(false);
 		n.setDataStore(null);
 		
@@ -1089,8 +1212,8 @@ public class SystemIndexProtocol implements EDProtocol{
 		for (int j = 0; j < listKeys.size(); j++)
 		{
 			BF bf_tmp = listKeys.get(j);
-			
-			if (bf_tmp.equals(bf_tmp0))
+			BF key = bf_tmp.getKey(Config.sizeOfKey);
+			if (key.equals(bf_tmp0))
 			{
 				l0.add(bf_tmp);
 			}
@@ -1118,6 +1241,9 @@ public class SystemIndexProtocol implements EDProtocol{
 		else
 			t.send(Network.get(nodeIndex), Network.get(serverID0), rep, pid);
 		
+		if (serverID0 != nodeIndex)
+			this.listResponseRemaining.put(serverID0, "OK");
+		
 		String s_tmp1 = this.skey(path + "1");
 		Message rep1 = new Message();
 		
@@ -1132,15 +1258,13 @@ public class SystemIndexProtocol implements EDProtocol{
 		rep1.setDestinataire(serverID1);
 		rep1.setRequestID(message.getRequestID());
 		
-		System.out.println(s_tmp0 + " " + path + "0");
-		System.out.println(s_tmp1 + " " + path + "1");
-
 		if (serverID1 == nodeIndex)
 			treatCreateNode(rep1, pid);
 		else
 			t.send(Network.get(nodeIndex), Network.get(serverID1), rep1, pid);	
 		
-		System.out.println(nodeIndex + " vs " + serverID0 + " & " + serverID1);
+		if (serverID1 != nodeIndex)
+			this.listResponseRemaining.put(serverID1, "OK");		
 	}
 
 	/**
@@ -1407,7 +1531,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				while (enumeration.hasMoreElements())
 				{
 					String s_tmp = enumeration.nextElement();
-					PHT_IndexNode n = this.list.get(s_tmp); 
+					PHT_Node n = this.list.get(s_tmp); 
 					if (n.isLeafNode())
 					{
 						ControlerNw.config_log.getFilterPerNode().put(n.getPath(), n.size());
