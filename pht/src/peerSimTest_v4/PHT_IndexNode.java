@@ -53,11 +53,6 @@ public class PHT_IndexNode implements Serializable{
 		this.isLeafNode = value;
 	}
 	
-	public boolean isLeafNode()
-	{
-		return this.isLeafNode;
-	}
-	
 	public DataStore getDataStore()
 	{
 		return this.data;
@@ -65,6 +60,10 @@ public class PHT_IndexNode implements Serializable{
 	
 	public void setDataStore(DataStore data)
 	{
+		if (data == null)
+		{
+			System.out.println("            "+ this.path + " size "+this.data.size() + "//////" );
+		}
 		this.data = data;
 	}
 	
@@ -80,9 +79,13 @@ public class PHT_IndexNode implements Serializable{
 	 * */
 	
 	public void insert(BF bf) throws ErrorException
-	{				
+	{		
 		data.insert(bf);
 	}
-	
+
+	public boolean isLeafNode()
+	{
+		return this.isLeafNode;
+	}
 	
 }

@@ -46,7 +46,7 @@ public class ControlerNw implements Control {
 			Message rep = new Message();
 			
 			rep.setType("createNode");
-			rep.setData("/");
+			rep.setPath("/");
 			rep.setOption("/");
 			rep.setDestinataire(serverID);
 			
@@ -84,10 +84,15 @@ public class ControlerNw implements Control {
 						BF bf_tmp = new BF(config_log.sizeOfBF);
 						bf_tmp.addAll(tmp[1]);
 
+						ControlerNw.config_log.getTranslate().setLength(Config.requestRang);
+						int requestID = ControlerNw.config_log.getTranslate().translate(bf_tmp.toString());
+
 						Message message = new Message();
 
+						message.setRequestID(requestID);
 						message.setType("insert");
 						message.setBF(bf_tmp);
+						message.setKey(bf_tmp.getKey(Config.sizeOfKey));
 						message.setDestinataire(23);
 						line++;
 						ControlerNw.config_log.addTotalFilterCreated(1);;
@@ -141,6 +146,7 @@ public class ControlerNw implements Control {
 						message.setType("add");
 						message.setIndexName("dcs");
 						message.setBF(bf_tmp);
+						message.setKey(bf_tmp.getKey(Config.sizeOfKey));
 						message.setDestinataire(23);
 						line++;
 						ControlerNw.config_log.addTotalFilterCreated(1);;

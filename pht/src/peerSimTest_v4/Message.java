@@ -25,6 +25,7 @@ public class Message {
 	
 	private String indexName;
 	private String type = "";
+	private String path;
 	private Object data = null;
 	private BF key;
 	private BF bf;
@@ -109,6 +110,16 @@ public class Message {
 		this.data = data;
 	}
 	
+	public String getPath()
+	{
+		return this.path;
+	}
+	
+	public void setPath(String path)
+	{
+		this.path = path;
+	}
+	
 	public int getSource()
 	{
 		return this.src;
@@ -166,7 +177,8 @@ public class Message {
 				+ "Index        : " + this.indexName 			+ "\n  "
 				+ "BF           : " + this.bf 					+ "\n  "
 				+ "Key          : " + this.key      			+ "\n  "
-				+ "Data         : " + this.getData() 			+ "\n  "
+				+ "Path         : " + this.path      			+ "\n  "
+		//		+ "Data         : " + this.data 				+ "\n  "
 				+ "IsLeafNode   : " + this.isLeafNode 			+ "\n  "
 				+ "Source       : " + this.getSource() 			+ "\n  "
 				+ "Destinataire : " + this.getDestinataire() 	+ "\n  "

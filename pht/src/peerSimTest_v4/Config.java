@@ -38,6 +38,7 @@ public class Config {
 	private int nodeVisited = 0;
 	private int totalFilterCreated = 0;
 	private int numberOfFilter = 0;
+	public static int totalFilterAdded = 0;
 	
 	private boolean experience_OK = true;
 	

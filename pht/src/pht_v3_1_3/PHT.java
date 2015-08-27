@@ -94,8 +94,7 @@ public class PHT implements Serializable{
 					}
 					else // !n.isLeafNode()
 					{
-						int i = 1;
-						path += key.getFragment(n.getRang() + i++, 1);
+						path += key.getFragment(n.getRang() + 1, 1);
 					}
 				}
 				else // !key.equals(bf_tmp)
