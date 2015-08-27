@@ -1,5 +1,7 @@
 package peersim.pht.dht;
 
+import java.math.BigInteger;
+
 import peersim.core.Node;
 import peersim.pht.messages.PhtMessage;
 
@@ -11,6 +13,8 @@ import peersim.pht.messages.PhtMessage;
  */
 public interface DhtInterface {
     void send(PhtMessage message, String dest);
+   // void send(BigInteger recipient, PhtMessage message);
     Object getNodeId();
     Node getNode();
+	
 }

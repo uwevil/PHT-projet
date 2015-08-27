@@ -27,16 +27,16 @@ public class MSPInit implements Control{
         MSPastry dht;
         PhtProtocol prot = null;
         MSPastryListener lst;
-
+        
         for (int i = 0; i < Network.size(); i++) {
-            msprot = ((MSPastryProtocol)Network.get(i).getProtocol(this.mspid));
+        		msprot = ((MSPastryProtocol)Network.get(i).getProtocol(this.mspid));
             dht    = ((MSPastry)Network.get(i).getProtocol(this.dhtid));
             prot   = ((PhtProtocol)Network.get(i).getProtocol(this.phtid));
             lst    = ((MSPastryListener)Network.get(i).getProtocol(this.lstid));
-
+            
             lst.setNode(Network.get(i));
             msprot.setListener(lst);
-            //msprot.setMspastryid(this.mspid);
+            msprot.setMspastryid(this.mspid);
             dht.setMSP(msprot);
             prot.setDht(dht);
             prot.setNodeId(i);
