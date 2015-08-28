@@ -74,7 +74,7 @@ public class ObserverNw implements Control {
 					
 					bf.addAll(rf.getDescription(i));
 					
-					ControlerNw.config_log.getTranslate().setLength(Config.requestRang);
+					ControlerNw.config_log.getTranslate().setLength(Config.requestRange);
 					int requestID = ControlerNw.config_log.getTranslate().translate(bf.toString());
 					
 			//		WriteFile wf = new WriteFile("/Users/dcs/vrac/test/"+ date+ "/liste_requestID_OK", true);

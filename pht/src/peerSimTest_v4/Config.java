@@ -21,8 +21,8 @@ public class Config {
 
 	private int[] nodePerServer = new int[Network.size()];
 	
-	public static int indexRand = 99999999;
-	public static int requestRang = 1000000;
+	public static int indexRanqe = 99999999;
+	public static int requestRange = 1000000;
 	public static int sizeOfBF = 512;
 	public static int sizeOfKey = 256;
 	public static int gamma = 1;
