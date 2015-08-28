@@ -39,9 +39,7 @@ public class Config {
 	private int totalFilterCreated = 0;
 	private int numberOfFilter = 0;
 	public static int totalFilterAdded = 0;
-	
-	private boolean experience_OK = true;
-	
+		
 	public static String date = (new SimpleDateFormat("dd-MM-yyyy/HH-mm-ss")).format(new Date());
 	public static String peerSimLOG = "/Users/dcs/vrac/test/"+ date + "_log";
 	public static String peerSimLOG_resultat = "/Users/dcs/vrac/test/" + date+ "_resultat_log";
@@ -157,16 +155,6 @@ public class Config {
 	public int getNodePerServer(int index)
 	{
 		return this.nodePerServer[index];
-	}
-	
-	public synchronized void setExperience_OK(boolean val)
-	{
-		this.experience_OK = val;
-	}
-	
-	public boolean getExperience_OK()
-	{
-		return this.experience_OK;
 	}
 	
 	public synchronized void setEnd_OK(boolean val)

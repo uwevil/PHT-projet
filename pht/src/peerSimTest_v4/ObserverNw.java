@@ -36,10 +36,8 @@ public class ObserverNw implements Control {
 			ok2 = true;
 			return false;
 		}
-		else if (ok2 && ControlerNw.config_log.getExperience_OK() && Config.ObserverNw_OK)
-		{
-			Node n = Network.get(23);
-			
+		else if (ok2 && Config.ObserverNw_OK)
+		{			
 			System.out.println("Expérience n° " + experience);
 			
 			String essai = "0" + "_" + Config.version;
@@ -51,61 +49,13 @@ public class ObserverNw implements Control {
 			Config.peerSimLOG_path = "/Users/dcs/vrac/test/" + date + "/Essai" + essai 
 					+ "/" + experience + "_path_log";
 			
-			try 
-			{
-				ReadFile rf = new ReadFile("/Users/dcs/vrac/test/wikiDocs<60_500_request");
-				
-				int j = 0;
-				/*
-				String date = (new SimpleDateFormat("dd-MM-yyyy/HH-mm-ss")).format(new Date());
-				Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "/" + experience + "_log";
-				Config.peerSimLOG_resultat = "/Users/dcs/vrac/test/" + date + "/" + experience + "_resultat_log";
-				Config.peerSimLOG_path = "/Users/dcs/vrac/test/" + date + "/" + experience + "_path_log";
-				*/
-
-				for (int i = experience*10; i < rf.size() && j < 10; i++)
-				{
-					Message message = new Message();
-					message.setIndexName("dcs");
-					message.setSource(23);
-					message.setDestinataire(23);
-										
-					BF bf = new BF(Config.sizeOfBF);
-					
-					bf.addAll(rf.getDescription(i));
-					
-					ControlerNw.config_log.getTranslate().setLength(Config.requestRange);
-					int requestID = ControlerNw.config_log.getTranslate().translate(bf.toString());
-					
-			//		WriteFile wf = new WriteFile("/Users/dcs/vrac/test/"+ date+ "/liste_requestID_OK", true);
-			//		wf.write(requestID + ";"+rf.getDescription(i)+"\n\n");
-			//		wf.close();
-					
-					message.setRequestID(requestID);
-
-					message.setBF(bf);
-					message.setType("search");
-					
-					j++;
-					EDSimulator.add(0, message, n, pid);
-				}
-				experience++;
-				
-				System.out.println("NOMBRE de requete = " + rf.size());
-				
-			} 
-			catch (FileNotFoundException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			Node n = Network.get(23);
 			
-			ControlerNw.config_log.setExperience_OK(false);
-			
-			if (experience*10 >= 5)
-			{
-				ok2 = false;
-			}
+			Message message = new Message();
+			message.setType("searchInit");
+			message.setDestinataire(23);
+
+			EDSimulator.add(0, message, n, pid);
 			
 				
 			/*
@@ -208,7 +158,6 @@ public class ObserverNw implements Control {
 			wf.close();
 			
 			ControlerNw.config_log.setEnd_OK(false);
-			ControlerNw.config_log.setExperience_OK(true);
 		}
 		
 		return false;

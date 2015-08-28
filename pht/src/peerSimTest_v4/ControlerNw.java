@@ -51,17 +51,6 @@ public class ControlerNw implements Control {
 			rep.setDestinataire(serverID);
 			
 			EDSimulator.add(0, rep, Network.get(serverID), pid);
-
-			/*	Message message = new Message();
-
-			 n = Network.get(23);
-			 message.setType("createIndex");
-			 message.setIndexName("dcs");
-			 message.setSource(23);
-			 message.setDestinataire(23);
-		
-			 EDSimulator.add(0, message, n, pid);
-			 */
 			 ok = false;
 		}
 		else if (ok2)
@@ -69,7 +58,8 @@ public class ControlerNw implements Control {
 			n = Network.get(23);
 			
 			Message message = new Message();
-			message.setType("init");
+			message.setType("insertInit");
+			message.setData(1600);
 			message.setDestinataire(23);
 
 			EDSimulator.add(0, message, n, pid);
@@ -81,7 +71,7 @@ public class ControlerNw implements Control {
 		//		Config.ObserverNw_OK = true;
 			/**************/			
 		}
-		else if (ok3)
+		/*else if (ok3)
 		{
 			System.out.println("Lecture les dernières lignes");
 
@@ -127,7 +117,7 @@ public class ControlerNw implements Control {
 				e.printStackTrace();
 			}
 		}
-			
+			*/
 		return false;
 	}
 

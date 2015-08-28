@@ -58,10 +58,12 @@ public class PHT_Node implements Serializable{
 		return this.data;
 	}
 	
+	@SuppressWarnings("static-access")
 	public void setDataStore(DataStore data)
 	{
 		if (data == null)
 		{
+			ControlerNw.config_log.totalFilterAdded = ControlerNw.config_log.totalFilterAdded - ControlerNw.config_log.gamma - 1;
 	//		System.out.println("            "+ this.path + " size "+this.data.size() + "//////" );
 		}
 		this.data = data;
