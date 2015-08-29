@@ -12,12 +12,12 @@ public class Config {
 	public static String version = "peerSim_v4";
 
 	private ArrayList<String> nodeMatched = new ArrayList<String>();
-	private Hashtable<Integer, Object> listAnswers = new Hashtable<Integer, Object>();
+	private Hashtable<Long, Object> listAnswers = new Hashtable<Long, Object>();
 	private Hashtable<String, Integer> filterPerNode = new Hashtable<String, Integer>();
 	private Hashtable<Integer, String> realIndexHeight = new Hashtable<Integer, String>();
 	private Hashtable<Integer, String> indexHeight = new Hashtable<Integer, String>();
-	private Hashtable<Integer, Long> timeGlobal = new Hashtable<Integer, Long>();
-	private Hashtable<Integer, Long> timeCalcul = new Hashtable<Integer, Long>();
+	private Hashtable<Long, Long> timeGlobal = new Hashtable<Long, Long>();
+	private Hashtable<Long, Long> timeCalcul = new Hashtable<Long, Long>();
 
 	private int[] nodePerServer = new int[Network.size()];
 	
@@ -53,9 +53,9 @@ public class Config {
 		}		
 		nodeVisited = 0;
 		nodeMatched = new ArrayList<String>();
-		listAnswers = new Hashtable<Integer, Object>();
-		timeCalcul = new Hashtable<Integer, Long>();
-		timeGlobal = new Hashtable<Integer, Long>();
+		listAnswers = new Hashtable<Long, Object>();
+		timeCalcul = new Hashtable<Long, Long>();
+		timeGlobal = new Hashtable<Long, Long>();
 		indexHeight = new Hashtable<Integer, String>();
 		
 		time = 0;
@@ -103,22 +103,22 @@ public class Config {
 		return this.nodeVisited;
 	}
 	
-	public void putListAnswer(Integer key, Object value)
+	public void putListAnswer(Long key, Object value)
 	{
 		this.listAnswers.put(key, value);
 	}
 	
-	public Object getListAnswer(Integer key)
+	public Object getListAnswer(Long key)
 	{
 		return this.listAnswers.get(key);
 	}
 	
-	public boolean containsKeyListAnswer(Integer key)
+	public boolean containsKeyListAnswer(Long key)
 	{
 		return this.listAnswers.containsKey(key);
 	}
 	
-	public void removeListAnswer(Integer key)
+	public void removeListAnswer(Long key)
 	{
 		this.listAnswers.remove(key);
 	}
@@ -182,12 +182,12 @@ public class Config {
 		return this.filterPerNode;
 	}
 	
-	public Hashtable<Integer, Long> getTimeGlobal()
+	public Hashtable<Long, Long> getTimeGlobal()
 	{
 		return this.timeGlobal;
 	} 
 	
-	public synchronized void addTimeCalcul(Integer key, long t)
+	public synchronized void addTimeCalcul(Long key, long t)
 	{
 		if (this.timeCalcul.containsKey(key))
 		{
@@ -201,7 +201,7 @@ public class Config {
 		}
 	}
 	
-	public long getTimeCalcul(Integer key)
+	public long getTimeCalcul(Long key)
 	{
 		return (this.timeCalcul.get(key) == null ? 0 : this.timeCalcul.get(key));
 	}

@@ -18,9 +18,12 @@ import peersim.config.Configuration;
 import peersim.core.Network;
 import peersim.core.Node;
 import peersim.edsim.EDProtocol;
+import peersim.edsim.EDSimulator;
+import peersim.edsim.Heap;
+import peersim.edsim.PriorityQ;
 import peersim.transport.Transport;
 
-public class SystemIndexProtocol implements EDProtocol{
+public class SystemIndexProtocol_saved implements EDProtocol{
 
 	public static int init;
 	
@@ -32,28 +35,28 @@ public class SystemIndexProtocol implements EDProtocol{
 	private int id;
 	
 	private Hashtable<String, PHT_Node> list = new Hashtable<String, PHT_Node>();
-	private Hashtable<Long, String> listPath = new Hashtable<Long, String>();
+	private Hashtable<Integer, String> listPath = new Hashtable<Integer, String>();
 	private ArrayDeque<BF> insertFIFO = new ArrayDeque<BF>();
 	private ArrayDeque<BF> searchFIFO = new ArrayDeque<BF>();
 	
 	private Hashtable<Integer, ArrayList<Message>> splitData = new Hashtable<Integer, ArrayList<Message>>();
 	
 	private int[] listCreateNode = new int[Network.size()];
-
-	private Hashtable<Long, Object> listPUT = new Hashtable<Long, Object>();
+	private int[] listPUT = new int[Network.size()];
+	private ArrayDeque<Object> listSplit = new ArrayDeque<Object>();
 	
 	private boolean split = false;
-		
-	private Hashtable<Long ,Message> messageWaitingForResponse = new Hashtable<Long, Message>();
 	
-	private Convert tableMessageID = new Convert();
+	private boolean problem = false;
+	
+	private ArrayDeque<Message> messageWaitingForResponse = new ArrayDeque<Message>();
 				
 	private int[] recu = new int[Network.size()];
 	private boolean recu_OK = false;
 	private boolean insert_OK = true;
 	private boolean search_OK = true;
 
-	public SystemIndexProtocol(String prefix) {
+	public SystemIndexProtocol_saved(String prefix) {
 		// TODO Auto-generated constructor stub
 		this.prefix = prefix;
 		tid = Configuration.getPid(prefix+ "." + PAR_TRANSPORT);
@@ -75,7 +78,7 @@ public class SystemIndexProtocol implements EDProtocol{
 	
 	public Object clone()
 	{
-		SystemIndexProtocol s = new SystemIndexProtocol(prefix);
+		SystemIndexProtocol_saved s = new SystemIndexProtocol_saved(prefix);
 		s.tid = this.tid;
 		s.prefix = this.prefix;
 		s.nodeIndex = this.nodeIndex;
@@ -616,7 +619,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		return -1;
 	}
 	
-	private void lookupPath(BF bf, BF key, String path, long requestID, int pid) throws ErrorException
+	private void lookupPath(BF bf, BF key, String path, int requestID, int pid) throws ErrorException
 	{
 		ControlerNw.config_log.getTranslate().setLength(Network.size());
 		int serverID = ControlerNw.config_log.getTranslate().translate(path);
@@ -649,8 +652,73 @@ public class SystemIndexProtocol implements EDProtocol{
 			t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
 		}
 	}
+/*	
+	private void lookupLocalPath(BF bf, BF key, String path, int requestID, int pid) throws ErrorException
+	{
+		PHT_Node n = this.list.get(path);
+		
+		if (n.getPath().equals("/"))
+		{
+			if (n.isLeafNode())
+			{
+				insertLocalPath(bf, key, path, requestID, pid);
+				return;
+			}
+			path = key.getFragment(0, 1).toString();
+		}
+		else // !n.getPath().equals("/")
+		{				
+			BF bf_tmp = new BF(n.getPath());
+			if (key.equals(bf_tmp))
+			{					
+				if (n.isLeafNode())
+				{
+					insertLocalPath(bf, key, path, requestID, pid);
+					return;
+				}
+				else // !n.isLeafNode()
+				{
+					path += key.getFragment(n.getRang() + 1, 1);
+				}
+			}
+			else // !key.equals(bf_tmp)
+			{
+				int rang = n.getRang();
 
-	private void splitLocal(PHT_Node n, long requestID, int pid) throws ErrorException
+				String s = new String();
+				for (int i = 0; i <= rang; i++)
+				{
+					if (key.getBit(i) == bf_tmp.getBit(i))
+						s += (key.getBit(i)) ? "1" : "0";
+					
+					if (key.getBit(i) == !bf_tmp.getBit(i))
+					{
+						s += (key.getBit(i)) ? "1" : "0";
+						break;
+					}
+				}
+				
+				path = s;
+			}
+		}
+		
+		this.lookupPath(bf, key, path, requestID, pid);
+	}
+*/
+	/*
+	private void insertLocalPath(BF bf, BF key, String path, int requestID, int pid) throws ErrorException
+	{
+		PHT_Node n = this.list.get(path);
+		n.insert(bf);
+		
+		if (n.size() > Config.gamma)
+		{
+			n.setLeafNode(false);
+			splitLocal(n, pid);
+		}
+	}
+*/
+	private void splitLocal(PHT_Node n, int pid) throws ErrorException
 	{
 		this.split = true;
 		
@@ -704,7 +772,7 @@ public class SystemIndexProtocol implements EDProtocol{
 					rep.setKey(key);
 					rep.setSource(nodeIndex);
 					rep.setDestinataire(serverID1);
-
+					
 					if (this.splitData.containsKey(serverID1))
 					{
 						this.splitData.get(serverID1).add(rep);
@@ -731,8 +799,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				rep.setOption("0");
 				rep.setSource(nodeIndex);
 				rep.setDestinataire(serverID0);
-				rep.setRequestID(requestID);
-
+				
 				t.send(Network.get(nodeIndex), Network.get(serverID0), rep, pid);
 			
 				this.listCreateNode[serverID0]++;
@@ -751,8 +818,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				rep.setOption("1");
 				rep.setSource(nodeIndex);
 				rep.setDestinataire(serverID1);
-				rep.setRequestID(requestID);
-
+				
 				t.send(Network.get(nodeIndex), Network.get(serverID1), rep, pid);
 				
 				this.listCreateNode[serverID1]++;
@@ -786,7 +852,7 @@ public class SystemIndexProtocol implements EDProtocol{
 					rep.setKey(key);
 					rep.setSource(nodeIndex);
 					rep.setDestinataire(serverID0);
-
+					
 					if (this.splitData.containsKey(serverID0))
 					{
 						this.splitData.get(serverID0).add(rep);
@@ -808,7 +874,7 @@ public class SystemIndexProtocol implements EDProtocol{
 					rep.setKey(key);
 					rep.setSource(nodeIndex);
 					rep.setDestinataire(serverID1);
-
+					
 					if (this.splitData.containsKey(serverID1))
 					{
 						this.splitData.get(serverID1).add(rep);
@@ -837,8 +903,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				rep1.setOption(path + "1");
 				rep1.setSource(nodeIndex);
 				rep1.setDestinataire(serverID1);
-				rep1.setRequestID(requestID);
-
+				
 				t.send(Network.get(nodeIndex), Network.get(serverID1), rep1, pid);
 								
 				this.listCreateNode[serverID1]++;
@@ -858,8 +923,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				rep.setOption(path + "0");
 				rep.setSource(nodeIndex);
 				rep.setDestinataire(serverID0);
-				rep.setRequestID(requestID);
-
+				
 				t.send(Network.get(nodeIndex), Network.get(serverID0), rep, pid);
 				
 				this.listCreateNode[serverID0]++;
@@ -881,7 +945,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		BF key = message.getKey();
 		String path = (String) message.getOption();
 		boolean isLeafNode = message.getIsLeafNode();
-		long requestID = message.getRequestID();
+		int requestID = message.getRequestID();
 		
 		if (path.equals("/"))
 		{
@@ -982,6 +1046,11 @@ public class SystemIndexProtocol implements EDProtocol{
 			BF key = bf.getKey(Config.sizeOfKey);
 			int requestID = insertFIFO.size();
 			
+			for (int i = 0; i < Network.size(); i++)
+			{
+				this.listCreateNode[i] = 0;
+			}
+			
 			this.lookupPath(bf, key, "/", requestID, pid);
 		}
 	}
@@ -1053,7 +1122,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		BF bf = message.getBF();
 		BF key = message.getKey();
 		String path = message.getPath();
-		long requestID = message.getRequestID();
+		int requestID = message.getRequestID();
 
 		Message rep = new Message();
 		
@@ -1068,10 +1137,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
 		
-		int[] tmp = new int[Network.size()];
-		tmp[message.getSource()]++;
-		
-		this.listPUT.put(requestID, tmp);
+		this.listPUT[message.getSource()]++;
 	}
 	
 	/**
@@ -1089,7 +1155,7 @@ public class SystemIndexProtocol implements EDProtocol{
 	@SuppressWarnings("static-access")
 	private void treatPUT(Message message, int pid) throws ErrorException
 	{
-		messageWaitingForResponse.put(message.getRequestID(), message);
+		messageWaitingForResponse.add(message);
 		
 		String path = message.getPath();
 		
@@ -1100,12 +1166,14 @@ public class SystemIndexProtocol implements EDProtocol{
 		if (n.size() > ControlerNw.config_log.gamma)
 		{
 			n.setLeafNode(false);
-			this.splitLocal(n, message.getRequestID(), pid);
+			this.splitLocal(n, pid);
 		}
 		else
 		{
-			Message tmp = this.messageWaitingForResponse.get(message.getRequestID());
+			Message tmp = this.messageWaitingForResponse.removeLast();
 			
+			System.out.println(nodeIndex + " " + tmp.getSource());
+
 			Message rep = new Message();
 			
 			rep.setType(tmp.getType() + "_OK");
@@ -1115,9 +1183,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			rep.setDestinataire(tmp.getSource());
 			rep.setRequestID(tmp.getRequestID());
 			
-			t.send(Network.get(nodeIndex), Network.get(tmp.getSource()), rep, pid);	
-			
-			this.messageWaitingForResponse.remove(message.getRequestID());
+			t.send(Network.get(nodeIndex), Network.get(tmp.getSource()), rep, pid);			
 		}
 	}
 	
@@ -1136,11 +1202,40 @@ public class SystemIndexProtocol implements EDProtocol{
 	{
 		if (this.split)
 		{
-			if (!this.listPUT.isEmpty())
+			if (!this.listSplit.isEmpty())
 			{
-				int[] split_tmp = (int[]) this.listPUT.get(this.tableMessageID.get(message.getRequestID()));
+				int[] split_tmp = (int[]) this.listSplit.getLast();
 				
-				split_tmp[message.getSource()]--;
+				if (split_tmp[message.getSource()] == 0)
+				{
+					this.problem = true;
+					ArrayDeque<Object> save = new ArrayDeque<Object>();
+					while (true)
+					{
+						this.listSplit.removeLast();
+						int[] split_tmp2 = (int[]) this.listSplit.removeLast();
+						
+						if (split_tmp2[message.getSource()] != 0)
+						{
+							split_tmp2[message.getSource()]--;
+							save.add(split_tmp2);
+							break;
+						}
+						save.add(split_tmp2);
+					}
+					
+					for (int i = 0; i < save.size(); i++)
+					{
+						this.listSplit.add(save.removeLast());
+					}
+					
+					this.listSplit.add(split_tmp);
+					
+				}
+				else
+				{
+					split_tmp[message.getSource()]--;
+				}	
 				
 				for (int i = 0; i < 1000; i++)
 					if (split_tmp[i] != 0)
@@ -1149,8 +1244,8 @@ public class SystemIndexProtocol implements EDProtocol{
 				
 				if (this.testOK(split_tmp, Network.size()))
 				{	
-					Message tmp = this.messageWaitingForResponse.get(this.tableMessageID.get(message.getRequestID()));
-					System.out.println(message.getRequestID() + " " + tmp);
+					Message tmp = this.messageWaitingForResponse.removeLast();
+					
 					Message rep = new Message();
 					rep.setType(tmp.getType() + "_OK");
 					rep.setPath(tmp.getPath());
@@ -1161,12 +1256,38 @@ public class SystemIndexProtocol implements EDProtocol{
 					
 					t.send(Network.get(nodeIndex), Network.get(tmp.getSource()), rep, pid);
 					
-					this.messageWaitingForResponse.remove(this.tableMessageID.get(message.getRequestID()));
-					this.listPUT.remove(this.tableMessageID.get(message.getRequestID()));
+					this.listSplit.removeLast();					
 				}
 				
-				if (this.messageWaitingForResponse.isEmpty())
+				while (this.problem && !this.listSplit.isEmpty())
 				{
+					split_tmp = (int[]) this.listSplit.getLast();
+					
+					if (this.testOK(split_tmp, Network.size()))
+					{	
+						Message tmp = this.messageWaitingForResponse.removeLast();
+						
+						Message rep = new Message();
+						rep.setType(tmp.getType() + "_OK");
+						rep.setPath(tmp.getPath());
+						rep.setOption(tmp.getOption());
+						rep.setSource(nodeIndex);
+						rep.setDestinataire(tmp.getSource());
+						rep.setRequestID(tmp.getRequestID());
+						
+						t.send(Network.get(nodeIndex), Network.get(tmp.getSource()), rep, pid);
+						
+						this.listSplit.removeLast();		
+					}
+					else
+					{
+						break;
+					}
+				}
+				
+				if (this.listSplit.isEmpty())
+				{
+					this.problem = false;
 					this.split = false;
 				}
 				else
@@ -1175,11 +1296,13 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 
 		if (!this.split)
-		{			
-			int[] tmp = (int[]) this.listPUT.get(this.tableMessageID.get(message.getRequestID()));
-			tmp[message.getSource()]--;
+		{
+			if (this.listPUT[message.getSource()] == 0)
+				return;
+			
+			this.listPUT[message.getSource()]--;
 
-			if (this.testOK(tmp, Network.size()))
+			if (this.testOK(listPUT, Network.size()))
 			{
 			/*	if (!this.messageWaitingForResponse.isEmpty())
 				{
@@ -1219,30 +1342,22 @@ public class SystemIndexProtocol implements EDProtocol{
 				
 				int[] tmp = new int[Network.size()];
 				System.out.println("ssssssssssssssss");
-								
 				while (enumeration.hasMoreElements())
 				{
 					Integer serverID = enumeration.nextElement();
 					ArrayList<Message> arrayList = this.splitData.get(serverID);
 					
-					long requestID = Calendar.getInstance().getTimeInMillis();
-					
-					this.tableMessageID.add(requestID, message.getRequestID());
-					
 					for (int i = 0; i < arrayList.size(); i++)
 					{
 						Message rep = arrayList.get(i);
 						
-						rep.setRequestID(requestID);
-
 						t.send(Network.get(nodeIndex), Network.get(rep.getDestinataire()), rep, pid);
 						
 						tmp[rep.getDestinataire()]++;
 					}
 				}
 				
-				this.listPUT.put(message.getRequestID(), tmp);			
-			
+				this.listSplit.add(tmp);			
 				for (int i = 0; i < 1000; i++)
 					if (tmp[i] != 0)
 					System.out.println(i + " : " + tmp[i]);
@@ -1270,8 +1385,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		rep.setOption(realPath);
 		rep.setSource(nodeIndex);
 		rep.setDestinataire(message.getSource());
-		rep.setRequestID(message.getRequestID());
-
+			
 		t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);	
 	}
 

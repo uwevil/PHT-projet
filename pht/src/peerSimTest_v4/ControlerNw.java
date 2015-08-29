@@ -15,7 +15,7 @@ public class ControlerNw implements Control {
 	private static final String PAR_PROTOCOL = "protocol";
 	
 	public static Config config_log = new Config();
-	public static Hashtable<Integer, Config> search_log = new Hashtable<Integer, Config>();
+	public static Hashtable<Long, Config> search_log = new Hashtable<Long, Config>();
 
 	@SuppressWarnings("unused")
 	private String prefix;

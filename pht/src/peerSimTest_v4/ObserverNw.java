@@ -111,13 +111,13 @@ public class ObserverNw implements Control {
 			WriteFile wf = new WriteFile(Config.peerSimLOG+"_time", false);
 			wf.write("RequeteID temps(ms)\n");
 			
-			Enumeration<Integer> enumeration = ControlerNw.config_log.getTimeGlobal().keys();
+			Enumeration<Long> enumeration = ControlerNw.config_log.getTimeGlobal().keys();
 			long time = 0, time2 = 0;
 			int size = 0;
 			
 			while (enumeration.hasMoreElements())
 			{
-				Integer i = enumeration.nextElement();
+				Long i = enumeration.nextElement();
 				
 				long tmp = ControlerNw.config_log.getTimeGlobal().get(i);
 				time += tmp;

@@ -31,7 +31,7 @@ public class Message {
 	private BF bf;
 	private int src;
 	private int dest;
-	private int requestID;
+	private long requestID;
 	private boolean isLeafNode;
 	private Object option = null;
 	
@@ -140,12 +140,12 @@ public class Message {
 		this.dest = dest;
 	}
 	
-	public int getRequestID()
+	public long getRequestID()
 	{
 		return this.requestID;
 	}
 	
-	public void setRequestID(int requestID)
+	public void setRequestID(long requestID)
 	{
 		this.requestID = requestID;
 	}
