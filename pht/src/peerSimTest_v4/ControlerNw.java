@@ -59,7 +59,7 @@ public class ControlerNw implements Control {
 			
 			Message message = new Message();
 			message.setType("insertInit");
-			message.setData(1600);
+			message.setData(160);
 			message.setDestinataire(23);
 
 			EDSimulator.add(0, message, n, pid);

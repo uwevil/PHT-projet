@@ -63,7 +63,7 @@ public class PHT_Node implements Serializable{
 	{
 		if (data == null)
 		{
-			ControlerNw.config_log.totalFilterAdded = ControlerNw.config_log.totalFilterAdded - ControlerNw.config_log.gamma - 1;
+			ControlerNw.config_log.totalFilterAdded = ControlerNw.config_log.totalFilterAdded - this.data.size();
 	//		System.out.println("            "+ this.path + " size "+this.data.size() + "//////" );
 		}
 		this.data = data;
