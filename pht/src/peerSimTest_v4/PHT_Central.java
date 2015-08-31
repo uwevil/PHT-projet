@@ -1,4 +1,4 @@
-package pht_v3_1_3;
+package peerSimTest_v4;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -18,17 +18,17 @@ import java.util.Hashtable;
 *
  **/
 
-public class PHT implements Serializable{
+public class PHT_Central implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 	private String indexName;
-	private Hashtable<String, PHT_Node> listNodes;
+	private Hashtable<String, PHT_Node_Central> listNodes;
 	
-	public PHT(String indexName) {
+	public PHT_Central(String indexName) {
 		// TODO Auto-generated constructor stub
 		this.indexName = indexName;
-		listNodes = new Hashtable<String, PHT_Node>();
-		listNodes.put("/", new PHT_Node("/"));
+		listNodes = new Hashtable<String, PHT_Node_Central>();
+		listNodes.put("/", new PHT_Node_Central("/"));
 	}
 	
 	/**
@@ -42,7 +42,7 @@ public class PHT implements Serializable{
 		return this.indexName;
 	}
 	
-	public Hashtable<String, PHT_Node> getListNodes()
+	public Hashtable<String, PHT_Node_Central> getListNodes()
 	{	
 		return this.listNodes;
 	}
@@ -57,7 +57,7 @@ public class PHT implements Serializable{
 	public void deserializeListNodes(String fileName)
 	{
 		Serializer serializer = new Serializer();
-		this.listNodes = (Hashtable<String, PHT_Node>) serializer.readObject(fileName);
+		this.listNodes = (Hashtable<String, PHT_Node_Central>) serializer.readObject(fileName);
 	}
 	
 	/**
@@ -66,15 +66,16 @@ public class PHT implements Serializable{
 	 * @return {@link String}
 	 * 	
 	 * @author dcs
+	 * @throws ErrorException 
 	 * */
 	
-	private String lookup_insert(BF key) throws ErrorException
+	private String lookup_insert(BF key) throws  ErrorException
 	{
 		String path = "/";
 		
 		while (true)
 		{
-			PHT_Node n = this.listNodes.get(path);
+			PHT_Node_Central n = this.listNodes.get(path);
 
 			if (n.getPath().equals("/"))
 			{
@@ -122,6 +123,8 @@ public class PHT implements Serializable{
 	
 	/**
 	 * Insère le filtre dans le système.
+	 * @throws ErrorException 
+	 * @throws  
 	 * 
 	*
 	 * */
@@ -131,7 +134,7 @@ public class PHT implements Serializable{
 		BF key = bf.getKey(Config.sizeOfKey);
 		String path = this.lookup_insert(key);
 		
-		PHT_Node systemNode = this.listNodes.get(path);
+		PHT_Node_Central systemNode = this.listNodes.get(path);
 		systemNode.insert(bf);
 		
 		if (systemNode.size() > Config.gamma)
@@ -145,17 +148,18 @@ public class PHT implements Serializable{
 	 * Eclater d'un nœud, appelé par la méthode {@code insert}.
 	 * 
 	 * @author dcs
+	 * @throws ErrorException 
 	 * */
 	
-	private void split(PHT_Node n) throws ErrorException
+	private void split(PHT_Node_Central n) throws ErrorException
 	{		
 		ArrayList<BF> listKeys = n.getListKeys();
 		n.setListKey(null);
 		
 		if (n.getPath().equals("/"))
 		{
-			PHT_Node new0 = new PHT_Node("0");
-			PHT_Node new1 = new PHT_Node("1");
+			PHT_Node_Central new0 = new PHT_Node_Central("0");
+			PHT_Node_Central new1 = new PHT_Node_Central("1");
 			
 			this.listNodes.put("0", new0);
 			this.listNodes.put("1", new1);
@@ -164,8 +168,8 @@ public class PHT implements Serializable{
 		{
 			String path = n.getPath();
 			
-			PHT_Node new0 = new PHT_Node(path + "0");
-			PHT_Node new1 = new PHT_Node(path + "1");
+			PHT_Node_Central new0 = new PHT_Node_Central(path + "0");
+			PHT_Node_Central new1 = new PHT_Node_Central(path + "1");
 			
 			String s_tmp = this.skey(path + "0");
 			if (this.listNodes.containsKey(s_tmp))
@@ -289,12 +293,6 @@ public class PHT implements Serializable{
 	
 	public ArrayList<BF> supersetSearch(BF bf) throws ErrorException
 	{					
-		//*************************************************
-		Config config = new Config();
-		config.getTranslate().setLength(Config.requestRang);
-		int requestID = config.getTranslate().translate(bf.toString());
-		//*************************************************
-		
 		ArrayList<BF> bfs = new ArrayList<BF>();
 		BF q = bf.getKey(Config.sizeOfKey);
 		String sbroot = "/";
@@ -312,7 +310,7 @@ public class PHT implements Serializable{
 		{
 			sbroot += q.toString().substring(0, nbOnes);
 		}
-		this.exploreSubtree(sbroot, q, bf, bfs, requestID);
+		this.exploreSubtree(sbroot, q, bf, bfs);
 		
 		return bfs;
 	}
@@ -320,32 +318,13 @@ public class PHT implements Serializable{
 	/**
 	 * Ajoute les filtres qui correspondent avec celui de la requête dans la liste des filtres.
 	 * 
-	 * @throws ErrorException
+	 * @throws 
 	*
 	 * */
 	
-	@SuppressWarnings("unchecked")
-	public void retrieveSuperset(ArrayList<BF> storedBF, BF bf, ArrayList<BF> bfs, int requestID, String path) throws ErrorException
+	public void retrieveSuperset(ArrayList<BF> storedBF, BF bf, ArrayList<BF> bfs, String path) 
+			throws ErrorException
 	{
-		//*******************LOG**********************	
-		Hashtable<Integer, Object> hashtable = (Hashtable<Integer, Object>) 
-				TestSystemIndex_all.config_log.getListAnswer(requestID);
-									
-		if (hashtable == null)
-		{
-			hashtable = new Hashtable<Integer, Object>();
-			ArrayList<String> arrayList = new ArrayList<String>();
-			arrayList.add(path);
-			hashtable.put(requestID, arrayList);
-										
-			TestSystemIndex_all.config_log.putListAnswer(requestID, hashtable);
-		}
-		else
-		{
-			((ArrayList<String>) hashtable.get(requestID)).add(path);
-		}
-		//*******************LOG**********************	
-
 		for (int i = 0; i < storedBF.size(); i++)
 		{
 			BF bf_tmp = storedBF.get(i);
@@ -361,10 +340,10 @@ public class PHT implements Serializable{
 	 * 
 	 * */
 	
-	private void exploreSubtree(String sbroot, BF q, BF bf, ArrayList<BF> bfs, int requestID) throws ErrorException
+	private void exploreSubtree(String sbroot, BF q, BF bf, ArrayList<BF> bfs) throws ErrorException
 	{
 		String prefix = sbroot + "1";
-		PHT_Node n = this.listNodes.get(this.skey(prefix.substring(1, prefix.length())));
+		PHT_Node_Central n = this.listNodes.get(this.skey(prefix.substring(1, prefix.length())));
 		if (n == null)
 		{
 			String path = prefix.substring(0, prefix.length() - 1);
@@ -380,7 +359,7 @@ public class PHT implements Serializable{
 			
 			ArrayList<BF> storedBF = this.listNodes.get(tmp).getListKeys();
 			
-			this.retrieveSuperset(storedBF, bf, bfs, requestID, path);
+			this.retrieveSuperset(storedBF, bf, bfs, path);
 		}
 		else
 		{
@@ -389,7 +368,7 @@ public class PHT implements Serializable{
 			if (label.length() > (toMatchLen + 1))
 			{
 				label = label.substring(0, toMatchLen + 1);
-				this.collectLeaves(label, bf, bfs, requestID);
+				this.collectLeaves(label, bf, bfs);
 				label = label.substring(0, toMatchLen);
 			}
 			else
@@ -407,7 +386,7 @@ public class PHT implements Serializable{
 				
 				ArrayList<BF> storedBF = this.listNodes.get(tmp).getListKeys();
 				
-				this.retrieveSuperset(storedBF, bf, bfs, requestID, path);
+				this.retrieveSuperset(storedBF, bf, bfs, path);
 			}
 			int minLen = sbroot.length();
 			String bs_label = label.substring(1, label.length());
@@ -417,17 +396,17 @@ public class PHT implements Serializable{
 				bs_label = bs_label.substring(0, bs_label.length() - 1) + "0";
 				if (qprefix.in(new BF(bs_label)))
 				{
-					this.exploreSubtree("/" + bs_label, q, bf, bfs, requestID);
+					this.exploreSubtree("/" + bs_label, q, bf, bfs);
 				}
 				bs_label = bs_label.substring(0, bs_label.length() - 1);
 			}
 		}
 	}
 	
-	private void collectLeaves(String sbroot, BF bf, ArrayList<BF> bfs, int requestID) throws ErrorException
+	private void collectLeaves(String sbroot, BF bf, ArrayList<BF> bfs) throws ErrorException
 	{
 		String prefix = sbroot + "1";
-		PHT_Node n = this.listNodes.get(this.skey(prefix.substring(1, prefix.length())));
+		PHT_Node_Central n = this.listNodes.get(this.skey(prefix.substring(1, prefix.length())));
 
 		if (n == null)
 		{
@@ -444,7 +423,7 @@ public class PHT implements Serializable{
 			
 			ArrayList<BF> storedBF = this.listNodes.get(tmp).getListKeys();
 			
-			this.retrieveSuperset(storedBF, bf, bfs, requestID, path);
+			this.retrieveSuperset(storedBF, bf, bfs, path);
 		}
 		else
 		{
@@ -462,12 +441,12 @@ public class PHT implements Serializable{
 			
 			ArrayList<BF> storedBF = this.listNodes.get(tmp).getListKeys();
 			
-			this.retrieveSuperset(storedBF, bf, bfs, requestID, path);
+			this.retrieveSuperset(storedBF, bf, bfs, path);
 			int minLen = sbroot.length();
 			String bs_label = label.substring(1, label.length());
 			while (bs_label.length() >= minLen)
 			{
-				this.collectLeaves("/" + bs_label, bf, bfs, requestID);
+				this.collectLeaves("/" + bs_label, bf, bfs);
 				bs_label = bs_label.substring(0, bs_label.length() - 1);
 			}
 		}
@@ -484,7 +463,7 @@ public class PHT implements Serializable{
 	 * 	<li> soit {@link BF}
 	 * 	</ul>
 	 * 
-	 * @throws ErrorException 
+	 * @throws  
 	 * */
 	
 	public Object searchExact(BF key) throws ErrorException

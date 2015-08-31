@@ -7,7 +7,7 @@ import java.util.Hashtable;
 
 import peersim.core.Network;
 
-public class Config {
+public class Config_Central {
 
 	public static String version = "v3_1_3";
 
@@ -38,7 +38,7 @@ public class Config {
 	public static String peerSimLOG_resultat = "/Users/dcs/vrac/test/" + date+ "_resultat_log";
 	public static String peerSimLOG_path = "/Users/dcs/vrac/test/" + date + "_path_log";
 	
-	public Config()
+	public Config_Central()
 	{
 		for (int i = 0; i < Network.size(); i++)
 		{

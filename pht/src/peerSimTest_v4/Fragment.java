@@ -15,7 +15,7 @@ public class Fragment implements Serializable{
 	private int size;
 	
 	/**
-	 * Créer un fragment vide de taille "nbits"
+	 * Crée un fragment vide de taille "nbits"
 	 * 
 	 * @param nbits
 	 * @author dcs
@@ -27,7 +27,7 @@ public class Fragment implements Serializable{
 	}
 	
 	/**
-	 * Rendre le fragment sous forme un BitSet
+	 * Rend le fragment sous forme un BitSet
 	 * 
 	 * @author dcs
 	 * */
@@ -38,7 +38,7 @@ public class Fragment implements Serializable{
 	}
 	
 	/**
-	 * Mettre le bit à la position 'index' la valeur 'value'
+	 * Met le bit à la position 'index' la valeur 'value'.
 	 * 
 	 * @author dcs
 	 **/
@@ -61,7 +61,7 @@ public class Fragment implements Serializable{
 	}
 	
 	/**
-	 * Test si le fragment contient un autre
+	 * Teste si le fragment contient un autre. Les deux peuvent avoir deux tailles différentes.
 	 * 
 	 * @return true si le fragment est contenu dans {@code o}
 	 * @author dcs
@@ -86,7 +86,7 @@ public class Fragment implements Serializable{
 	}
 	
 	/**
-	 * Test l'égalité entre 2 fragments
+	 * Teste l'égalité entre 2 fragments.
 	 * 
 	 * @author dcs
 	 * */
@@ -107,50 +107,8 @@ public class Fragment implements Serializable{
 		return true;
 	}
 	
-	/**
-	 * Convertir le fragment en entier
-	 * 
-	 * @return int
-	 * 
-	 * @author dcs
-	 **/
-	
-	public int toInt()
-	{
-		int res = 0;
-		for (int i = 0; i < this.size; i++)
-		{
-			res += this.bitset.get(i) ? (int)Math.pow(2, i) : 0;
-		}
-		return res;
-	}
-	
-	/**
-	 * Convertir un entier 'a' en fragment de taille 'nbits'
-	 * 
-	 * @return {@link Fragment}
-	 * @author dcs
-	 * */
-	
-	public Fragment intToFragment(int a)
-	{
-		int val = a;
-		Fragment f = new Fragment(this.size);
-		
-		for (int i = 0; i < this.size; i++)
-		{
-			if (1<<(this.size - i - 1) <= val)
-			{
-				f.setBit(this.size - i - 1, true);
-				val = val - (1<<(this.size - i - 1));
-			}
-		}
-		
-		return f;
-	}
-	
 	/** 
-	 * Rendre la valeur d'un bit à la position 'index'
+	 * Rend la valeur d'un bit à la position 'index'.
 	 * 
 	 * @return {@link Boolean}
 	 * @author dcs
@@ -162,7 +120,7 @@ public class Fragment implements Serializable{
 	}
 	
 	/** 
-	 * Rendre la taille du fragment
+	 * Rend la taille du fragment.
 	 * 
 	 * @return int
 	 * @author dcs
@@ -173,30 +131,4 @@ public class Fragment implements Serializable{
 		return this.size;
 	}
 	
-	public String toPath()
-	{
-		return "/" + this.toInt();
-	}
-	
-	/**
-	 * Rendre le fragment à partir du chemin
-	 * 
-	 * @param path
-	 * @return {@link Fragment}
-	 * @author dcs
-	 * */
-	
-	public Fragment pathToFragment(String path)
-	{		
-		char[] array = path.toCharArray();
-		String s = new String();
-		for (int i = 1; i < array.length; i++)
-		{
-			if (array[i] != '/')
-				s += array[i];
-		}
-		
-		Fragment f = (new Fragment(this.size)).intToFragment(Integer.parseInt(s));
-		return f;
-	}
 }

@@ -5,9 +5,9 @@ import java.util.Hashtable;
 
 public class TestSystemIndex {
 
-	public static void main(String[] args) throws ErrorException
+	public static void main(String[] args) throws ErrorException_Central
 	{
-		PHT systemIndex = new PHT("dcs");
+		PHT_Central systemIndex = new PHT_Central("dcs");
 		
 		BF key1 = new BF("0001" + "0101" + "1011" + "1000");
 		BF key2 = new BF("0001" + "0101" + "1111" + "1000");
@@ -32,7 +32,7 @@ public class TestSystemIndex {
 		systemIndex.insert(key10);
 
 		System.out.println();
-		Hashtable<String, PHT_Node> listNodes = systemIndex.getListNodes();
+		Hashtable<String, PHT_Node_Central> listNodes = systemIndex.getListNodes();
 		
 		Enumeration<String> enumeration = listNodes.keys();
 		
@@ -42,7 +42,7 @@ public class TestSystemIndex {
 			
 			System.out.println(s);
 			
-			PHT_Node n = listNodes.get(s);
+			PHT_Node_Central n = listNodes.get(s);
 			
 			System.out.print(n.getPath());
 			

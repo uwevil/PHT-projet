@@ -43,10 +43,10 @@ public class BF implements Serializable
 	 * Créer un filtre.
 	 *
 	 * @param chaineBits de 0 et 1.
-	 * @throws ErrorException
+	 * @throws ErrorException_Central
 	 * @author dcs
 	 * */
-	public BF(String chaineBits) throws ErrorException
+	public BF(String chaineBits) throws ErrorException_Central
 	{
 		char[] chararray = chaineBits.toCharArray();
 			
@@ -56,7 +56,7 @@ public class BF implements Serializable
 		{
 			if (chararray[i] != '0' && chararray[i] != '1')
 			{
-				throw new ErrorException("chaineBits contient des caractères spéciales = " + chaineBits);
+				throw new ErrorException_Central("chaineBits contient des caractères spéciales = " + chaineBits);
 			}
 			if (chararray[i] == '1')
 				this.bitset.set(i, true);
@@ -312,7 +312,7 @@ public class BF implements Serializable
 	{
 		try {
 			if (start < 0 || start > stop)
-				throw new ErrorException("pathToBF : start invalid = " + start);
+				throw new ErrorException_Central("pathToBF : start invalid = " + start);
 			
 			String[] s = path.split("/");
 			
@@ -324,7 +324,7 @@ public class BF implements Serializable
 				s_tmp += ((new Fragment(sizeOfFragment)).intToFragment(Integer.parseInt(s[i]))).toString();
 			
 			return (new BF(s_tmp));
-		} catch (ErrorException e) {
+		} catch (ErrorException_Central e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

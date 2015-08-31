@@ -1,16 +1,16 @@
-package pht_v3_1_3;
+package peerSimTest_v4;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class PHT_Node implements Serializable{
+public class PHT_Node_Central implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 	private String path;
 	private boolean isLeafNode = true;
 	private ArrayList<BF> listKeys;
 	
-	public PHT_Node(String path)
+	public PHT_Node_Central(String path)
 	{
 		this.path = path;
 		listKeys  = new ArrayList<BF>();

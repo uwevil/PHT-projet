@@ -1,6 +1,6 @@
 package pht_v3_1_3;
 
-public class ErrorException extends Exception {
+public class ErrorException_Central extends Exception {
 	/**
 	 * 
 	 */
@@ -12,7 +12,7 @@ public class ErrorException extends Exception {
 	 * @param message
 	 * @author dcs
 	 * */
-	public ErrorException(String message)
+	public ErrorException_Central(String message)
 	{
 		System.err.println(message);
 	}

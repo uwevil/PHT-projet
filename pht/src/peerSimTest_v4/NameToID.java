@@ -3,19 +3,25 @@ package peerSimTest_v4;
 import java.security.MessageDigest;
 
 /**
- * Traduire une chaîne de caractères en entier.
+ * Traduire une chaîne de caractères en nombre entier.
  * 
  * @author dcs
  * */
 public class NameToID {
 	
-	private int length;
+	private int range;
 	
-	public NameToID(int length) {
+	/**
+	 * Initialise avec l'interval de 0 à {@code range}, inclus.
+	 * */
+	public NameToID(int range) {
 		// TODO Auto-generated constructor stub
-		this.length = length;
+		this.range = range;
 	}
 	
+	/**
+	 * Transforme une chaîne en nombre entier.
+	 * */
 	public int translate(String s)
 	{
 		MessageDigest md;
@@ -28,9 +34,9 @@ public class NameToID {
 
 			for (int j = 0; j < tmp.length; j++)
 			{
-				n = ((double)(tmp[j] & 0x000000FF)*Math.pow(2, j*8)) % this.length + n;
+				n = ((double)(tmp[j] & 0x000000FF)*Math.pow(2, j*8)) % this.range + n;
 			}
-			res =  (int) (n % this.length);
+			res =  (int) (n % this.range);
 		}catch (Exception e){
 			e.printStackTrace();
 		}
@@ -38,14 +44,12 @@ public class NameToID {
 		return res;
 	}
 	
-	public void setLength(int length)
+	/**
+	 * Change l'interval.
+	 * */
+	public void setRange(int range)
 	{
-		this.length = length;
-	}
-	
-	public int getLength()
-	{
-		return this.length;
+		this.range = range;
 	}
 
 }

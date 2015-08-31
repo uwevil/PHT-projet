@@ -1,7 +1,5 @@
 package peerSimTest_v4;
 
-import java.util.Hashtable;
-
 import peersim.config.Configuration;
 import peersim.core.Control;
 import peersim.core.Network;
@@ -11,8 +9,7 @@ import peersim.edsim.EDSimulator;
 public class ControlerNw implements Control {
 	private static final String PAR_PROTOCOL = "protocol";
 	
-	public static Config config_log = new Config();
-	public static Hashtable<Long, Config> search_log = new Hashtable<Long, Config>();
+	public static Config config_log;
 
 	@SuppressWarnings("unused")
 	private String prefix;
@@ -22,6 +19,7 @@ public class ControlerNw implements Control {
 	
 	public ControlerNw(String prefix)
 	{
+		config_log = new Config();
 		this.prefix = prefix;
 		pid = Configuration.getPid(prefix+ "." + PAR_PROTOCOL);
 	}
@@ -37,7 +35,7 @@ public class ControlerNw implements Control {
 		{
 			System.out.println("Création de l'index");
 			
-			ControlerNw.config_log.getTranslate().setLength(Network.size());
+			ControlerNw.config_log.getTranslate().setRange(Network.size());
 			int serverID = ControlerNw.config_log.getTranslate().translate("/");
 			
 			Message rep = new Message();
@@ -55,8 +53,8 @@ public class ControlerNw implements Control {
 			n = Network.get(23);
 			
 			Message message = new Message();
-			message.setType("insertInit");
-			message.setData(160000);
+			message.setType("simulation");
+		//	message.setData(16000000);
 			message.setDestinataire(23);
 
 			EDSimulator.add(0, message, n, pid);

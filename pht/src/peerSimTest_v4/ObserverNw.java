@@ -73,8 +73,8 @@ public class ObserverNw implements Control {
 			*/
 		}
 		
-		if (ControlerNw.config_log.getEnd_OK())
-		{
+	//	if (ControlerNw.config_log.getEnd_OK())
+	//	{
 			/*
 			//*******************
 			WriteFile wf = new WriteFile(Config.peerSimLOG+"_indexHeight", false);
@@ -149,7 +149,7 @@ public class ObserverNw implements Control {
 			
 			ControlerNw.config_log.setEnd_OK(false);
 			*/
-		}
+//		}
 		
 		return false;
 	}

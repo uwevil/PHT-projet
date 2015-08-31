@@ -14,16 +14,16 @@ import java.util.concurrent.TimeUnit;
 
 public class TestSystemIndex_all {
 
-	public static Config config_log = new Config();
+	public static Config_Central config_log = new Config_Central();
 	
 	@SuppressWarnings({ "unchecked"})
-	public static void main(String[] args) throws ErrorException
+	public static void main(String[] args) throws ErrorException_Central
 	{
 		int line = 0;
 		int k = 0;
-		PHT pht= new PHT("dcs");
+		PHT_Central pht= new PHT_Central("dcs");
 		
-		String version = Config.version;
+		String version = Config_Central.version;
 		
 		System.out.println("Lecture wiki");
 		
@@ -39,7 +39,7 @@ public class TestSystemIndex_all {
 				
 				if (tmp.length >= 2 && tmp[1].length() > 2 )
 				{
-					BF bf = new BF(Config.sizeOfBF);
+					BF bf = new BF(Config_Central.sizeOfBF);
 					bf.addAll(tmp[1]);
 					
 					line++;
@@ -68,12 +68,12 @@ public class TestSystemIndex_all {
 		System.out.println("Fin de désérialisation " + (System.currentTimeMillis() - time) + " ms");
 		
 		
-		Hashtable<String, PHT_Node> listNodes = pht.getListNodes();		
+		Hashtable<String, PHT_Node_Central> listNodes = pht.getListNodes();		
 	
 		String date = (new SimpleDateFormat("dd-MM-yyyy/HH-mm-ss")).format(new Date());
-		Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "_" + version + "/";
+		Config_Central.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "_" + version + "/";
 		
-		WriteFile wf = new WriteFile(Config.peerSimLOG + "_" + version, false);
+		WriteFile wf = new WriteFile(Config_Central.peerSimLOG + "_" + version, false);
 		wf.close();
 		
 		Enumeration<String> enumeration = listNodes.keys();
@@ -83,10 +83,10 @@ public class TestSystemIndex_all {
 		{
 			String s = enumeration.nextElement();
 			
-			wf = new WriteFile(Config.peerSimLOG + "_" + version, true);
+			wf = new WriteFile(Config_Central.peerSimLOG + "_" + version, true);
 			wf.write(s + "\n");
 			
-			PHT_Node n = listNodes.get(s);
+			PHT_Node_Central n = listNodes.get(s);
 			
 			wf.write(n.getPath());
 			
@@ -107,7 +107,7 @@ public class TestSystemIndex_all {
 			wf.close();
 		}
 		
-		wf = new WriteFile(Config.peerSimLOG + "_" + version, true);
+		wf = new WriteFile(Config_Central.peerSimLOG + "_" + version, true);
 		wf.write("Nombre total de filtres  : " + total + "\n");
 		wf.write("Nombre total de nœuds    : " + listNodes.size() + "\n");
 		wf.write("Nombre total de feuilles : " + nbLeafs + "\n");
@@ -120,15 +120,15 @@ public class TestSystemIndex_all {
 						
 	/**/	while (experience < 50)
 			{
-				Config.peerSimLOG_resultat = Config.peerSimLOG + experience + "_resultat_log";
+				Config_Central.peerSimLOG_resultat = Config_Central.peerSimLOG + experience + "_resultat_log";
 
 				int j = 0;
 	/**/		for (int i = experience*10; i < rf.size() && j < 10; i++)
 				{			
-					BF bf = new BF(Config.sizeOfBF);
+					BF bf = new BF(Config_Central.sizeOfBF);
 					bf.addAll(rf.getDescription(i));
 										
-					config_log.getTranslate().setLength(Config.requestRang);
+					config_log.getTranslate().setLength(Config_Central.requestRang);
 					int requestID = config_log.getTranslate().translate(bf.toString());
 					
 					long temps = Calendar.getInstance().getTimeInMillis();
@@ -139,7 +139,7 @@ public class TestSystemIndex_all {
 							(Hashtable<Integer, Object>) config_log.getListAnswer(requestID);
 					ArrayList<String> arrayList = (ArrayList<String>) hashtable.get(requestID);
 					
-					wf = new WriteFile(Config.peerSimLOG_resultat + "_path_" + requestID, true);
+					wf = new WriteFile(Config_Central.peerSimLOG_resultat + "_path_" + requestID, true);
 					
 					for (int l = 0; l < arrayList.size(); l++)
 					{
@@ -149,7 +149,7 @@ public class TestSystemIndex_all {
 					
 					if (((ArrayList<BF>) res).size() != 0)
 					{	
-						wf = new WriteFile(Config.peerSimLOG_resultat + "_" + requestID, true);
+						wf = new WriteFile(Config_Central.peerSimLOG_resultat + "_" + requestID, true);
 						wf.write(rf.getDescription(i) + "\n");
 						wf.write("request : " + bf.toString() + "\n\n");
 						
@@ -179,7 +179,7 @@ public class TestSystemIndex_all {
 					}
 					else // non trouvé
 					{
-						wf = new WriteFile(Config.peerSimLOG_resultat + "_null_" + requestID, true);
+						wf = new WriteFile(Config_Central.peerSimLOG_resultat + "_null_" + requestID, true);
 						wf.write(rf.getDescription(i) + "\n");
 						wf.write("request : " + bf.toString() + "\n\n");
 						
@@ -207,7 +207,7 @@ public class TestSystemIndex_all {
 						wf.close();
 					}
 				
-					wf = new WriteFile(Config.peerSimLOG + "_log_time_" + version, true);
+					wf = new WriteFile(Config_Central.peerSimLOG + "_log_time_" + version, true);
 					if (requestID < 10000)
 					{
 						wf.write(requestID + "    ");

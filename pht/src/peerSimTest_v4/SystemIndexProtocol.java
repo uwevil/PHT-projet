@@ -5,15 +5,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
 
 import peersim.config.Configuration;
 import peersim.core.Network;
@@ -49,9 +45,15 @@ public class SystemIndexProtocol implements EDProtocol{
 	private boolean recu_OK = false;
 	private boolean insert_OK = true;
 	private boolean search_OK = true;
+	
+	private int numberOfFiltersCreated;
+	
+	
+	private Hashtable<String, PHT_Node_Central> pht_central;
+	
 
-	public SystemIndexProtocol(String prefix) {
-		// TODO Auto-generated constructor stub
+	public SystemIndexProtocol(String prefix)
+	{
 		this.prefix = prefix;
 		tid = Configuration.getPid(prefix+ "." + PAR_TRANSPORT);
 		
@@ -169,14 +171,14 @@ public class SystemIndexProtocol implements EDProtocol{
 			}
 			break;
 			
-		case "GET": //GET, indexName, path
-			treatGET(message, pid);
+		case "getLabel": //GET, indexName, path
+			treatGetLabel(message, pid);
 			break;
 			
-		case "GET_OK":
+		case "getLabel_OK":
 			try
 			{
-				treatGET_OK(message, pid);
+				treatGetLabel_OK(message, pid);
 			}
 			catch (ErrorException e2)
 			{
@@ -234,6 +236,24 @@ public class SystemIndexProtocol implements EDProtocol{
 			
 			
 			
+		case "simulation" :
+			try
+			{
+				treatSimulation(message, pid);
+			}
+			catch (ErrorException e1)
+			{
+				e1.printStackTrace();
+			}
+			break;
+			
+		case "createSimulation":
+			treatCreateSimulation(message, pid);
+			break;
+			
+		case "createSimulation_OK":
+			treatCreateSimulation_OK(message, pid);
+			break;
 			
 			
 			
@@ -258,6 +278,141 @@ public class SystemIndexProtocol implements EDProtocol{
 			break;
 		}
 	}
+
+	private void treatCreateSimulation(Message message, int pid)
+	{
+		String path = message.getPath();
+		PHT_Node_Central n = (PHT_Node_Central) message.getData();
+		PHT_Node n_tmp = new PHT_Node(n.getPath());
+		
+		DataStore data = new DataStore();
+		data.setListBFs(n.getListKeys());
+		
+		n_tmp.setDataStore(data);
+		n_tmp.setLeafNode(n.isLeafNode());
+		
+		this.list.put(path, n_tmp);
+		
+		Message rep = new Message();
+		rep.setType("createSimulation_OK");
+		rep.setSource(nodeIndex);
+		rep.setDestinataire(message.getSource());
+		
+		t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
+	}
+	
+	private void treatCreateSimulation_OK(Message message, int pid)
+	{
+		if (!pht_central.isEmpty())
+		{
+			Enumeration<String> enumeration = pht_central.keys();
+			
+			while (enumeration.hasMoreElements())
+			{
+				String path = enumeration.nextElement();
+				
+				Message rep = new Message();
+				rep.setType("createSimulation");
+				rep.setData(pht_central.get(path));
+				rep.setPath(path);
+				rep.setSource(nodeIndex);
+				
+				ControlerNw.config_log.getTranslate().setRange(Network.size());
+				int serverID = ControlerNw.config_log.getTranslate().translate(path);
+				
+				rep.setDestinataire(serverID);
+				
+				t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
+				
+				pht_central.remove(path);
+				
+				break;
+			}
+		}
+		else if (nodeIndex == init)
+		{
+			for (int i = 0; i < Network.size(); i++)
+			{	
+				Message rep = new Message();
+				rep.setType("overview");
+				rep.setSource(nodeIndex);
+				rep.setDestinataire(i);
+				
+				t.send(Network.get(nodeIndex), Network.get(i), rep, pid);
+			}
+		}	
+	}
+
+	private void treatSimulation(Message message, int pid) throws ErrorException
+	{
+		
+		init = nodeIndex;
+		
+		PHT_Central pht= new PHT_Central("dcs");
+
+		int line = 0;
+		int k = 0;
+		
+		try(BufferedReader reader = new BufferedReader(new FileReader("/Users/dcs/vrac/test/wikiDocs<60")))
+		{
+			while (true)
+			{
+				String s = new String();
+				s = reader.readLine();
+				if (s == null)
+					break;
+				String[] tmp = s.split(";");
+				
+				if (tmp.length >= 2 && tmp[1].length() > 2 )
+				{
+					BF bf = new BF(Config.sizeOfBF);
+					bf.addAll(tmp[1]);
+					
+					pht.insert(bf);
+					line++;
+				}
+				k++;
+				System.out.println(line + "/" + k);
+			//	if (line == 160000)
+				//	break;
+			}
+			reader.close();
+			
+			System.out.println("Fini de lecture " + k + " lignes.");
+			System.out.println("Nombre de filtres réels : " + line + " filtres.");
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		
+		pht_central = pht.getListNodes();
+		
+		Enumeration<String> enumeration = pht_central.keys();
+		
+		while (enumeration.hasMoreElements())
+		{
+			String path = enumeration.nextElement();
+			
+			Message rep = new Message();
+			rep.setType("createSimulation");
+			rep.setData(pht_central.get(path));
+			rep.setPath(path);
+			rep.setSource(nodeIndex);
+			
+			ControlerNw.config_log.getTranslate().setRange(Network.size());
+			int serverID = ControlerNw.config_log.getTranslate().translate(path);
+			
+			rep.setDestinataire(serverID);
+			
+			t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
+			
+			pht_central.remove(path);
+			
+			break;
+		}
+	}
+	
 	
 	/**
 	 * Calcule la clé de stockage associée avec le chemin "path".
@@ -355,48 +510,41 @@ public class SystemIndexProtocol implements EDProtocol{
 	
 	private void lookupPath(BF bf, BF key, String path, long requestID, int pid) throws ErrorException
 	{
-		ControlerNw.config_log.getTranslate().setLength(Network.size());
+		ControlerNw.config_log.getTranslate().setRange(Network.size());
 		int serverID = ControlerNw.config_log.getTranslate().translate(path);
 		
-	//	if (serverID == nodeIndex)
-	//	{
-	//		lookupLocalPath(bf, key, path, requestID, pid);	
-	//	}
-	//	else
+		if (this.listPath.containsKey(requestID))
 		{
-			if (this.listPath.containsKey(requestID))
-			{
-				this.listPath.remove(requestID);
-				this.listPath.put(requestID, path);
-			}
-			else
-			{
-				this.listPath.put(requestID, path);
-			}
-			
-			Message rep = new Message();
-			rep.setType("lookupPath");
-			rep.setBF(bf);
-			rep.setKey(key);
-			rep.setPath(path);
-			rep.setRequestID(requestID);
-			rep.setSource(nodeIndex);
-			rep.setDestinataire(serverID);
-			
-			t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
+			this.listPath.remove(requestID);
+			this.listPath.put(requestID, path);
 		}
+		else
+		{
+			this.listPath.put(requestID, path);
+		}
+		
+		Message rep = new Message();
+		rep.setType("lookupPath");
+		rep.setBF(bf);
+		rep.setKey(key);
+		rep.setPath(path);
+		rep.setRequestID(requestID);
+		rep.setSource(nodeIndex);
+		rep.setDestinataire(serverID);
+		
+		t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
 	}
 
 	private void splitLocal(PHT_Node n, long requestID, int pid) throws ErrorException
 	{		
 		DataStore data = n.getDataStore();
-		ArrayList<BF> listKeys = data.getListKeys();
+		ArrayList<BF> listKeys = data.getListBFs();
 		
 		n.setDataStore(null);
 		
 		if (n.getPath().equals("/"))
 		{
-			ControlerNw.config_log.getTranslate().setLength(Network.size());
+			ControlerNw.config_log.getTranslate().setRange(Network.size());
 			int serverID0 = ControlerNw.config_log.getTranslate().translate("0");
 			int serverID1 = ControlerNw.config_log.getTranslate().translate("1");
 			
@@ -492,7 +640,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			String path_tmp0 = this.skey(path + "0");
 			String path_tmp1 = this.skey(path + "1");
 			
-			ControlerNw.config_log.getTranslate().setLength(Network.size());
+			ControlerNw.config_log.getTranslate().setRange(Network.size());
 			int serverID0 = ControlerNw.config_log.getTranslate().translate(path_tmp0);
 			int serverID1 = ControlerNw.config_log.getTranslate().translate(path_tmp1);
 						
@@ -653,11 +801,11 @@ public class SystemIndexProtocol implements EDProtocol{
 
 	private void treatLookupPath(Message message, int pid)
 	{		
-		@SuppressWarnings("static-access")
+	/*	@SuppressWarnings("static-access")
 		WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG + "_tmp", true);
 		wf.write("requestID = " + message.getRequestID() + "\n");
 		wf.close();
-		
+		*/
 		String path = message.getPath();
 		
 		PHT_Node n = this.list.get(path);
@@ -677,6 +825,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);		
 	}
 
+	@SuppressWarnings("static-access")
 	private void launchInsert(int pid) throws ErrorException
 	{		
 		if (nodeIndex == init && insertFIFO.isEmpty())
@@ -703,6 +852,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			int requestID = insertFIFO.size();
 			
 			System.out.println(requestID);
+			System.out.println("Nombre de filtres ajoutés : " + ControlerNw.config_log.totalFilterAdded);
 			
 			this.lookupPath(bf, key, "/", requestID, pid);
 		}
@@ -751,22 +901,29 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 	}
 	
+	@SuppressWarnings({ "static-access", "unchecked" })
 	private void treatInsertInit(Message message, int pid) throws ErrorException
 	{
 		System.out.println("Lecture n°1");
 		
 		init = nodeIndex;
-		
-		this.initInsertFIFO(message);
-	/*	
-		long time = System.currentTimeMillis();
+	
+		if (!message.getData().getClass().getName().contains("String"))
+		{
+			this.initInsertFIFO(message);
+		}
+		else
+		{
+			long time = System.currentTimeMillis();
 
-		System.out.println("Désérialisation");
-		Serializer serializer = new Serializer();
-		this.insertFIFO = (ArrayDeque<BF>) serializer.readObject("/Users/dcs/vrac/test/fifo_" + ControlerNw.config_log.version);
+			System.out.println("Désérialisation");
+			Serializer serializer = new Serializer();
+			this.insertFIFO = (ArrayDeque<BF>) serializer.readObject("/Users/dcs/vrac/test/fifo_" + ControlerNw.config_log.version);
+			
+			System.out.println("Fin de désérialisation " + (System.currentTimeMillis() - time) + " ms");
+		}
 		
-		System.out.println("Fin de désérialisation " + (System.currentTimeMillis() - time) + " ms");
-		*/
+		numberOfFiltersCreated = insertFIFO.size();
 		this.launchInsert(pid);
 	}
 	
@@ -957,14 +1114,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		try 
 		{
 			ReadFile rf = new ReadFile("/Users/dcs/vrac/test/wikiDocs<60_500_request");
-			
-			/*
-			String date = (new SimpleDateFormat("dd-MM-yyyy/HH-mm-ss")).format(new Date());
-			Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "/" + experience + "_log";
-			Config.peerSimLOG_resultat = "/Users/dcs/vrac/test/" + date + "/" + experience + "_resultat_log";
-			Config.peerSimLOG_path = "/Users/dcs/vrac/test/" + date + "/" + experience + "_path_log";
-			*/
-
+		
 			for (int i = 0; i < rf.size(); i++)
 			{									
 				BF bf = new BF(Config.sizeOfBF);
@@ -995,7 +1145,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			while (!searchFIFO.isEmpty())
 			{
 				BF bf = searchFIFO.poll();
-				ControlerNw.config_log.getTranslate().setLength(Config.requestRange);
+				ControlerNw.config_log.getTranslate().setRange(Config.requestRange);
 				long requestID = ControlerNw.config_log.getTranslate().translate(bf.toString());
 				
 				long time = Calendar.getInstance().getTimeInMillis();
@@ -1003,7 +1153,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				
 				array.add(time);
 				ControlerNw.config_log.getTimeGlobal().put(requestID, array);
-				
+								
 				this.supersetSearch(bf, experience, requestID, pid);
 				j++;
 				
@@ -1040,17 +1190,17 @@ public class SystemIndexProtocol implements EDProtocol{
 	private void exploreSubtree(String sbroot, BF q, BF bf, int exprerience, long requestID, int pid) throws ErrorException
 	{
 		String prefix = sbroot + "1";
-		this.get(this.skey(prefix.substring(1, prefix.length())), sbroot, bf, q, exprerience, requestID, pid);
+		this.getLabel(this.skey(prefix.substring(1, prefix.length())), sbroot, bf, q, exprerience, requestID, pid);
 	}
 	
-	private void get(String path, String sbroot, BF bf, BF key, int exprerience, long requestID, int pid)
+	private void getLabel(String path, String sbroot, BF bf, BF key, int exprerience, long requestID, int pid)
 	{
-		ControlerNw.config_log.getTranslate().setLength(Network.size());
+		ControlerNw.config_log.getTranslate().setRange(Network.size());
 		int serverID = ControlerNw.config_log.getTranslate().translate(path);
 		
 		Message rep = new Message();
 		
-		rep.setType("GET");
+		rep.setType("getLabel");
 		rep.setRequestID(requestID);
 		rep.setBF(bf);
 		rep.setKey(key);
@@ -1063,16 +1213,24 @@ public class SystemIndexProtocol implements EDProtocol{
 		t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
 	}
 	
-	private void treatGET(Message message, int pid)
+	private void treatGetLabel(Message message, int pid)
 	{
 		PHT_Node n = this.list.get(message.getPath());
 		
+		PHT_Node n_tmp = null;
+		if (n != null)
+		{
+			n_tmp = new PHT_Node(n.getPath());
+			n_tmp.setLeafNode(n.isLeafNode());
+			n_tmp.setDataStore(null);
+		}
+		
 		Message rep = new Message();
 		
-		rep.setType("GET_OK");
+		rep.setType("getLabel_OK");
 		rep.setBF(message.getBF());
 		rep.setKey(message.getKey());
-		rep.setData(n);
+		rep.setData(n_tmp);
 		rep.setSource(nodeIndex);
 		rep.setDestinataire(message.getSource());
 		rep.setOption(message.getOption());
@@ -1082,7 +1240,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
 	}
 	
-	private void treatGET_OK(Message message, int pid) throws ErrorException
+	private void treatGetLabel_OK(Message message, int pid) throws ErrorException
 	{
 		BF bf = message.getBF();
 		BF q = message.getKey();
@@ -1158,7 +1316,7 @@ public class SystemIndexProtocol implements EDProtocol{
 	
 	private void getCollectLeaves(String path, String sbroot, BF bf, BF key, int exprerience, long requestID, int pid)
 	{
-		ControlerNw.config_log.getTranslate().setLength(Network.size());
+		ControlerNw.config_log.getTranslate().setRange(Network.size());
 		int serverID = ControlerNw.config_log.getTranslate().translate(path);
 		
 		Message rep = new Message();
@@ -1180,12 +1338,20 @@ public class SystemIndexProtocol implements EDProtocol{
 	{
 		PHT_Node n = this.list.get(message.getPath());
 		
+		PHT_Node n_tmp = null;
+		if (n != null)
+		{
+			n_tmp = new PHT_Node(n.getPath());
+			n_tmp.setLeafNode(n.isLeafNode());
+			n_tmp.setDataStore(null);
+		}
+		
 		Message rep = new Message();
 		
 		rep.setType("getCollectLeaves_OK");
 		rep.setBF(message.getBF());
 		rep.setKey(message.getKey());
-		rep.setData(n);
+		rep.setData(n_tmp);
 		rep.setSource(nodeIndex);
 		rep.setDestinataire(message.getSource());
 		rep.setOption(message.getOption());
@@ -1252,7 +1418,7 @@ public class SystemIndexProtocol implements EDProtocol{
 
 	private void getStoredBF(String path, BF bf, BF key, int exprerience, long requestID, int pid)
 	{
-		ControlerNw.config_log.getTranslate().setLength(Network.size());
+		ControlerNw.config_log.getTranslate().setRange(Network.size());
 		int serverID = ControlerNw.config_log.getTranslate().translate(path);
 		
 		Message rep = new Message();
@@ -1296,7 +1462,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		BF bf = message.getBF();
 		
-		ArrayList<BF> storedBF = n.getDataStore().getListKeys();
+		ArrayList<BF> storedBF = n.getDataStore().getListBFs();
 		
 		this.retrieveSuperset(storedBF, bf, (int) message.getOption2(), message.getRequestID(), n.getPath());
 	}
@@ -1425,45 +1591,6 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 		
 		ControlerNw.config_log.setConfig_OK(false);
-				
-		//*******************
-		WriteFile wf = new WriteFile(Config.peerSimLOG+"_indexHeight", false);
-		Enumeration<Integer> enumeration = ControlerNw.config_log.getIndexHeight().keys();
-		wf.write("Nombre de messages  : " + (ControlerNw.config_log.numberOfMessages - Network.size()*2 - 1*2) + "\n\n");
-		wf.write("Taille du filtre    : " + ControlerNw.config_log.sizeOfBF + "\n");
-		wf.write("Gamma               : " + ControlerNw.config_log.gamma + "\n\n");
-		
-		while (enumeration.hasMoreElements())
-		{
-			Integer i = enumeration.nextElement();
-			if (i <= 9)
-			{
-				wf.write(i + "  " + ControlerNw.config_log.getIndexHeight().get(i) + "\n");
-			}
-			else
-			{
-				wf.write(i + " " + ControlerNw.config_log.getIndexHeight().get(i) + "\n");
-			}			
-		}
-		wf.write("\n");
-		
-		enumeration = ControlerNw.config_log.getRealIndexHeight().keys();
-		
-		while (enumeration.hasMoreElements())
-		{
-			Integer i = enumeration.nextElement();
-			if (i <= 9)
-			{
-				wf.write(i + "  " + ControlerNw.config_log.getRealIndexHeight().get(i) + "\n");
-			}
-			else
-			{
-				wf.write(i + " " + ControlerNw.config_log.getRealIndexHeight().get(i) + "\n");
-			}	
-		}
-		
-		wf.close();
-		//*******************
 		
 		Hashtable<Integer, Integer> tab = new Hashtable<Integer, Integer>();
 		
@@ -1533,7 +1660,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			String s_tmp = enumeration4.nextElement();
 			
 			WriteFile wf2 = new WriteFile(Config.peerSimLOG + "_node", true);
-			ControlerNw.config_log.getTranslate().setLength(Network.size());
+			ControlerNw.config_log.getTranslate().setRange(Network.size());
 			if (s_tmp != "/")
 			{
 				wf2.write(s_tmp + "        " + ControlerNw.config_log.getTranslate().translate(s_tmp) + "\n");
@@ -1802,9 +1929,51 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		recu_OK = true;
 		
+		//*******************
+		WriteFile wf = new WriteFile(Config.peerSimLOG+"_indexHeight", false);
+		Enumeration<Integer> enumeration = ControlerNw.config_log.getIndexHeight().keys();
+		wf.write("Nombre de messages        : " + (ControlerNw.config_log.numberOfMessages - Network.size()*2 - 1*2 - 1) + "\n\n");
+		wf.write("Nombre de filtres crées   : " + numberOfFiltersCreated + "\n");
+		wf.write("Nombre de filtres ajoutés : " + ControlerNw.config_log.totalFilterAdded + "\n\n"); //j + "\n\n");
+		wf.write("Taille du filtre          : " + ControlerNw.config_log.sizeOfBF + "\n");
+		wf.write("Gamma                     : " + ControlerNw.config_log.gamma + "\n\n");
+		
+		while (enumeration.hasMoreElements())
+		{
+			i = enumeration.nextElement();
+			if (i <= 9)
+			{
+				wf.write(i + "  " + ControlerNw.config_log.getIndexHeight().get(i) + "\n");
+			}
+			else
+			{
+				wf.write(i + " " + ControlerNw.config_log.getIndexHeight().get(i) + "\n");
+			}			
+		}
+		wf.write("\n");
+		
+		enumeration = ControlerNw.config_log.getRealIndexHeight().keys();
+		
+		while (enumeration.hasMoreElements())
+		{
+			i = enumeration.nextElement();
+			if (i <= 9)
+			{
+				wf.write(i + "  " + ControlerNw.config_log.getRealIndexHeight().get(i) + "\n");
+			}
+			else
+			{
+				wf.write(i + " " + ControlerNw.config_log.getRealIndexHeight().get(i) + "\n");
+			}	
+		}
+		
+		wf.close();		
+		//*******************
+		
 		Config.ObserverNw_OK = true;
 	}
 		
+	
 }
 
 

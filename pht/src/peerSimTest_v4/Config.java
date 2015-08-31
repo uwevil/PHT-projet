@@ -1,7 +1,6 @@
 package peerSimTest_v4;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
 
@@ -25,39 +24,70 @@ public class Config {
 	private Hashtable<String, Integer> filterPerNode = new Hashtable<String, Integer>();
 	
 	/**
-	 * Hauteur réelle dans l'arbre, c-à-d, le chemin après l'application la fonction {@link skey}.
+	 * Le plus long chemin dans l'abre après l'application la fonction {@link skey}.
 	 * */
 	private Hashtable<Integer, String> realIndexHeight = new Hashtable<Integer, String>();
+	
+	/**
+	 * Le plus long chemin dans l'arbre.
+	 * */
 	private Hashtable<Integer, String> indexHeight = new Hashtable<Integer, String>();
+	
+	/**
+	 * Temps depuis le lancement de la requête et le temps pour chaque réponse qui contient un filtre correspondant avec la requête
+	 *  identifiée par {@code requestID}.
+	 * */
 	private Hashtable<Long, Object> timeGlobal = new Hashtable<Long, Object>();
-	private Hashtable<Long, Long> timeCalcul = new Hashtable<Long, Long>();
 
+	/**
+	 * Nombre de nœuds hébergés sur chaque pair dans le réseau.
+	 * */
 	private int[] nodePerServer = new int[Network.size()];
 	
 	public static int indexRanqe = 99999999;
 	public static int requestRange = 1000000;
-	public static int sizeOfBF = 512;
-	public static int sizeOfKey = 256;
-	public static int gamma = 1000;
 	public static boolean ObserverNw_OK = false;
-	
-	public static long numberOfMessages = 0;
-	
 	private NameToID translate = new NameToID(0);
-	private boolean end_OK = false;
+
 	private boolean config_OK = true;
 	
-	private long time_calcul = 0;
-	private long time = 0;
-
-	private int nodeVisited = 0;
-	private int totalFilterCreated = 0;
-	private int numberOfFilter = 0;
-	public static int totalFilterAdded = 0;
+	/**
+	 * Taille d'un filtre.
+	 * */
+	public static int sizeOfBF = 512;
+	
+	/**
+	 * Taille d'une clé.
+	 * */
+	public static int sizeOfKey = 256;
+	
+	/**
+	 * Nombre de filtres maximums sur un nœud dans l'arbre.
+	 * */
+	public static int gamma = 1000;
+	
+	/**
+	 * Nombre de messages dans le réseau sans compter les messages {@code init}, {@code overview}.
+	 * */
+	public static long numberOfMessages = 0;
 		
+	public static int totalFilterAdded = 0;
+
 	public static String date = (new SimpleDateFormat("dd-MM-yyyy/HH-mm-ss")).format(new Date());
+	
+	/**
+	 * Emplacement pù on stocke les fichiers de log.
+	 * */
 	public static String peerSimLOG = "/Users/dcs/vrac/test/"+ date + "_" + version+ "/" + "_log";
+	
+	/**
+	 * Emplacement pù on stocke les fichiers temporaires, de résultats, de log.
+	 * */
 	public static String peerSimLOG_resultat = "/Users/dcs/vrac/test/" + date  + "_" + version + "/";
+	
+	/**
+	 * Configuration.
+	 * */
 	
 	public Config()
 	{
@@ -65,101 +95,67 @@ public class Config {
 		{
 			nodePerServer[i] = 0;
 		}		
-		nodeVisited = 0;
+
 		listAnswers = new Hashtable<Long, Object>();
-		timeCalcul = new Hashtable<Long, Long>();
 		timeGlobal = new Hashtable<Long, Object>();
 		indexHeight = new Hashtable<Integer, String>();
-		
-		time = 0;
-		time_calcul = 0;
-		
+				
 		date = (new SimpleDateFormat("dd/MM/yyyy/HH-mm-ss")).format(new Date());
-		totalFilterCreated = 0;
 		nodePerServer = new int[Network.size()];
 		
 		for (int i = 0; i < Network.size(); i++)
 			nodePerServer[i] = 0;
 		
-		numberOfFilter = 0;		
 		config_OK = true;
 	}
 	
-	public synchronized void addTotalFilterCreated(int i)
-	{
-		if (this.getConfig_OK())
-			this.totalFilterCreated += i;
-	}
-	
-	public int getTotalFilterCreated()
-	{
-		return this.totalFilterCreated;
-	}
-	
-	public synchronized void addNumberOfFilters(int i)
-	{
-		this.numberOfFilter += i;
-	}
-	
-	public int getNumberOfFilters()
-	{
-		return this.numberOfFilter;
-	}
-		
-	public synchronized void addNodeVisited(int i)
-	{
-		this.nodeVisited += i;
-	}
-	
-	public int getNodeVisited()
-	{
-		return this.nodeVisited;
-	}
-	
+	/**
+	 * Ajoute d'un objet dans la liste des requêtes identifiées par {@code requestID}.
+	 * */
 	public void putListAnswer(Long key, Object value)
 	{
 		this.listAnswers.put(key, value);
 	}
 	
+	/**
+	 * Retourne d'un objet dans la liste des requêtes identifiées par {@code requestID}.
+	 * */
 	public Object getListAnswer(Long key)
 	{
 		return this.listAnswers.get(key);
 	}
 	
+	/**
+	 * Teste l'existence d'un objet dans la liste des requêtes identifiées par {@code requestID}.
+	 * */
 	public boolean containsKeyListAnswer(Long key)
 	{
 		return this.listAnswers.containsKey(key);
 	}
 	
-	public void removeListAnswer(Long key)
-	{
-		this.listAnswers.remove(key);
-	}
-	
+	/**
+	 * Retourne le convertisseur d'une chaîne de caractère en un entier.
+	 * */
 	public NameToID getTranslate()
 	{
 		return this.translate;
 	}
 	
+	/**
+	 * Ajoute le nombre de nœuds hébergés sur un pair {@code index} dans le réseau.
+	 * */
 	public synchronized void setNodePerServer(int index, int i)
 	{
 		if (this.getConfig_OK())
 			this.nodePerServer[index] = i;
 	}
 	
+	/**
+	 * Retourne le nombre de nœuds hébergés sur un pair {@code index} dans le réseau.
+	 * */
 	public int getNodePerServer(int index)
 	{
 		return this.nodePerServer[index];
-	}
-	
-	public synchronized void setEnd_OK(boolean val)
-	{
-		this.end_OK = val;
-	}
-	
-	public boolean getEnd_OK()
-	{
-		return this.end_OK;
 	}
 	
 	public synchronized void setConfig_OK(boolean value)
@@ -172,60 +168,33 @@ public class Config {
 		return this.config_OK;
 	}
 
+	/**
+	 * Retourne une liste de nœuds avec son nombre de filtres stockés.
+	 * */
 	public Hashtable<String, Integer> getFilterPerNode()
 	{
 		return this.filterPerNode;
 	}
 	
+	/**
+	 * Retourne une liste de requêtes identifiées par {@code requestID} avec son {@link Object} (pour calculer le temps).
+	 * */
 	public Hashtable<Long, Object> getTimeGlobal()
 	{
 		return this.timeGlobal;
 	} 
 	
-	public synchronized void addTimeCalcul(Long key, long t)
-	{
-		if (this.timeCalcul.containsKey(key))
-		{
-			long tmp = this.timeCalcul.get(key);
-			this.timeCalcul.remove(key);
-			this.timeCalcul.put(key, tmp + t);
-		}
-		else
-		{
-			this.timeCalcul.put(key, t);
-		}
-	}
-	
-	public long getTimeCalcul(Long key)
-	{
-		return (this.timeCalcul.get(key) == null ? 0 : this.timeCalcul.get(key));
-	}
-	
-	public synchronized void addTime_calcul(long t)
-	{
-		this.time_calcul += t;
-	}
-	
-	public long getTime_calcul()
-	{
-		return this.time_calcul;
-	}
-	
-	public synchronized void setTime(long time)
-	{
-		this.time = time;
-	}
-	
-	public long getTime()
-	{
-		return this.time;
-	}
-	
+	/**
+	 * Retourne une liste de différentes hauteurs.
+	 * */
 	public Hashtable<Integer, String> getIndexHeight()
 	{
 		return this.indexHeight;
 	}
 	
+	/**
+	 * Retourne une liste de différentes hauteurs après l'application de méthode {@link skey}.
+	 * */
 	public Hashtable<Integer, String> getRealIndexHeight()
 	{
 		return this.realIndexHeight;

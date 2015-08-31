@@ -1,26 +1,5 @@
 package peerSimTest_v4;
 
-/**Type de message :
- * <ul>
- * 	<p>
- * 	<li> createIndex
- * 	<li> removeIndex
- * 	<li> add
- * 	<li> remove
- * 	<li> search
- * 	</p>
- * </ul>
- * <ul>
- * 	<p> 
- * 	<li> createNode
- * 	<li> removeNode
- * 	</p>
- * </ul>
- * <ul>
- * 	<li> OK
- * </ul>
- * 
- **/
 public class Message {
 	
 	private String indexName;
@@ -32,32 +11,10 @@ public class Message {
 	private int src;
 	private int dest;
 	private long requestID;
-//	private long splitID;
 	private boolean isLeafNode;
 	private Object option = null;
 	private Object option2 = null;
 	
-	/**Type de message :
-	 * <ul>
-	 * 	<p>
-	 * 	<li> createIndex
-	 * 	<li> removeIndex
-	 * 	<li> add
-	 * 	<li> remove
-	 * 	<li> search
-	 * 	</p>
-	 * </ul>
-	 * <ul>
-	 * 	<p> 
-	 * 	<li> createNode
-	 * 	<li> removeNode
-	 * 	</p>
-	 * </ul>
-	 * <ul>
-	 * 	<li> OK
-	 * </ul>
-	 * 
-	 **/
 	public Message()
 	{
 	}

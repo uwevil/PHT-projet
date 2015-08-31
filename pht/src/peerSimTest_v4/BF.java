@@ -15,7 +15,7 @@ public class BF implements Serializable
 	private int bitSetSize;
 	
 	/** 
-	 * Créer un filtre vide.
+	 * Crée un filtre vide.
 	 * 
 	 * @param bitSetSize taille du filtre.
 	 * 
@@ -29,7 +29,7 @@ public class BF implements Serializable
 	}
 	
 	/**
-	 * Créer un filtre vide.
+	 * Crée un filtre vide.
 	 * 
 	 * @author dcs
 	 * */
@@ -40,7 +40,7 @@ public class BF implements Serializable
 	}
 	
 	/** 
-	 * Créer un filtre.
+	 * Crée un filtre.
 	 *
 	 * @param chaineBits de 0 et 1.
 	 * @throws ErrorException
@@ -64,7 +64,7 @@ public class BF implements Serializable
 	}
 	
 	/**
-	 * Créer un filtre à partir de 2 filtres.
+	 * Crée un filtre à partir de 2 filtres.
 	 * 
 	 * @param a
 	 * @param b
@@ -85,7 +85,7 @@ public class BF implements Serializable
 	}
 	
 	/** 
-	 * Test l'égalité entre 2 filtres.
+	 * Teste l'égalité entre 2 filtres.
 	 * 
 	 * @author dcs
 	 * */
@@ -106,7 +106,7 @@ public class BF implements Serializable
 	}
 	
 	/** 
-	 * Ajout une chaîne de description dans le filtre.
+	 * Ajoute une chaîne de description dans le filtre.
 	 * 
 	 * @param description suite de mots clés sous forme mot0,mot1,mot2,…,motn.
 	 * @author dcs
@@ -207,7 +207,7 @@ public class BF implements Serializable
 	*/
 	
 	/**
-	 *  Mettre le bit à la position 'index' une valeur 'v'
+	 *  Met le bit à la position 'index' une valeur 'v'
 	 *  
 	 *  @param index position du bit.
 	 *  @param v valeur booléenne.
@@ -219,7 +219,7 @@ public class BF implements Serializable
 	}
 	
 	/**
-	 * Rendre la valeur du bit à la position 'index'
+	 * Rend la valeur du bit à la position 'index'
 	 * 
 	 * @param index position du bit.
 	 * @return {@link Boolean}
@@ -231,7 +231,7 @@ public class BF implements Serializable
 	}
 	
 	/** 
-	 * Rendre la taille du filtre
+	 * Rend la taille du filtre
 	 * 
 	 * @return int
 	 * @author dcs
@@ -258,7 +258,7 @@ public class BF implements Serializable
 	}
 	
 	/** 
-	 * Test si le filtre contient un autre filtre. Deux filtres peuvent n'avoir pas de même taille.
+	 * Teste si le filtre contient un autre filtre. Deux filtres peuvent n'avoir pas de même taille.
 	 * 
 	 * @param o objet.
 	 * @return {@link Boolean}
@@ -280,7 +280,7 @@ public class BF implements Serializable
 	}
 	
 	/** 
-	 * Rendre le fragment de taille connue à la position précise.
+	 * Rend le fragment de taille connue à la position précise.
 	 * 
 	 * @param index position du fragment dans le filtre.
 	 * @param sizeOfFragment taille du fragment.

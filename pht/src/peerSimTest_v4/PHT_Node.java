@@ -4,16 +4,6 @@ import java.io.Serializable;
 
 /**
  * 
- * SystèmeIndexP2P gère les nœuds
- * <p>
- * Variable locale : 
- * <ul>
- * 	<li> indexName
- * 	<li> serverID
- * 	<li> listeNode
- * </ul>
- * 
-*
  **/
 
 public class PHT_Node implements Serializable{
@@ -23,6 +13,10 @@ public class PHT_Node implements Serializable{
 	private DataStore data;
 	private boolean isLeafNode = true;
 	
+	
+	/**
+	 * Initialise avec le chemin {@code path}.
+	 * */
 	public PHT_Node(String path) {
 		// TODO Auto-generated constructor stub
 		this.path = path;
@@ -40,7 +34,10 @@ public class PHT_Node implements Serializable{
 		return this.path;
 	}
 	
-	public int getRang() throws ErrorException
+	/**
+	 * Retourne le rang de ce nœud, -1 si ce nœud est la racine.
+	 * */
+	public int getRang()
 	{
 		if (this.path == "/")
 			return -1;
@@ -48,27 +45,37 @@ public class PHT_Node implements Serializable{
 		return this.path.length() - 1;
 	}
 	
+	/**
+	 * Change l'état de ce nœud.
+	 * */
 	public void setLeafNode(boolean value)
 	{
 		this.isLeafNode = value;
 	}
 	
+	/**
+	 * Retourne {@link DataStore}.
+	 * */
 	public DataStore getDataStore()
 	{
 		return this.data;
 	}
 	
+	/**
+	 * Remplace l'ancien {@link DataStore} par un nouveau.
+	 * */
 	@SuppressWarnings("static-access")
 	public void setDataStore(DataStore data)
 	{
 		if (data == null)
-		{
-			ControlerNw.config_log.totalFilterAdded = ControlerNw.config_log.totalFilterAdded - this.data.size();
-	//		System.out.println("            "+ this.path + " size "+this.data.size() + "//////" );
-		}
+			ControlerNw.config_log.totalFilterAdded -= this.data.size();
+		
 		this.data = data;
 	}
 	
+	/**
+	 * Retourne la taille de {@link DataStore} stocké sur ce nœud.
+	 * */
 	public int size()
 	{
 		return this.data.size();
@@ -77,7 +84,6 @@ public class PHT_Node implements Serializable{
 	/**
 	 * Insère le filtre dans le système.
 	 * 
-	*
 	 * */
 	
 	public void insert(BF bf) throws ErrorException
@@ -85,6 +91,9 @@ public class PHT_Node implements Serializable{
 		data.insert(bf);
 	}
 
+	/**
+	 * Retourne l'état de ce nœud.
+	 * */
 	public boolean isLeafNode()
 	{
 		return this.isLeafNode;
