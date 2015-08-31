@@ -343,13 +343,14 @@ public class SystemIndexProtocol implements EDProtocol{
 		}	
 	}
 
+	@SuppressWarnings({ "static-access", "unchecked" })
 	private void treatSimulation(Message message, int pid) throws ErrorException
 	{
-		
 		init = nodeIndex;
 		
 		PHT_Central pht= new PHT_Central("dcs");
 
+		/*
 		int line = 0;
 		int k = 0;
 		
@@ -373,7 +374,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				}
 				k++;
 				System.out.println(line + "/" + k);
-			//	if (line == 160000)
+			//	if (line == 1600)
 				//	break;
 			}
 			reader.close();
@@ -385,7 +386,13 @@ public class SystemIndexProtocol implements EDProtocol{
 		{
 			e.printStackTrace();
 		}
+		*/
 		
+		Serializer serializer = new Serializer();
+	//	serializer.writeObject(pht, ControlerNw.config_log.serializerName + "_path_central");
+		pht_central = (Hashtable<String, PHT_Node_Central>) 
+			serializer.readObject(ControlerNw.config_log.serializerName + "_path_central");
+				
 		pht_central = pht.getListNodes();
 		
 		Enumeration<String> enumeration = pht_central.keys();
@@ -1415,7 +1422,6 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 	}
 
-
 	private void getStoredBF(String path, BF bf, BF key, int exprerience, long requestID, int pid)
 	{
 		ControlerNw.config_log.getTranslate().setRange(Network.size());
@@ -1444,6 +1450,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		rep.setType("getStoredBF_OK");
 		rep.setBF(message.getBF());
 		rep.setKey(message.getKey());
+		rep.setPath(message.getPath());
 		rep.setData(n);
 		rep.setSource(nodeIndex);
 		rep.setDestinataire(message.getSource());
@@ -1453,9 +1460,19 @@ public class SystemIndexProtocol implements EDProtocol{
 		t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
 	}
 	
+	@SuppressWarnings({ "static-access", "unchecked" })
 	private void treatGetStoredBF_OK(Message message, int pid)
 	{
+		long time = Calendar.getInstance().getTimeInMillis();
+		((ArrayList<Long>) ControlerNw.config_log.getTimeGlobal().get(message.getRequestID())).add(time);
+		
 		PHT_Node n = (PHT_Node) message.getData();
+		
+		WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG_resultat 
+				+ message.getOption2() + "_path_" 
+				+ message.getRequestID(), true);
+		wf.write(message.getPath() + "\n");
+		wf.close();
 		
 		if (n == null)
 			return;
@@ -1498,35 +1515,28 @@ public class SystemIndexProtocol implements EDProtocol{
 			{
 				File fs = new File(s);
 				if (!fs.exists())
-				{
-					
-					long time = Calendar.getInstance().getTimeInMillis();
-					((ArrayList<Long>) ControlerNw.config_log.getTimeGlobal().get(requestID)).add(time);
-					
+				{	
 					WriteFile wf1 = new WriteFile(s, true);
 					wf1.write("Requete : " + bf + "\n");
 					wf1.write("Key     : " + bf.getKey(Config.sizeOfKey) + "\n\n");
 					wf1.write(path + " :\n\n");
 					wf1.write(bf_tmp + "\n");
+					wf1.write(bf_tmp.getKey(ControlerNw.config_log.sizeOfKey) + "\n\n");
 					wf1.close();
 					
 					ArrayList<Long> arrayList = ((ArrayList<Long>) ControlerNw.config_log.getTimeGlobal().get(requestID));
-					time = arrayList.get(arrayList.size() - 1) - arrayList.get(arrayList.size() -2);
+					long time = arrayList.get(arrayList.size() - 1) - arrayList.get(arrayList.size() -2);
 					
 					wf1 = new WriteFile(ControlerNw.config_log.peerSimLOG_resultat + exprerience + "_time_" + requestID, true);
-					wf1.write( ((ArrayList<String>) hashtable.get(requestID)).size() + " retrieve(s) (+" + time + "ms)\n");
+					wf1.write( ((ArrayList<String>) hashtable.get(requestID)).size() + " retrieve(s) (+" + time + " ms)\n");
 					wf1.close();
-					
 				}	
 				else
 				{
 					WriteFile wf1 = new WriteFile(s, true);
 					wf1.write(bf_tmp + "\n");
+					wf1.write(bf_tmp.getKey(ControlerNw.config_log.sizeOfKey) + "\n\n");
 					wf1.close();
-					
-					WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG_resultat + exprerience + "_path_" + requestID, true);
-					wf.write(path + "\n");
-					wf.close();
 				}
 			}
 		}

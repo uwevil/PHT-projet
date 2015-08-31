@@ -85,6 +85,8 @@ public class Config {
 	 * */
 	public static String peerSimLOG_resultat = "/Users/dcs/vrac/test/" + date  + "_" + version + "/";
 	
+	public static String serializerName = "/Users/dcs/vrac/test/peerSim_v4";
+	
 	/**
 	 * Configuration.
 	 * */
