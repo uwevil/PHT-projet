@@ -28,9 +28,11 @@ public class DataStore implements Serializable{
 	{
 		if (this.listKeys.contains(key))
 			return;
+		/*
 		WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG + "_tmp", true);
 		wf.write("Total filters added : " + ControlerNw.config_log.totalFilterAdded++ + "\n");
 		wf.close();
+		*/
 		this.listKeys.add(key);
 	}
 	

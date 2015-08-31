@@ -36,9 +36,6 @@ public class CreateNw implements Control {
 		f = new File(Config.peerSimLOG_resultat);
 		if (f.exists())
 			f.delete();
-		f = new File(Config.peerSimLOG_path);
-		if (f.exists())
-			f.delete();
 		
 		return false;
 	}

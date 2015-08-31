@@ -1,8 +1,5 @@
 package peerSimTest_v4;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.Hashtable;
 
 import peersim.config.Configuration;
@@ -20,8 +17,8 @@ public class ControlerNw implements Control {
 	@SuppressWarnings("unused")
 	private String prefix;
 	private int pid;
+	@SuppressWarnings("unused")
 	private boolean ok = true, ok2 = true, ok3 = false;
-	private int line = 0;
 	
 	public ControlerNw(String prefix)
 	{
@@ -59,7 +56,7 @@ public class ControlerNw implements Control {
 			
 			Message message = new Message();
 			message.setType("insertInit");
-			message.setData(160);
+			message.setData(160000);
 			message.setDestinataire(23);
 
 			EDSimulator.add(0, message, n, pid);

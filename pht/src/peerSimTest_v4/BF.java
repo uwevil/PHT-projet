@@ -241,6 +241,9 @@ public class BF implements Serializable
 		return bitSetSize;
 	}
 	
+	/**
+	 * 
+	 * */
 	
 	public String toString()
 	{
@@ -255,7 +258,7 @@ public class BF implements Serializable
 	}
 	
 	/** 
-	 * Test si le filtre contient un autre filtre
+	 * Test si le filtre contient un autre filtre. Deux filtres peuvent n'avoir pas de même taille.
 	 * 
 	 * @param o objet.
 	 * @return {@link Boolean}
@@ -302,37 +305,6 @@ public class BF implements Serializable
 	}
 	
 	/**
-	 * Retourne un filtre à partir du chemin "/././." dans l'interval [start, stop] avec la taille d'un fragment.
-	 * 
-	 * @return {@link BF}
-	 * @author dcs
-	 * */
-	
-	public BF pathToBF(String path, int start, int stop, int sizeOfFragment)
-	{
-		try {
-			if (start < 0 || start > stop)
-				throw new ErrorException("pathToBF : start invalid = " + start);
-			
-			String[] s = path.split("/");
-			
-			if (stop > s.length - 2)
-				stop = s.length - 2;
-			
-			String s_tmp = new String();
-			for (int i = start + 1; i <= stop + 1; i++)
-				s_tmp += ((new Fragment(sizeOfFragment)).intToFragment(Integer.parseInt(s[i]))).toString();
-			
-			return (new BF(s_tmp));
-		} catch (ErrorException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return null;
-	}
-	
-	/**
 	 * Retourne le rang du filtre entre [0, bitSetSize/sizeOfFragment].
 	 * 
 	 * @return int
@@ -348,7 +320,7 @@ public class BF implements Serializable
 	}
 	
 	/**
-	 * Retourne une clé sous forme le filtre.
+	 * Retourne une clé sous forme le filtre de taille {@code sizeOfKey}.
 	 * 
 	 * @return {@link BF}
 	 * @author dcs

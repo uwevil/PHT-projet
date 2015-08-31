@@ -47,8 +47,8 @@ public class TestSystemIndex_all {
 				}
 				k++;
 				System.out.println(line + "/" + k);
-		//		if (line == 1600)
-			//		break;
+				if (line == 160000)
+					break;
 			}
 			reader.close();
 			
@@ -64,7 +64,7 @@ public class TestSystemIndex_all {
 		long time = System.currentTimeMillis();
 		System.out.println("Désérialisation");
 	//	pht.deserializeListNodes("/Users/dcs/vrac/test/listNodes_" + version);
-		pht.serializeListNodes("/Users/dcs/vrac/test/listNodes_" + version);
+	//	pht.serializeListNodes("/Users/dcs/vrac/test/listNodes_" + version);
 		System.out.println("Fin de désérialisation " + (System.currentTimeMillis() - time) + " ms");
 		
 		

@@ -8,15 +8,28 @@ import java.util.Hashtable;
 import peersim.core.Network;
 
 public class Config {
-
+	
+	/**
+	 * Version.
+	 * */
 	public static String version = "peerSim_v4";
 
-	private ArrayList<String> nodeMatched = new ArrayList<String>();
+	/**
+	 * Liste des réponses identifiée par requestID.
+	 * */
 	private Hashtable<Long, Object> listAnswers = new Hashtable<Long, Object>();
+	
+	/**
+	 * Nombre de filtres sur chaque nœud dans l'arbre.
+	 * */
 	private Hashtable<String, Integer> filterPerNode = new Hashtable<String, Integer>();
+	
+	/**
+	 * Hauteur réelle dans l'arbre, c-à-d, le chemin après l'application la fonction {@link skey}.
+	 * */
 	private Hashtable<Integer, String> realIndexHeight = new Hashtable<Integer, String>();
 	private Hashtable<Integer, String> indexHeight = new Hashtable<Integer, String>();
-	private Hashtable<Long, Long> timeGlobal = new Hashtable<Long, Long>();
+	private Hashtable<Long, Object> timeGlobal = new Hashtable<Long, Object>();
 	private Hashtable<Long, Long> timeCalcul = new Hashtable<Long, Long>();
 
 	private int[] nodePerServer = new int[Network.size()];
@@ -25,9 +38,11 @@ public class Config {
 	public static int requestRange = 1000000;
 	public static int sizeOfBF = 512;
 	public static int sizeOfKey = 256;
-	public static int gamma = 1;
+	public static int gamma = 1000;
 	public static boolean ObserverNw_OK = false;
-
+	
+	public static long numberOfMessages = 0;
+	
 	private NameToID translate = new NameToID(0);
 	private boolean end_OK = false;
 	private boolean config_OK = true;
@@ -41,9 +56,8 @@ public class Config {
 	public static int totalFilterAdded = 0;
 		
 	public static String date = (new SimpleDateFormat("dd-MM-yyyy/HH-mm-ss")).format(new Date());
-	public static String peerSimLOG = "/Users/dcs/vrac/test/"+ date + "_log";
-	public static String peerSimLOG_resultat = "/Users/dcs/vrac/test/" + date+ "_resultat_log";
-	public static String peerSimLOG_path = "/Users/dcs/vrac/test/" + date + "_path_log";
+	public static String peerSimLOG = "/Users/dcs/vrac/test/"+ date + "_" + version+ "/" + "_log";
+	public static String peerSimLOG_resultat = "/Users/dcs/vrac/test/" + date  + "_" + version + "/";
 	
 	public Config()
 	{
@@ -52,10 +66,9 @@ public class Config {
 			nodePerServer[i] = 0;
 		}		
 		nodeVisited = 0;
-		nodeMatched = new ArrayList<String>();
 		listAnswers = new Hashtable<Long, Object>();
 		timeCalcul = new Hashtable<Long, Long>();
-		timeGlobal = new Hashtable<Long, Long>();
+		timeGlobal = new Hashtable<Long, Object>();
 		indexHeight = new Hashtable<Integer, String>();
 		
 		time = 0;
@@ -123,24 +136,6 @@ public class Config {
 		this.listAnswers.remove(key);
 	}
 	
-	public void addNodeMatched(String s)
-	{
-		if (this.nodeMatched.contains(s))
-			return;
-		
-		this.nodeMatched.add(s);
-	}
-	
-	public ArrayList<String> getNodeMatched()
-	{
-		return this.nodeMatched;
-	}
-	
-	public int sizeNodeMatched()
-	{
-		return this.nodeMatched.size();
-	}
-	
 	public NameToID getTranslate()
 	{
 		return this.translate;
@@ -182,7 +177,7 @@ public class Config {
 		return this.filterPerNode;
 	}
 	
-	public Hashtable<Long, Long> getTimeGlobal()
+	public Hashtable<Long, Object> getTimeGlobal()
 	{
 		return this.timeGlobal;
 	} 

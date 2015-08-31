@@ -32,8 +32,10 @@ public class Message {
 	private int src;
 	private int dest;
 	private long requestID;
+//	private long splitID;
 	private boolean isLeafNode;
 	private Object option = null;
+	private Object option2 = null;
 	
 	/**Type de message :
 	 * <ul>
@@ -150,6 +152,16 @@ public class Message {
 		this.requestID = requestID;
 	}
 	
+/*	public long getSplitID()
+	{
+		return this.splitID;
+	}
+	
+	public void setSplitID(long splitID)
+	{
+		this.splitID = splitID;
+	}
+	*/
 	public Object getOption()
 	{
 		return this.option;
@@ -158,6 +170,16 @@ public class Message {
 	public void setOption(Object option)
 	{
 		this.option = option;
+	}
+	
+	public Object getOption2()
+	{
+		return this.option2;
+	}
+	
+	public void setOption2(Object option2)
+	{
+		this.option2 = option2;
 	}
 	
 	public void setIsLeafNode(boolean value)
@@ -183,7 +205,8 @@ public class Message {
 				+ "Source       : " + this.getSource() 			+ "\n  "
 				+ "Destinataire : " + this.getDestinataire() 	+ "\n  "
 				+ "RequestID    : " + this.requestID 			+ "\n  "
-				+ "Option       : " + this.option 				+ "\n";
+				+ "Option       : " + this.option 				+ "\n  "
+				+ "Option2      : " + this.option2 				+ "\n";
 	}
 	
 }

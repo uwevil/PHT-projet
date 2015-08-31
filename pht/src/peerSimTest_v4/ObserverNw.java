@@ -37,18 +37,7 @@ public class ObserverNw implements Control {
 			return false;
 		}
 		else if (ok2 && Config.ObserverNw_OK)
-		{			
-			System.out.println("Expérience n° " + experience);
-			
-			String essai = "0" + "_" + Config.version;
-			String date = (new SimpleDateFormat("dd-MM-yyyy")).format(new Date());
-			Config.peerSimLOG = "/Users/dcs/vrac/test/"+ date + "/Essai" + essai 
-					+ "/" + experience + "_log";
-			Config.peerSimLOG_resultat = "/Users/dcs/vrac/test/" + date + "/Essai" + essai 
-					+ "/" + experience + "_resultat_log";
-			Config.peerSimLOG_path = "/Users/dcs/vrac/test/" + date + "/Essai" + essai 
-					+ "/" + experience + "_path_log";
-			
+		{						
 			Node n = Network.get(23);
 			
 			Message message = new Message();
@@ -57,6 +46,7 @@ public class ObserverNw implements Control {
 
 			EDSimulator.add(0, message, n, pid);
 			
+			Config.ObserverNw_OK = false;
 				
 			/*
 			Message message = new Message();
@@ -107,7 +97,7 @@ public class ObserverNw implements Control {
 			//*******************
 			*/
 			
-			
+			/*
 			WriteFile wf = new WriteFile(Config.peerSimLOG+"_time", false);
 			wf.write("RequeteID temps(ms)\n");
 			
@@ -158,6 +148,7 @@ public class ObserverNw implements Control {
 			wf.close();
 			
 			ControlerNw.config_log.setEnd_OK(false);
+			*/
 		}
 		
 		return false;
