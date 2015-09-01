@@ -40,7 +40,7 @@ public class ControlerNw implements Control {
 			
 			Message rep = new Message();
 			
-			rep.setType(Type.createNode);
+			rep.setType(Type.CREATE_NODE);
 			rep.setPath("/");
 			rep.setOption("/");
 			rep.setDestinataire(serverID);
@@ -53,7 +53,7 @@ public class ControlerNw implements Control {
 			n = Network.get(23);
 			
 			Message message = new Message();
-			message.setType(Type.simulation);
+			message.setType(Type.SIMULATION);
 		//	message.setData(16000000);
 			message.setDestinataire(23);
 

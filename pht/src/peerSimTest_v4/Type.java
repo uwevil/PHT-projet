@@ -1,37 +1,37 @@
 package peerSimTest_v4;
 
 public enum Type {
-	createIndex, 
-	removeIndex,
+	CREATE_INDEX, 
+	REMOVE_INDEX,
 	
-	insertInit,
-	searchInit,
+	INSERT_INIT,
+	SEARCH_INIT,
 	
 	PUT,
 	PUT_OK,
 	
-	createNode,
-	createNode_OK,
+	CREATE_NODE,
+	CREATE_NODE_OK,
 	
-	insert,
+	INSERT,
 	
-	getStatus,
-	getStatus_OK,
+	GET_STATUS,
+	GET_STATUS_OK,
 	
-	lookupPath,
-	lookupPath_OK,
+	LOOKUP_PATH,
+	LOOKUP_PATH_OK,
 	
-	getStoredBF,
-	getStoredBF_OK,
+	GET_STORED_BF,
+	GET_STORED_BF_OK,
 	
-	getCollectLeaves,
-	getCollectLeaves_OK,
+	GET_COLLECT_LEAVES,
+	GET_COLLECT_LEAVES_OK,
 	
-	simulation,
-	createSimulation,
-	createSimulation_OK,
+	SIMULATION,
+	CREATE_SIMULATION,
+	CREATE_SIMULATION_OK,
 	
-	overview,
-	overview_OK,
+	OVERVIEW,
+	OVERVIEW_OK,
 	
 }

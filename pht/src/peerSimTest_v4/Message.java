@@ -109,16 +109,6 @@ public class Message {
 		this.requestID = requestID;
 	}
 	
-/*	public long getSplitID()
-	{
-		return this.splitID;
-	}
-	
-	public void setSplitID(long splitID)
-	{
-		this.splitID = splitID;
-	}
-	*/
 	public Object getOption()
 	{
 		return this.option;
@@ -157,7 +147,7 @@ public class Message {
 				+ "BF           : " + this.bf 					+ "\n  "
 				+ "Key          : " + this.key      			+ "\n  "
 				+ "Path         : " + this.path      			+ "\n  "
-		//		+ "Data         : " + this.data 				+ "\n  "
+				+ "Data         : " + this.data 				+ "\n  "
 				+ "IsLeafNode   : " + this.isLeafNode 			+ "\n  "
 				+ "Source       : " + this.getSource() 			+ "\n  "
 				+ "Destinataire : " + this.getDestinataire() 	+ "\n  "

@@ -82,9 +82,8 @@ public class SystemIndexProtocol implements EDProtocol{
 	
 	@SuppressWarnings("static-access")
 	@Override
-	public void processEvent(Node node, int pid, Object event) {
-		// TODO Auto-generated method stub
-		
+	public void processEvent(Node node, int pid, Object event)
+	{
 		t = (Transport) Network.get(nodeIndex).getProtocol(tid);
 		Message message = (Message)event;
 /*
@@ -96,13 +95,13 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		switch(message.getType())
 		{
-		case createIndex: 
+		case CREATE_INDEX: 
 			break;
 			
-		case removeIndex: 
+		case REMOVE_INDEX: 
 			break;
 			
-		case insertInit :
+		case INSERT_INIT :
 			try
 			{
 				treatInsertInit(message, pid);
@@ -113,7 +112,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			}
 			break;
 			
-		case searchInit :
+		case SEARCH_INIT :
 			try
 			{
 				treatSearchInit(message, pid);
@@ -146,7 +145,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			}
 			break;
 			
-		case createNode_OK :
+		case CREATE_NODE_OK :
 			try
 			{
 				treatCreateNode_OK(message, pid);
@@ -157,7 +156,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			}
 			break;
 			
-		case insert :
+		case INSERT :
 			try
 			{
 				treatInsert(message, pid);
@@ -168,11 +167,11 @@ public class SystemIndexProtocol implements EDProtocol{
 			}
 			break;
 			
-		case getStatus: 
+		case GET_STATUS: 
 			treatGetStatus(message, pid);
 			break;
 			
-		case getStatus_OK:
+		case GET_STATUS_OK:
 			try
 			{
 				treatGetStatus_OK(message, pid);
@@ -183,7 +182,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			}
 			break;
 			
-		case lookupPath_OK :
+		case LOOKUP_PATH_OK :
 			try 
 			{
 				treatLookupPath_OK(message, pid);
@@ -194,11 +193,11 @@ public class SystemIndexProtocol implements EDProtocol{
 			}
 			break;
 			
-		case lookupPath :
+		case LOOKUP_PATH :
 			treatLookupPath(message, pid);
 			break;
 			
-		case createNode :
+		case CREATE_NODE :
 			try
 			{
 				treatCreateNode(message, pid);
@@ -209,31 +208,32 @@ public class SystemIndexProtocol implements EDProtocol{
 			}
 			break;
 				
-		case getStoredBF :
+		case GET_STORED_BF :
 			treatGetStoredBF(message, pid);
 			break;
 			
-		case getStoredBF_OK :
+		case GET_STORED_BF_OK :
 			treatGetStoredBF_OK(message, pid);
 			break;
 			
-		case getCollectLeaves :
+		case GET_COLLECT_LEAVES :
 			treatGetCollectLeaves(message, pid);
 			break;
 			
-		case getCollectLeaves_OK :
+		case GET_COLLECT_LEAVES_OK :
 			try
 			{
 				treatGetCollectLeaves_OK(message, pid);
-			} catch (ErrorException e1) {
-				// TODO Auto-generated catch block
+			}
+			catch (ErrorException e1)
+			{
 				e1.printStackTrace();
 			}
 			break;
 			
 			
 			
-		case simulation :
+		case SIMULATION :
 			try
 			{
 				treatSimulation(message, pid);
@@ -244,11 +244,11 @@ public class SystemIndexProtocol implements EDProtocol{
 			}
 			break;
 			
-		case createSimulation :
+		case CREATE_SIMULATION :
 			treatCreateSimulation(message, pid);
 			break;
 			
-		case createSimulation_OK :
+		case CREATE_SIMULATION_OK :
 			treatCreateSimulation_OK(message, pid);
 			break;
 			
@@ -256,7 +256,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			
 			
 			
-		case overview :
+		case OVERVIEW :
 			try
 			{
 				treatOverview(message, pid);
@@ -267,7 +267,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			}
 			break;
 			
-		case overview_OK : 
+		case OVERVIEW_OK : 
 			treatOverview_OK(message, pid);
 			break;
 			
@@ -295,7 +295,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		this.list.put(path, n_tmp);
 		
 		Message rep = new Message();
-		rep.setType(Type.createSimulation_OK);
+		rep.setType(Type.CREATE_SIMULATION_OK);
 		rep.setSource(nodeIndex);
 		rep.setDestinataire(message.getSource());
 		
@@ -317,7 +317,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				String path = enumeration.nextElement();
 				
 				Message rep = new Message();
-				rep.setType(Type.createSimulation);
+				rep.setType(Type.CREATE_SIMULATION);
 				rep.setData(pht_listNodes.get(path));
 				rep.setPath(path);
 				rep.setSource(nodeIndex);
@@ -339,7 +339,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			for (int i = 0; i < Network.size(); i++)
 			{	
 				Message rep = new Message();
-				rep.setType(Type.overview);
+				rep.setType(Type.OVERVIEW);
 				rep.setSource(nodeIndex);
 				rep.setDestinataire(i);
 				
@@ -383,7 +383,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				}
 				k++;
 				System.out.println(line + "/" + k);
-				if (line == 1600)
+				if (line == 160)
 					break;
 			}
 			reader.close();
@@ -410,7 +410,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			String path = enumeration.nextElement();
 			
 			Message rep = new Message();
-			rep.setType(Type.createSimulation);
+			rep.setType(Type.CREATE_SIMULATION);
 			rep.setData(pht_listNodes.get(path));
 			rep.setPath(path);
 			rep.setSource(nodeIndex);
@@ -542,7 +542,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 		
 		Message rep = new Message();
-		rep.setType(Type.lookupPath);
+		rep.setType(Type.LOOKUP_PATH);
 		rep.setBF(bf);
 		rep.setKey(key);
 		rep.setPath(path);
@@ -583,7 +583,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				if (key.equals(key_tmp0))
 				{
 					Message rep = new Message();
-					rep.setType(Type.insert);
+					rep.setType(Type.INSERT);
 					rep.setBF(bf_tmp);
 					rep.setSource(nodeIndex);
 					
@@ -601,7 +601,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				else
 				{
 					Message rep = new Message();
-					rep.setType(Type.insert);
+					rep.setType(Type.INSERT);
 					rep.setBF(bf_tmp);
 					rep.setSource(nodeIndex);
 
@@ -626,7 +626,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			else
 			{
 				Message rep = new Message();
-				rep.setType(Type.createNode);
+				rep.setType(Type.CREATE_NODE);
 				rep.setPath("0");
 				rep.setOption("0");
 				rep.setSource(nodeIndex);
@@ -646,7 +646,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			else // serverID1 == nodeIndex
 			{
 				Message rep = new Message();
-				rep.setType(Type.createNode);
+				rep.setType(Type.CREATE_NODE);
 				rep.setPath("1");
 				rep.setOption("1");
 				rep.setSource(nodeIndex);
@@ -679,7 +679,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				if (key.equals(key_tmp0))
 				{
 					Message rep = new Message();
-					rep.setType(Type.insert);
+					rep.setType(Type.INSERT);
 					rep.setBF(bf_tmp);
 					rep.setSource(nodeIndex);
 
@@ -697,7 +697,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				else
 				{
 					Message rep = new Message();
-					rep.setType(Type.insert);
+					rep.setType(Type.INSERT);
 					rep.setBF(bf_tmp);
 					rep.setSource(nodeIndex);
 
@@ -724,7 +724,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				this.list.put(path_tmp0, n0);
 				
 				Message rep1 = new Message();
-				rep1.setType(Type.createNode);
+				rep1.setType(Type.CREATE_NODE);
 				rep1.setPath(path_tmp1);
 				rep1.setOption(path + "1");
 				rep1.setSource(nodeIndex);
@@ -745,7 +745,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				this.list.put(path_tmp1, n1);
 				
 				Message rep = new Message();
-				rep.setType(Type.createNode);
+				rep.setType(Type.CREATE_NODE);
 				rep.setPath(path_tmp0);
 				rep.setOption(path + "0");
 				rep.setSource(nodeIndex);
@@ -849,7 +849,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		Message rep = new Message();
 		
-		rep.setType(Type.lookupPath_OK);
+		rep.setType(Type.LOOKUP_PATH_OK);
 		rep.setBF(message.getBF());
 		rep.setKey(message.getKey());
 		rep.setPath(path);
@@ -874,7 +874,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			for (int i = 0; i < Network.size(); i++)
 			{	
 				Message rep = new Message();
-				rep.setType(Type.overview);
+				rep.setType(Type.OVERVIEW);
 				rep.setSource(nodeIndex);
 				rep.setDestinataire(i);
 				
@@ -1051,10 +1051,8 @@ public class SystemIndexProtocol implements EDProtocol{
 		else
 		{			
 			Message rep = new Message();
-			
-		//	rep.setType(message.getType() + "_OK");
-			
-			rep.setType(Type.valueOf(message.getType().name() + "_OK"));
+						
+			rep.setType(Type.valueOf(message.getType() + "_OK"));
 			rep.setPath(message.getPath());
 			rep.setOption(message.getOption());
 			rep.setSource(nodeIndex);
@@ -1166,7 +1164,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		this.list.put(path, n);
 		
 		Message rep = new Message();
-		rep.setType(Type.createNode_OK);
+		rep.setType(Type.CREATE_NODE_OK);
 		rep.setPath(path);
 		rep.setOption(realPath);
 		rep.setSource(nodeIndex);
@@ -1238,6 +1236,31 @@ public class SystemIndexProtocol implements EDProtocol{
 					experience++;
 				}
 			}
+			
+			/*
+			for (int i = 0; i < 10; i++)
+			{
+				BF bf = new BF(Config.sizeOfBF);
+				
+				for (j = 0; j < (i + 1)*10; j++)
+				{
+					bf.setBit(j, true);
+				}
+				
+				System.out.println(bf);
+				
+				ControlerNw.config_log.getTranslate().setRange(Config.requestRange);
+				long requestID = ControlerNw.config_log.getTranslate().translate(bf.toString());
+				
+				long time = Calendar.getInstance().getTimeInMillis();
+				ArrayList<Long> array = new ArrayList<Long>();
+				
+				array.add(time);
+				ControlerNw.config_log.getTimeGlobal().put(requestID, array);
+								
+				this.supersetSearch(bf, experience, requestID, pid);
+			}
+			*/
 		}
 	}
 		
@@ -1275,7 +1298,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		Message rep = new Message();
 		
-		rep.setType(Type.getStatus);
+		rep.setType(Type.GET_STATUS);
 		rep.setRequestID(requestID);
 		rep.setBF(bf);
 		rep.setKey(key);
@@ -1302,7 +1325,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		Message rep = new Message();
 		
-		rep.setType(Type.getStatus_OK);
+		rep.setType(Type.GET_STATUS_OK);
 		rep.setBF(message.getBF());
 		rep.setKey(message.getKey());
 		rep.setData(n_tmp);
@@ -1369,6 +1392,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			}
 			
 			int minLen = sbroot.length();
+
 			String bs_label = label.substring(1, label.length());
 			while (bs_label.length() >= minLen)
 			{
@@ -1396,7 +1420,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		Message rep = new Message();
 		
-		rep.setType(Type.getCollectLeaves);
+		rep.setType(Type.GET_COLLECT_LEAVES);
 		rep.setRequestID(requestID);
 		rep.setBF(bf);
 		rep.setKey(key);
@@ -1423,7 +1447,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		Message rep = new Message();
 		
-		rep.setType(Type.getCollectLeaves_OK);
+		rep.setType(Type.GET_COLLECT_LEAVES_OK);
 		rep.setBF(message.getBF());
 		rep.setKey(message.getKey());
 		rep.setData(n_tmp);
@@ -1500,7 +1524,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		Message rep = new Message();
 		
-		rep.setType(Type.getStoredBF);
+		rep.setType(Type.GET_STORED_BF);
 		rep.setBF(bf);
 		rep.setKey(key);
 		rep.setRequestID(requestID);
@@ -1518,7 +1542,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		Message rep = new Message();
 		
-		rep.setType(Type.getStoredBF_OK);
+		rep.setType(Type.GET_STORED_BF_OK);
 		rep.setBF(message.getBF());
 		rep.setKey(message.getKey());
 		rep.setPath(message.getPath());
@@ -1657,7 +1681,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		
 		Message rep = new Message();
-		rep.setType(Type.overview_OK);
+		rep.setType(Type.OVERVIEW_OK);
 		rep.setSource(nodeIndex);
 		rep.setDestinataire(message.getSource());
 		

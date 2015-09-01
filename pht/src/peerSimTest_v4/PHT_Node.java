@@ -99,4 +99,9 @@ public class PHT_Node implements Serializable{
 		return this.isLeafNode;
 	}
 	
+	public String toString()
+	{
+		return "Path : " + this.path + "\n" + "IsLeafNode : " +  this.isLeafNode;
+	}
+	
 }
