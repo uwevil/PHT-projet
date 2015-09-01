@@ -44,12 +44,9 @@ public class SystemIndexProtocol implements EDProtocol{
 	private int[] recu = new int[Network.size()];
 	private boolean recu_OK = false;
 	private boolean insert_OK = true;
-	private boolean search_OK = true;
+	private boolean search_OK = true;	
 	
-	private int numberOfFiltersCreated;
-	
-	
-	private Hashtable<String, PHT_Node_Central> pht_central;
+	private Hashtable<String, PHT_Node_Central> pht_listNodes;
 	
 
 	public SystemIndexProtocol(String prefix)
@@ -279,6 +276,10 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 	}
 
+	/**
+	 * Traite le message de simulation de l'initiateur.
+	 * */
+	
 	private void treatCreateSimulation(Message message, int pid)
 	{
 		String path = message.getPath();
@@ -301,11 +302,15 @@ public class SystemIndexProtocol implements EDProtocol{
 		t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
 	}
 	
+	/**
+	 * L'inititateur reçoit l'aquittement après l'envoi de message de simulation.
+	 * */
+	
 	private void treatCreateSimulation_OK(Message message, int pid)
 	{
-		if (!pht_central.isEmpty())
+		if (!pht_listNodes.isEmpty())
 		{
-			Enumeration<String> enumeration = pht_central.keys();
+			Enumeration<String> enumeration = pht_listNodes.keys();
 			
 			while (enumeration.hasMoreElements())
 			{
@@ -313,7 +318,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				
 				Message rep = new Message();
 				rep.setType("createSimulation");
-				rep.setData(pht_central.get(path));
+				rep.setData(pht_listNodes.get(path));
 				rep.setPath(path);
 				rep.setSource(nodeIndex);
 				
@@ -324,7 +329,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				
 				t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
 				
-				pht_central.remove(path);
+				pht_listNodes.remove(path);
 				
 				break;
 			}
@@ -343,7 +348,11 @@ public class SystemIndexProtocol implements EDProtocol{
 		}	
 	}
 
-	@SuppressWarnings({ "static-access", "unchecked" })
+	/**
+	 * Traite le message de simulation au lancement de la simulation.
+	 * */
+	
+	@SuppressWarnings({ "static-access" })
 	private void treatSimulation(Message message, int pid) throws ErrorException
 	{
 		init = nodeIndex;
@@ -390,12 +399,11 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		Serializer serializer = new Serializer();
 	//	serializer.writeObject(pht, ControlerNw.config_log.serializerName + "_path_central");
-		pht_central = (Hashtable<String, PHT_Node_Central>) 
-			serializer.readObject(ControlerNw.config_log.serializerName + "_path_central");
+		pht = (PHT_Central) serializer.readObject(ControlerNw.config_log.serializerName + "_path_central");
 				
-		pht_central = pht.getListNodes();
+		pht_listNodes = pht.getListNodes();
 		
-		Enumeration<String> enumeration = pht_central.keys();
+		Enumeration<String> enumeration = pht_listNodes.keys();
 		
 		while (enumeration.hasMoreElements())
 		{
@@ -403,7 +411,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			
 			Message rep = new Message();
 			rep.setType("createSimulation");
-			rep.setData(pht_central.get(path));
+			rep.setData(pht_listNodes.get(path));
 			rep.setPath(path);
 			rep.setSource(nodeIndex);
 			
@@ -414,12 +422,11 @@ public class SystemIndexProtocol implements EDProtocol{
 			
 			t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
 			
-			pht_central.remove(path);
+			pht_listNodes.remove(path);
 			
 			break;
 		}
 	}
-	
 	
 	/**
 	 * Calcule la clé de stockage associée avec le chemin "path".
@@ -515,6 +522,10 @@ public class SystemIndexProtocol implements EDProtocol{
 		return -1;
 	}
 	
+	/**
+	 * La méthode qui lance une requête de recherche d'un chemin vers le serveur qui le gère.
+	 * */
+	
 	private void lookupPath(BF bf, BF key, String path, long requestID, int pid) throws ErrorException
 	{
 		ControlerNw.config_log.getTranslate().setRange(Network.size());
@@ -542,8 +553,15 @@ public class SystemIndexProtocol implements EDProtocol{
 		t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
 	}
 
+	/**
+	 * Appellé lors qu'un nœud contient plus de {@link Config.gamma} filtres.
+	 * */
+	
 	private void splitLocal(PHT_Node n, long requestID, int pid) throws ErrorException
 	{		
+		ControlerNw.config_log.addSplit(1);
+		
+		
 		DataStore data = n.getDataStore();
 		ArrayList<BF> listKeys = data.getListBFs();
 		
@@ -741,6 +759,10 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 	}
 
+	/**
+	 * Retourne le rang d'un chemin.
+	 * */
+	
 	private int calculRang(String path)
 	{
 		if (path == "/")
@@ -748,6 +770,10 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		return path.length() - 1;
 	}
+	
+	/**
+	 * Traite le message réponse de {@link lookupPath}.
+	 * */
 	
 	private void treatLookupPath_OK(Message message, int pid) throws ErrorException
 	{
@@ -806,6 +832,10 @@ public class SystemIndexProtocol implements EDProtocol{
 		this.lookupPath(bf, key, path, requestID, pid);
 	}
 
+	/**
+	 * Traite de message {@link lookupPath}.
+	 * */
+	
 	private void treatLookupPath(Message message, int pid)
 	{		
 	/*	@SuppressWarnings("static-access")
@@ -832,6 +862,10 @@ public class SystemIndexProtocol implements EDProtocol{
 		t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);		
 	}
 
+	/**
+	 * L'initiateur lance la requête d'insertion.
+	 * */
+	
 	@SuppressWarnings("static-access")
 	private void launchInsert(int pid) throws ErrorException
 	{		
@@ -864,6 +898,10 @@ public class SystemIndexProtocol implements EDProtocol{
 			this.lookupPath(bf, key, "/", requestID, pid);
 		}
 	}
+	
+	/**
+	 * Initialise la liste des filtres pour l'insertion.
+	 * */
 	
 	private void initInsertFIFO(Message message)
 	{
@@ -908,6 +946,10 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 	}
 	
+	/**
+	 * Traite le message d'initialisation de l'insertion.
+	 * */
+	
 	@SuppressWarnings({ "static-access", "unchecked" })
 	private void treatInsertInit(Message message, int pid) throws ErrorException
 	{
@@ -930,9 +972,13 @@ public class SystemIndexProtocol implements EDProtocol{
 			System.out.println("Fin de désérialisation " + (System.currentTimeMillis() - time) + " ms");
 		}
 		
-		numberOfFiltersCreated = insertFIFO.size();
+		ControlerNw.config_log.numberOfFiltersCreated = insertFIFO.size();
 		this.launchInsert(pid);
 	}
+	
+	/**
+	 * Traite le message d'insertion.
+	 * */
 	
 	private void treatInsert(Message message, int pid) throws ErrorException
 	{
@@ -951,6 +997,10 @@ public class SystemIndexProtocol implements EDProtocol{
 			this.insertFIFO.add(message.getBF());
 		}
 	}
+	
+	/**
+	 * Envoie le message {@code PUT} vers un serveur correspondant.
+	 * */
 	
 	private void insertPath(Message message, int pid)
 	{
@@ -979,15 +1029,7 @@ public class SystemIndexProtocol implements EDProtocol{
 	}
 	
 	/**
-	 * Traiter le message de type "PUT".
-	 * 
-	 * @param message
-	 *  <li> indexName
-	 *  <li> path
-	 *  <li> BF
-	 *  
-	 *  @author dcs
-	 * @throws ErrorException 
+	 * Traite le message {@code PUT}
 	 * */
 	
 	@SuppressWarnings("static-access")
@@ -1021,6 +1063,10 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 	}
 	
+	/**
+	 * Teste si toutes les entrées d'une table de taille {@code size} sont égales à {@code 0}, sinon {@code false}.
+	 * */
+	
 	private boolean testOK(int[] tab, int size)
 	{
 		for (int i = 0; i < size; i++)
@@ -1031,6 +1077,10 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		return true;
 	}
+	
+	/**
+	 * Traite le message réponse de {@code PUT}.
+	 * */
 	
 	private void treatPUT_OK(Message message, int pid) throws ErrorException
 	{
@@ -1048,6 +1098,10 @@ public class SystemIndexProtocol implements EDProtocol{
 			this.launchInsert(pid);
 		}		
 	}
+	
+	/**
+	 * Traite le message réponse de {@code createNode}.
+	 * */
 	
 	private void treatCreateNode_OK(Message message, int pid) throws ErrorException
 	{		
@@ -1093,6 +1147,10 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 	}
 	
+	/**
+	 * Traite le message {@code createNode}.
+	 * */
+	
 	private void treatCreateNode(Message message, int pid) throws ErrorException
 	{		
 		String path = message.getPath();
@@ -1115,6 +1173,10 @@ public class SystemIndexProtocol implements EDProtocol{
 
 		t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);	
 	}
+	
+	/**
+	 * Traite le message d'initialisation de la recherche.
+	 * */
 	
 	private void treatSearchInit(Message message, int pid) throws ErrorException
 	{
@@ -1141,6 +1203,10 @@ public class SystemIndexProtocol implements EDProtocol{
 		}	
 		
 	}
+	
+	/**
+	 * Lance une recherche.
+	 * */
 	
 	private void launchSearch(int pid) throws ErrorException
 	{		
@@ -1424,6 +1490,9 @@ public class SystemIndexProtocol implements EDProtocol{
 
 	private void getStoredBF(String path, BF bf, BF key, int exprerience, long requestID, int pid)
 	{
+//		long time = Calendar.getInstance().getTimeInMillis();
+//		((ArrayList<Long>) ControlerNw.config_log.getTimeGlobal().get(requestID)).add(time);
+		
 		ControlerNw.config_log.getTranslate().setRange(Network.size());
 		int serverID = ControlerNw.config_log.getTranslate().translate(path);
 		
@@ -1460,23 +1529,26 @@ public class SystemIndexProtocol implements EDProtocol{
 		t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
 	}
 	
-	@SuppressWarnings({ "static-access", "unchecked" })
+	@SuppressWarnings({ "static-access" })
 	private void treatGetStoredBF_OK(Message message, int pid)
 	{
-		long time = Calendar.getInstance().getTimeInMillis();
-		((ArrayList<Long>) ControlerNw.config_log.getTimeGlobal().get(message.getRequestID())).add(time);
-		
 		PHT_Node n = (PHT_Node) message.getData();
 		
 		WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG_resultat 
 				+ message.getOption2() + "_path_" 
 				+ message.getRequestID(), true);
-		wf.write(message.getPath() + "\n");
+		
+		ControlerNw.config_log.addRetrieves(message.getRequestID(), 1);
+		
+		wf.write(message.getPath() + " (" + ControlerNw.config_log.getRetrieves(message.getRequestID()) + ")\n");
 		wf.close();
 		
 		if (n == null)
+		{
+		//	ArrayList<Long> arrayList = ((ArrayList<Long>) ControlerNw.config_log.getTimeGlobal().get(message.getRequestID()));
+		//	arrayList.remove(arrayList.size() - 1);
 			return;
-		
+		}
 		BF bf = message.getBF();
 		
 		ArrayList<BF> storedBF = n.getDataStore().getListBFs();
@@ -1508,6 +1580,7 @@ public class SystemIndexProtocol implements EDProtocol{
 
 		String s = ControlerNw.config_log.peerSimLOG_resultat + exprerience + "_resultat_log_" + requestID;
 		
+		int ii = 0;
 		for (int i = 0; i < storedBF.size(); i++)
 		{
 			BF bf_tmp = storedBF.get(i);
@@ -1519,13 +1592,12 @@ public class SystemIndexProtocol implements EDProtocol{
 					WriteFile wf1 = new WriteFile(s, true);
 					wf1.write("Requete : " + bf + "\n");
 					wf1.write("Key     : " + bf.getKey(Config.sizeOfKey) + "\n\n");
-					wf1.write(path + " :\n\n");
+					wf1.write("\n" + path + " :\n\n");
 					wf1.write(bf_tmp + "\n");
-					wf1.write(bf_tmp.getKey(ControlerNw.config_log.sizeOfKey) + "\n\n");
 					wf1.close();
 					
 					ArrayList<Long> arrayList = ((ArrayList<Long>) ControlerNw.config_log.getTimeGlobal().get(requestID));
-					long time = arrayList.get(arrayList.size() - 1) - arrayList.get(arrayList.size() -2);
+					long time = Calendar.getInstance().getTimeInMillis() - arrayList.get(arrayList.size() - 1);
 					
 					wf1 = new WriteFile(ControlerNw.config_log.peerSimLOG_resultat + exprerience + "_time_" + requestID, true);
 					wf1.write( ((ArrayList<String>) hashtable.get(requestID)).size() + " retrieve(s) (+" + time + " ms)\n");
@@ -1534,21 +1606,30 @@ public class SystemIndexProtocol implements EDProtocol{
 				else
 				{
 					WriteFile wf1 = new WriteFile(s, true);
-					wf1.write(bf_tmp + "\n");
-					wf1.write(bf_tmp.getKey(ControlerNw.config_log.sizeOfKey) + "\n\n");
+					if (ii == 0)
+					{
+						wf1.write("\n" + path + " :\n\n");
+						wf1.write(bf_tmp + "\n");
+					}
+					else
+					{
+						wf1.write(bf_tmp + "\n");
+					}
+					wf1.close();
+					
+					ArrayList<Long> arrayList = ((ArrayList<Long>) ControlerNw.config_log.getTimeGlobal().get(requestID));
+					long time = Calendar.getInstance().getTimeInMillis() - arrayList.get(arrayList.size() - 1);
+					
+					wf1 = new WriteFile(ControlerNw.config_log.peerSimLOG_resultat + exprerience + "_time_" + requestID, true);
+					wf1.write( ((ArrayList<String>) hashtable.get(requestID)).size() + " retrieve(s) (+" + time + " ms)\n");
 					wf1.close();
 				}
+				
+				ii++;
 			}
 		}
 	}
 
-	/**
-	 * Capturer l'état du système.
-	 * 
-	 * @author dcs
-	 * @throws ErrorException 
-	 * */
-		
 	private void treatOverview(Message message, int pid) throws ErrorException
 	{	
 		ControlerNw.config_log.setNodePerServer(nodeIndex, list.size());		
@@ -1942,8 +2023,10 @@ public class SystemIndexProtocol implements EDProtocol{
 		//*******************
 		WriteFile wf = new WriteFile(Config.peerSimLOG+"_indexHeight", false);
 		Enumeration<Integer> enumeration = ControlerNw.config_log.getIndexHeight().keys();
-		wf.write("Nombre de messages        : " + (ControlerNw.config_log.numberOfMessages - Network.size()*2 - 1*2 - 1) + "\n\n");
-		wf.write("Nombre de filtres crées   : " + numberOfFiltersCreated + "\n");
+		wf.write("Nombre de messages        : " + (ControlerNw.config_log.numberOfMessages - Network.size()*2 - 1*2 - 1) + "\n");
+		wf.write("Nombre de split           : " + ControlerNw.config_log.getSplit() + "\n\n");
+
+		wf.write("Nombre de filtres crées   : " + ControlerNw.config_log.numberOfFiltersCreated + "\n");
 		wf.write("Nombre de filtres ajoutés : " + ControlerNw.config_log.totalFilterAdded + "\n\n"); //j + "\n\n");
 		wf.write("Taille du filtre          : " + ControlerNw.config_log.sizeOfBF + "\n");
 		wf.write("Gamma                     : " + ControlerNw.config_log.gamma + "\n\n");

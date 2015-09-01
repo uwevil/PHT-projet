@@ -153,6 +153,8 @@ public class PHT_Central implements Serializable{
 	
 	private void split(PHT_Node_Central n) throws ErrorException
 	{		
+		ControlerNw.config_log.addSplit(1);
+		
 		ArrayList<BF> listKeys = n.getListKeys();
 		n.setListKey(null);
 		

@@ -18,6 +18,8 @@ public class Config {
 	 * */
 	private Hashtable<Long, Object> listAnswers = new Hashtable<Long, Object>();
 	
+	private Hashtable<Long, Integer> retrieves = new Hashtable<Long, Integer>();
+	
 	/**
 	 * Nombre de filtres sur chaque nœud dans l'arbre.
 	 * */
@@ -70,8 +72,12 @@ public class Config {
 	 * Nombre de messages dans le réseau sans compter les messages {@code init}, {@code overview}.
 	 * */
 	public static long numberOfMessages = 0;
+	
+	public static int numberOfFiltersCreated = 3386463;
 		
-	public static int totalFilterAdded = 0;
+	public static int totalFilterAdded = 3073443;
+	
+	private long split = 7109;
 
 	public static String date = (new SimpleDateFormat("dd-MM-yyyy/HH-mm-ss")).format(new Date());
 	
@@ -101,13 +107,14 @@ public class Config {
 		listAnswers = new Hashtable<Long, Object>();
 		timeGlobal = new Hashtable<Long, Object>();
 		indexHeight = new Hashtable<Integer, String>();
+		retrieves = new Hashtable<Long, Integer>();
 				
 		date = (new SimpleDateFormat("dd/MM/yyyy/HH-mm-ss")).format(new Date());
 		nodePerServer = new int[Network.size()];
 		
 		for (int i = 0; i < Network.size(); i++)
 			nodePerServer[i] = 0;
-		
+		split = 0;
 		config_OK = true;
 	}
 	
@@ -200,6 +207,35 @@ public class Config {
 	public Hashtable<Integer, String> getRealIndexHeight()
 	{
 		return this.realIndexHeight;
+	}
+	
+	public synchronized void addSplit(long i)
+	{
+		this.split += i;
+	}
+	
+	public long getSplit()
+	{
+		return this.split;
+	}
+	
+	public synchronized void addRetrieves(long requestID, int i)
+	{
+		if (!this.retrieves.containsKey(requestID))
+		{
+			this.retrieves.put(requestID, i);
+		}
+		else
+		{
+			int tmp = this.retrieves.get(requestID) + i;
+			this.retrieves.remove(requestID);
+			this.retrieves.put(requestID, tmp);
+		}
+	}
+	
+	public int getRetrieves(long requestID)
+	{
+		return this.retrieves.get(requestID);
 	}
 	
 }
