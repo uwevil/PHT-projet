@@ -3,7 +3,7 @@ package peerSimTest_v4;
 public class Message {
 	
 	private String indexName;
-	private String type = "";
+	private Type type;
 	private String path;
 	private Object data = null;
 	private BF key;
@@ -49,12 +49,12 @@ public class Message {
 		this.key = key;
 	}
 	
-	public String getType()
+	public Type getType()
 	{
 		return this.type;
 	}
 	
-	public void setType(String type)
+	public void setType(Type type)
 	{
 		this.type = type;
 	}

@@ -41,7 +41,7 @@ public class ObserverNw implements Control {
 			Node n = Network.get(23);
 			
 			Message message = new Message();
-			message.setType("searchInit");
+			message.setType(Type.searchInit);
 			message.setDestinataire(23);
 
 			EDSimulator.add(0, message, n, pid);
