@@ -39,3 +39,7 @@ control.0.step 100
 control.1 peerSimTest_v4.ObserverNw
 control.1.protocol link
 control.1.step 7000
+
+control.2 peerSimTest_v4.ObserverNw_tmp
+control.2.protocol link
+control.2.step 100000

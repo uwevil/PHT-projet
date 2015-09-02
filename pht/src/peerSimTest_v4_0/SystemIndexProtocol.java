@@ -1,7 +1,6 @@
-package peerSimTest_v4;
+package peerSimTest_v4_0;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -32,6 +31,8 @@ public class SystemIndexProtocol implements EDProtocol{
 	private Hashtable<Long, String> listPath = new Hashtable<Long, String>();
 	private ArrayDeque<BF> insertFIFO = new ArrayDeque<BF>();
 	private ArrayDeque<BF> searchFIFO = new ArrayDeque<BF>();
+	
+	private Hashtable<Long, BF> listRequests = new Hashtable<Long, BF>();
 	
 	private Hashtable<Integer, ArrayList<Message>> splitData = new Hashtable<Integer, ArrayList<Message>>();
 	
@@ -295,7 +296,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		this.list.put(path, n_tmp);
 		
 		Message rep = new Message();
-		rep.setType(Type.CREATE_SIMULATION_OK);
+		rep.setType(MessageType.CREATE_SIMULATION_OK);
 		rep.setSource(nodeIndex);
 		rep.setDestinataire(message.getSource());
 		
@@ -317,7 +318,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				String path = enumeration.nextElement();
 				
 				Message rep = new Message();
-				rep.setType(Type.CREATE_SIMULATION);
+				rep.setType(MessageType.CREATE_SIMULATION);
 				rep.setData(pht_listNodes.get(path));
 				rep.setPath(path);
 				rep.setSource(nodeIndex);
@@ -339,7 +340,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			for (int i = 0; i < Network.size(); i++)
 			{	
 				Message rep = new Message();
-				rep.setType(Type.OVERVIEW);
+				rep.setType(MessageType.OVERVIEW);
 				rep.setSource(nodeIndex);
 				rep.setDestinataire(i);
 				
@@ -410,7 +411,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			String path = enumeration.nextElement();
 			
 			Message rep = new Message();
-			rep.setType(Type.CREATE_SIMULATION);
+			rep.setType(MessageType.CREATE_SIMULATION);
 			rep.setData(pht_listNodes.get(path));
 			rep.setPath(path);
 			rep.setSource(nodeIndex);
@@ -542,7 +543,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 		
 		Message rep = new Message();
-		rep.setType(Type.LOOKUP_PATH);
+		rep.setType(MessageType.LOOKUP_PATH);
 		rep.setBF(bf);
 		rep.setKey(key);
 		rep.setPath(path);
@@ -583,7 +584,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				if (key.equals(key_tmp0))
 				{
 					Message rep = new Message();
-					rep.setType(Type.INSERT);
+					rep.setType(MessageType.INSERT);
 					rep.setBF(bf_tmp);
 					rep.setSource(nodeIndex);
 					
@@ -601,7 +602,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				else
 				{
 					Message rep = new Message();
-					rep.setType(Type.INSERT);
+					rep.setType(MessageType.INSERT);
 					rep.setBF(bf_tmp);
 					rep.setSource(nodeIndex);
 
@@ -626,7 +627,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			else
 			{
 				Message rep = new Message();
-				rep.setType(Type.CREATE_NODE);
+				rep.setType(MessageType.CREATE_NODE);
 				rep.setPath("0");
 				rep.setOption("0");
 				rep.setSource(nodeIndex);
@@ -646,7 +647,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			else // serverID1 == nodeIndex
 			{
 				Message rep = new Message();
-				rep.setType(Type.CREATE_NODE);
+				rep.setType(MessageType.CREATE_NODE);
 				rep.setPath("1");
 				rep.setOption("1");
 				rep.setSource(nodeIndex);
@@ -679,7 +680,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				if (key.equals(key_tmp0))
 				{
 					Message rep = new Message();
-					rep.setType(Type.INSERT);
+					rep.setType(MessageType.INSERT);
 					rep.setBF(bf_tmp);
 					rep.setSource(nodeIndex);
 
@@ -697,7 +698,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				else
 				{
 					Message rep = new Message();
-					rep.setType(Type.INSERT);
+					rep.setType(MessageType.INSERT);
 					rep.setBF(bf_tmp);
 					rep.setSource(nodeIndex);
 
@@ -724,7 +725,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				this.list.put(path_tmp0, n0);
 				
 				Message rep1 = new Message();
-				rep1.setType(Type.CREATE_NODE);
+				rep1.setType(MessageType.CREATE_NODE);
 				rep1.setPath(path_tmp1);
 				rep1.setOption(path + "1");
 				rep1.setSource(nodeIndex);
@@ -745,7 +746,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				this.list.put(path_tmp1, n1);
 				
 				Message rep = new Message();
-				rep.setType(Type.CREATE_NODE);
+				rep.setType(MessageType.CREATE_NODE);
 				rep.setPath(path_tmp0);
 				rep.setOption(path + "0");
 				rep.setSource(nodeIndex);
@@ -849,7 +850,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		Message rep = new Message();
 		
-		rep.setType(Type.LOOKUP_PATH_OK);
+		rep.setType(MessageType.LOOKUP_PATH_OK);
 		rep.setBF(message.getBF());
 		rep.setKey(message.getKey());
 		rep.setPath(path);
@@ -874,7 +875,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			for (int i = 0; i < Network.size(); i++)
 			{	
 				Message rep = new Message();
-				rep.setType(Type.OVERVIEW);
+				rep.setType(MessageType.OVERVIEW);
 				rep.setSource(nodeIndex);
 				rep.setDestinataire(i);
 				
@@ -950,7 +951,7 @@ public class SystemIndexProtocol implements EDProtocol{
 	 * Traite le message d'initialisation de l'insertion.
 	 * */
 	
-	@SuppressWarnings({ "static-access", "unchecked" })
+	@SuppressWarnings({ "static-access" })
 	private void treatInsertInit(Message message, int pid) throws ErrorException
 	{
 		System.out.println("Lecture n°1");
@@ -966,8 +967,8 @@ public class SystemIndexProtocol implements EDProtocol{
 			long time = System.currentTimeMillis();
 
 			System.out.println("Désérialisation");
-			Serializer serializer = new Serializer();
-			this.insertFIFO = (ArrayDeque<BF>) serializer.readObject("/Users/dcs/vrac/test/fifo_" + ControlerNw.config_log.version);
+		//	Serializer serializer = new Serializer();
+		//	this.insertFIFO = (ArrayDeque<BF>) serializer.readObject("/Users/dcs/vrac/test/fifo_" + ControlerNw.config_log.version);
 			
 			System.out.println("Fin de désérialisation " + (System.currentTimeMillis() - time) + " ms");
 		}
@@ -1011,7 +1012,7 @@ public class SystemIndexProtocol implements EDProtocol{
 
 		Message rep = new Message();
 		
-		rep.setType(Type.PUT);
+		rep.setType(MessageType.PUT);
 		rep.setBF(bf);
 		rep.setKey(key);
 		rep.setPath(path);
@@ -1052,7 +1053,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		{			
 			Message rep = new Message();
 						
-			rep.setType(Type.valueOf(message.getType() + "_OK"));
+			rep.setType(MessageType.valueOf(message.getType() + "_OK"));
 			rep.setPath(message.getPath());
 			rep.setOption(message.getOption());
 			rep.setSource(nodeIndex);
@@ -1131,7 +1132,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				
 				Message rep = new Message();
 				
-				rep.setType(Type.valueOf(tmp.getType() + "_OK"));
+				rep.setType(MessageType.valueOf(tmp.getType() + "_OK"));
 				rep.setPath(tmp.getPath());
 				rep.setOption(tmp.getOption());
 				rep.setSource(nodeIndex);
@@ -1164,7 +1165,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		this.list.put(path, n);
 		
 		Message rep = new Message();
-		rep.setType(Type.CREATE_NODE_OK);
+		rep.setType(MessageType.CREATE_NODE_OK);
 		rep.setPath(path);
 		rep.setOption(realPath);
 		rep.setSource(nodeIndex);
@@ -1208,6 +1209,7 @@ public class SystemIndexProtocol implements EDProtocol{
 	 * Lance une recherche.
 	 * */
 	
+	@SuppressWarnings("static-access")
 	private void launchSearch(int pid) throws ErrorException
 	{		
 		if (search_OK)
@@ -1221,8 +1223,17 @@ public class SystemIndexProtocol implements EDProtocol{
 				ControlerNw.config_log.getTranslate().setRange(Config.requestRange);
 				long requestID = ControlerNw.config_log.getTranslate().translate(bf.toString());
 				
+				this.listRequests.put(requestID, bf);
+				
+				ControlerNw.config_log.listRequestID.add(requestID);
+				
 				long time = Calendar.getInstance().getTimeInMillis();
 				ArrayList<Long> array = new ArrayList<Long>();
+				
+				WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG_resultat + requestID + ".xml", true);
+				wf.write("<request id=" + requestID + ", nbkeywords=" + (experience + 5)
+						+ ", time=" + time +">\n");
+				wf.close();
 				
 				array.add(time);
 				ControlerNw.config_log.getTimeGlobal().put(requestID, array);
@@ -1282,26 +1293,24 @@ public class SystemIndexProtocol implements EDProtocol{
 		{
 			sbroot += q.toString().substring(0, nbOnes);
 		}
-		this.exploreSubtree(sbroot, q, bf, experience, requestID, pid);
+		this.exploreSubtree(sbroot, experience, requestID, pid);
 	}
 
-	private void exploreSubtree(String sbroot, BF q, BF bf, int exprerience, long requestID, int pid) throws ErrorException
+	private void exploreSubtree(String sbroot, int exprerience, long requestID, int pid) throws ErrorException
 	{
 		String prefix = sbroot + "1";
-		this.getStatus(this.skey(prefix.substring(1, prefix.length())), sbroot, bf, q, exprerience, requestID, pid);
+		this.getStatus(this.skey(prefix.substring(1, prefix.length())), sbroot, exprerience, requestID, pid);
 	}
 	
-	private void getStatus(String path, String sbroot, BF bf, BF key, int exprerience, long requestID, int pid)
+	private void getStatus(String path, String sbroot, int exprerience, long requestID, int pid)
 	{
 		ControlerNw.config_log.getTranslate().setRange(Network.size());
 		int serverID = ControlerNw.config_log.getTranslate().translate(path);
 		
 		Message rep = new Message();
 		
-		rep.setType(Type.GET_STATUS);
+		rep.setType(MessageType.GET_STATUS);
 		rep.setRequestID(requestID);
-		rep.setBF(bf);
-		rep.setKey(key);
 		rep.setPath(path);
 		rep.setSource(nodeIndex);
 		rep.setDestinataire(serverID);
@@ -1325,9 +1334,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		Message rep = new Message();
 		
-		rep.setType(Type.GET_STATUS_OK);
-		rep.setBF(message.getBF());
-		rep.setKey(message.getKey());
+		rep.setType(MessageType.GET_STATUS_OK);
 		rep.setData(n_tmp);
 		rep.setSource(nodeIndex);
 		rep.setDestinataire(message.getSource());
@@ -1340,8 +1347,10 @@ public class SystemIndexProtocol implements EDProtocol{
 	
 	private void treatGetStatus_OK(Message message, int pid) throws ErrorException
 	{
-		BF bf = message.getBF();
-		BF q = message.getKey();
+		ControlerNw.config_log.addGetStatus(message.getRequestID(), 1);
+		
+		BF bf = this.listRequests.get(message.getRequestID());
+		BF q = bf.getKey(Config.sizeOfKey);
 		int exprerience = (int) message.getOption2();
 		long requestID = message.getRequestID();
 		String sbroot = (String) message.getOption();
@@ -1363,7 +1372,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				tmp = this.skey(path.substring(1, path.length()));
 			}
 			
-			this.getStoredBF(tmp, bf, q, exprerience, message.getRequestID(), pid);
+			this.getStoredBF(tmp, exprerience, message.getRequestID(), pid);
 		}
 		else
 		{
@@ -1372,7 +1381,7 @@ public class SystemIndexProtocol implements EDProtocol{
 			if (label.length() > (toMatchLen + 1))
 			{
 				label = label.substring(0, toMatchLen + 1);
-				this.collectLeaves(label, bf, q, exprerience, requestID, pid);
+				this.collectLeaves(label, exprerience, requestID, pid);
 				label = label.substring(0, toMatchLen);
 			}
 			else
@@ -1388,7 +1397,7 @@ public class SystemIndexProtocol implements EDProtocol{
 					tmp = this.skey(path.substring(1, path.length()));
 				}
 				
-				this.getStoredBF(tmp, bf, q, exprerience, requestID, pid);				
+				this.getStoredBF(tmp, exprerience, requestID, pid);				
 			}
 			
 			int minLen = sbroot.length();
@@ -1400,30 +1409,28 @@ public class SystemIndexProtocol implements EDProtocol{
 				bs_label = bs_label.substring(0, bs_label.length() - 1) + "0";
 				if (qprefix.in(new BF(bs_label)))
 				{
-					this.exploreSubtree("/" + bs_label, q, bf, exprerience, requestID, pid);
+					this.exploreSubtree("/" + bs_label, exprerience, requestID, pid);
 				}
 				bs_label = bs_label.substring(0, bs_label.length() - 1);
 			}
 		}
 	}
 	
-	private void collectLeaves(String sbroot, BF bf, BF key, int exprerience, long requestID, int pid) throws ErrorException
+	private void collectLeaves(String sbroot, int exprerience, long requestID, int pid) throws ErrorException
 	{
 		String prefix = sbroot + "1";
-		this.getCollectLeaves(this.skey(prefix.substring(1, prefix.length())), sbroot, bf, key, exprerience, requestID, pid);
+		this.getCollectLeaves(this.skey(prefix.substring(1, prefix.length())), sbroot, exprerience, requestID, pid);
 	}
 	
-	private void getCollectLeaves(String path, String sbroot, BF bf, BF key, int exprerience, long requestID, int pid)
+	private void getCollectLeaves(String path, String sbroot, int exprerience, long requestID, int pid)
 	{
 		ControlerNw.config_log.getTranslate().setRange(Network.size());
 		int serverID = ControlerNw.config_log.getTranslate().translate(path);
 		
 		Message rep = new Message();
 		
-		rep.setType(Type.GET_COLLECT_LEAVES);
+		rep.setType(MessageType.GET_COLLECT_LEAVES);
 		rep.setRequestID(requestID);
-		rep.setBF(bf);
-		rep.setKey(key);
 		rep.setPath(path);
 		rep.setSource(nodeIndex);
 		rep.setDestinataire(serverID);
@@ -1447,9 +1454,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		Message rep = new Message();
 		
-		rep.setType(Type.GET_COLLECT_LEAVES_OK);
-		rep.setBF(message.getBF());
-		rep.setKey(message.getKey());
+		rep.setType(MessageType.GET_COLLECT_LEAVES_OK);
 		rep.setData(n_tmp);
 		rep.setSource(nodeIndex);
 		rep.setDestinataire(message.getSource());
@@ -1462,8 +1467,6 @@ public class SystemIndexProtocol implements EDProtocol{
 	
 	private void treatGetCollectLeaves_OK(Message message, int pid) throws ErrorException
 	{
-		BF bf = message.getBF();
-		BF key = message.getKey();
 		String sbroot = (String) message.getOption();
 		
 		int experience = (int) message.getOption2();
@@ -1486,7 +1489,7 @@ public class SystemIndexProtocol implements EDProtocol{
 				tmp = this.skey(path.substring(1, path.length()));
 			}
 			
-			this.getStoredBF(tmp, bf, key, experience, requestID, pid);			
+			this.getStoredBF(tmp, experience, requestID, pid);			
 		}
 		else
 		{
@@ -1502,19 +1505,19 @@ public class SystemIndexProtocol implements EDProtocol{
 				tmp = this.skey(path.substring(1, path.length()));
 			}
 			
-			this.getStoredBF(tmp, bf, key, experience, requestID, pid);			
+			this.getStoredBF(tmp, experience, requestID, pid);			
 			
 			int minLen = sbroot.length();
 			String bs_label = label.substring(1, label.length());
 			while (bs_label.length() >= minLen)
 			{
-				this.collectLeaves("/" + bs_label, bf, key, experience, requestID, pid);
+				this.collectLeaves("/" + bs_label, experience, requestID, pid);
 				bs_label = bs_label.substring(0, bs_label.length() - 1);
 			}
 		}
 	}
 
-	private void getStoredBF(String path, BF bf, BF key, int exprerience, long requestID, int pid)
+	private void getStoredBF(String path, int exprerience, long requestID, int pid)
 	{
 //		long time = Calendar.getInstance().getTimeInMillis();
 //		((ArrayList<Long>) ControlerNw.config_log.getTimeGlobal().get(requestID)).add(time);
@@ -1524,9 +1527,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		Message rep = new Message();
 		
-		rep.setType(Type.GET_STORED_BF);
-		rep.setBF(bf);
-		rep.setKey(key);
+		rep.setType(MessageType.GET_STORED_BF);
 		rep.setRequestID(requestID);
 		rep.setPath(path);
 		rep.setSource(nodeIndex);
@@ -1542,9 +1543,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		Message rep = new Message();
 		
-		rep.setType(Type.GET_STORED_BF_OK);
-		rep.setBF(message.getBF());
-		rep.setKey(message.getKey());
+		rep.setType(MessageType.GET_STORED_BF_OK);
 		rep.setPath(message.getPath());
 		rep.setData(n);
 		rep.setSource(nodeIndex);
@@ -1555,19 +1554,11 @@ public class SystemIndexProtocol implements EDProtocol{
 		t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
 	}
 	
-	@SuppressWarnings({ "static-access" })
 	private void treatGetStoredBF_OK(Message message, int pid)
 	{
 		PHT_Node n = (PHT_Node) message.getData();
 		
-		WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG_resultat 
-				+ message.getOption2() + "_path_" 
-				+ message.getRequestID(), true);
-		
 		ControlerNw.config_log.addRetrieves(message.getRequestID(), 1);
-		
-		wf.write(message.getPath() + " (" + ControlerNw.config_log.getRetrieves(message.getRequestID()) + ")\n");
-		wf.close();
 		
 		if (n == null)
 		{
@@ -1575,7 +1566,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		//	arrayList.remove(arrayList.size() - 1);
 			return;
 		}
-		BF bf = message.getBF();
+		BF bf = this.listRequests.get(message.getRequestID());
 		
 		ArrayList<BF> storedBF = n.getDataStore().getListBFs();
 		
@@ -1583,7 +1574,7 @@ public class SystemIndexProtocol implements EDProtocol{
 	}
 	
 	@SuppressWarnings({ "unchecked", "static-access" })
-	private void retrieveSuperset(ArrayList<BF> storedBF, BF bf, int exprerience, long requestID, String path)
+	private void retrieveSuperset(ArrayList<BF> storedBF, BF bf, int experience, long requestID, String path)
 	{
 		//*******************LOG**********************	
 		Hashtable<Long, Object> hashtable = (Hashtable<Long, Object>) 
@@ -1603,55 +1594,27 @@ public class SystemIndexProtocol implements EDProtocol{
 			((ArrayList<String>) hashtable.get(requestID)).add(path);
 		}		
 		//*******************LOG**********************	
-
-		String s = ControlerNw.config_log.peerSimLOG_resultat + exprerience + "_resultat_log_" + requestID;
 		
-		int ii = 0;
+		ControlerNw.config_log.addNbFiltersRetrieved(requestID, storedBF.size());
+		
 		for (int i = 0; i < storedBF.size(); i++)
 		{
 			BF bf_tmp = storedBF.get(i);
 			if (bf.in(bf_tmp))
 			{
-				File fs = new File(s);
-				if (!fs.exists())
-				{	
-					WriteFile wf1 = new WriteFile(s, true);
-					wf1.write("Requete : " + bf + "\n");
-					wf1.write("Key     : " + bf.getKey(Config.sizeOfKey) + "\n\n");
-					wf1.write("\n" + path + " :\n\n");
-					wf1.write(bf_tmp + "\n");
-					wf1.close();
-					
-					ArrayList<Long> arrayList = ((ArrayList<Long>) ControlerNw.config_log.getTimeGlobal().get(requestID));
-					long time = Calendar.getInstance().getTimeInMillis() - arrayList.get(arrayList.size() - 1);
-					
-					wf1 = new WriteFile(ControlerNw.config_log.peerSimLOG_resultat + exprerience + "_time_" + requestID, true);
-					wf1.write( ((ArrayList<String>) hashtable.get(requestID)).size() + " retrieve(s) (+" + time + " ms)\n");
-					wf1.close();
-				}	
-				else
-				{
-					WriteFile wf1 = new WriteFile(s, true);
-					if (ii == 0)
-					{
-						wf1.write("\n" + path + " :\n\n");
-						wf1.write(bf_tmp + "\n");
-					}
-					else
-					{
-						wf1.write(bf_tmp + "\n");
-					}
-					wf1.close();
-					
-					ArrayList<Long> arrayList = ((ArrayList<Long>) ControlerNw.config_log.getTimeGlobal().get(requestID));
-					long time = Calendar.getInstance().getTimeInMillis() - arrayList.get(arrayList.size() - 1);
-					
-					wf1 = new WriteFile(ControlerNw.config_log.peerSimLOG_resultat + exprerience + "_time_" + requestID, true);
-					wf1.write( ((ArrayList<String>) hashtable.get(requestID)).size() + " retrieve(s) (+" + time + " ms)\n");
-					wf1.close();
-				}
+				ArrayList<Long> arrayList = ((ArrayList<Long>) ControlerNw.config_log.getTimeGlobal().get(requestID));
+				long time = Calendar.getInstance().getTimeInMillis();
+				arrayList.add(time);
 				
-				ii++;
+				time = time - arrayList.get(0);
+				
+				WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG_resultat + requestID + ".xml", true);
+				String s = this.baslise("path", path) + "\n";
+				s += this.baslise("time", time+"") + "\n";
+				s += this.baslise("retrieveAt", ControlerNw.config_log.getRetrieves(requestID)+"") + "\n";
+				s += this.baslise("filter", bf_tmp.toString() + "\n");
+				wf.write(this.baslise("resultat", s) +"\n");
+				wf.close();				
 			}
 		}
 	}
@@ -1681,7 +1644,7 @@ public class SystemIndexProtocol implements EDProtocol{
 		
 		
 		Message rep = new Message();
-		rep.setType(Type.OVERVIEW_OK);
+		rep.setType(MessageType.OVERVIEW_OK);
 		rep.setSource(nodeIndex);
 		rep.setDestinataire(message.getSource());
 		
@@ -1708,390 +1671,106 @@ public class SystemIndexProtocol implements EDProtocol{
 		}
 		
 		ControlerNw.config_log.setConfig_OK(false);
+				
+		WriteFile wf1 = new WriteFile(Config.peerSimLOG + "_nodePerServer.csv", true);
 		
-		Hashtable<Integer, Integer> tab = new Hashtable<Integer, Integer>();
+		wf1.write("nodeIndex;nombre de noeuds\n");
 		
-		WriteFile wf1 = new WriteFile(Config.peerSimLOG + "_nodePerServer", true);
-		
-		int j = 0;
-		int k = 0;
 		for (int i = 0; i < Network.size(); i++)
 		{
 			if (ControlerNw.config_log.getNodePerServer(i) == 0)
 				continue;
 			
-			j += ControlerNw.config_log.getNodePerServer(i);
-
-			if (tab.containsKey(ControlerNw.config_log.getNodePerServer(i)))
-			{
-				int p = tab.get(ControlerNw.config_log.getNodePerServer(i)) + 1;
-				tab.remove(ControlerNw.config_log.getNodePerServer(i));
-				tab.put(ControlerNw.config_log.getNodePerServer(i), p);
-			}
-			else
-			{
-				tab.put(ControlerNw.config_log.getNodePerServer(i), 1);
-			}
-			
-			if (i < 10)
-			{
-				wf1.write(i + "       " + ControlerNw.config_log.getNodePerServer(i) + "\n");
-			}
-			else if (i < 100)
-			{ 
-				wf1.write(i + "      " + ControlerNw.config_log.getNodePerServer(i) + "\n");
-			}
-			else
-			{					
-				wf1.write(i + "     " + ControlerNw.config_log.getNodePerServer(i) + "\n");
-			}
-			k++;
+			wf1.write(i + ";" + ControlerNw.config_log.getNodePerServer(i) + "\n");
 		}
 		
-		wf1.write("Total : " + k + " pairs " + j+ " nœuds\n");
-		
-		Enumeration<Integer> enumeration2 = tab.keys();
-		
-		while (enumeration2.hasMoreElements())
-		{
-			int q = enumeration2.nextElement();
-			
-			float tmp = (float) ((float)(tab.get(q))/(float)k)*100;
-			float tmp2 = (float) ((float)(tab.get(q)*q)/(float)j)*100;
-			wf1.write(tab.get(q) + " pairs contient "+ q + " nœuds = " + tmp + "% de pairs " + tmp2 +"% de nœuds\n");
-		}
-			
 		wf1.close();
+
+		wf1 = new WriteFile(Config.peerSimLOG + "_filterPerNode.csv", true);
 		
-		wf1 = new WriteFile(Config.peerSimLOG + "_filterPerNode", true);
+		wf1.write("index;nombre de filtres;noeud\n");
+
 		
 		Enumeration<String> enumeration4 = ControlerNw.config_log.getFilterPerNode().keys();
 		
 		int i = 0;
-		j = 0;
-		k = 0;
 				
-		Hashtable<Integer, ArrayList<String>> hias = new Hashtable<Integer, ArrayList<String>>();
 		while (enumeration4.hasMoreElements())
 		{
 			String s_tmp = enumeration4.nextElement();
 			
-			WriteFile wf2 = new WriteFile(Config.peerSimLOG + "_node", true);
+			WriteFile wf2 = new WriteFile(Config.peerSimLOG + "_node.csv", true);
 			ControlerNw.config_log.getTranslate().setRange(Network.size());
-			if (s_tmp != "/")
+			if (!s_tmp.equals("/"))
 			{
-				wf2.write(s_tmp + "        " + ControlerNw.config_log.getTranslate().translate(s_tmp) + "\n");
+				wf2.write(s_tmp + ";" + ControlerNw.config_log.getTranslate().translate(s_tmp) + "\n");
 			}
 			else
 			{
-				wf2.write(s_tmp + "\n");
+				ControlerNw.config_log.getTranslate().setRange(Network.size());
+				int serverID = ControlerNw.config_log.getTranslate().translate("/");
+				
+				wf2.write(s_tmp + ";" + serverID + "\n");
 			}
 			wf2.close();
 			
-			if (ControlerNw.config_log.getFilterPerNode().get(s_tmp) == 0)
-			{
-				i++;
-				continue;
-			}
+			wf1.write(i + ";" 
+					+ ControlerNw.config_log.getFilterPerNode().get(s_tmp) + ";" + s_tmp +  "\n");
 			
-			j += ControlerNw.config_log.getFilterPerNode().get(s_tmp);
-			
-			if (i < 10)
-			{
-				wf1.write(i + "       " 
-						+ ControlerNw.config_log.getFilterPerNode().get(s_tmp) + "    " + s_tmp +  "\n");
-			}
-			else if (i < 100)
-			{ 
-				wf1.write(i + "      " 
-						+ ControlerNw.config_log.getFilterPerNode().get(s_tmp) + "    " + s_tmp + "\n");
-			}
-			else
-			{					
-				wf1.write(i + "     " 
-						+ ControlerNw.config_log.getFilterPerNode().get(s_tmp) + "    " + s_tmp + "\n");
-			}
 			i++;
-			k++;
-			
-			if (ControlerNw.config_log.getFilterPerNode().get(s_tmp) < 50)
-			{
-				if (hias.containsKey(50))
-				{
-					hias.get(50).add(s_tmp);
-				}
-				else
-				{
-					ArrayList<String> als = new ArrayList<String>();
-					als.add(s_tmp);
-					hias.put(50, als);
-				}
-			}
-			else if (ControlerNw.config_log.getFilterPerNode().get(s_tmp) < 100)
-			{
-				if (hias.containsKey(100))
-				{
-					hias.get(100).add(s_tmp);
-				}
-				else
-				{
-					ArrayList<String> als = new ArrayList<String>();
-					als.add(s_tmp);
-					hias.put(100, als);
-				}
-			}
-			else if (ControlerNw.config_log.getFilterPerNode().get(s_tmp) < 200)
-			{
-				if (hias.containsKey(200))
-				{
-					hias.get(200).add(s_tmp);
-				}
-				else
-				{
-					ArrayList<String> als = new ArrayList<String>();
-					als.add(s_tmp);
-					hias.put(200, als);
-				}
-			}
-			else if (ControlerNw.config_log.getFilterPerNode().get(s_tmp) < 500)
-			{
-				if (hias.containsKey(500))
-				{
-					hias.get(500).add(s_tmp);
-				}
-				else
-				{
-					ArrayList<String> als = new ArrayList<String>();
-					als.add(s_tmp);
-					hias.put(500, als);
-				}
-			}
-			else if (ControlerNw.config_log.getFilterPerNode().get(s_tmp) < 1000)
-			{
-				if (hias.containsKey(1000))
-				{
-					hias.get(1000).add(s_tmp);
-				}
-				else
-				{
-					ArrayList<String> als = new ArrayList<String>();
-					als.add(s_tmp);
-					hias.put(1000, als);
-				}
-			}
-			else if (ControlerNw.config_log.getFilterPerNode().get(s_tmp) < 5000)
-			{
-				System.out.println("<5000 = " + ControlerNw.config_log.getFilterPerNode().get(s_tmp));
-				if (hias.containsKey(5000))
-				{
-					hias.get(5000).add(s_tmp);
-				}
-				else
-				{
-					ArrayList<String> als = new ArrayList<String>();
-					als.add(s_tmp);
-					hias.put(5000, als);
-				}
-			}
-			else if (ControlerNw.config_log.getFilterPerNode().get(s_tmp) < 10000)
-			{
-				if (hias.containsKey(10000))
-				{
-					hias.get(10000).add(s_tmp);
-				}
-				else
-				{
-					ArrayList<String> als = new ArrayList<String>();
-					als.add(s_tmp);
-					hias.put(10000, als);
-				}
-			}
-			else if (ControlerNw.config_log.getFilterPerNode().get(s_tmp) < 15000)
-			{
-				if (hias.containsKey(15000))
-				{
-					hias.get(15000).add(s_tmp);
-				}
-				else
-				{
-					ArrayList<String> als = new ArrayList<String>();
-					als.add(s_tmp);
-					hias.put(15000, als);
-				}
-			}
-			else if (ControlerNw.config_log.getFilterPerNode().get(s_tmp) < 20000)
-			{
-				if (hias.containsKey(20000))
-				{
-					hias.get(20000).add(s_tmp);
-				}
-				else
-				{
-					ArrayList<String> als = new ArrayList<String>();
-					als.add(s_tmp);
-					hias.put(20000, als);
-				}
-			}
-			else if (ControlerNw.config_log.getFilterPerNode().get(s_tmp) < 30000)
-			{
-				if (hias.containsKey(30000))
-				{
-					hias.get(30000).add(s_tmp);
-				}
-				else
-				{
-					ArrayList<String> als = new ArrayList<String>();
-					als.add(s_tmp);
-					hias.put(30000, als);
-				}
-			}
-			else if (ControlerNw.config_log.getFilterPerNode().get(s_tmp) < 40000)
-			{
-				if (hias.containsKey(40000))
-				{
-					hias.get(40000).add(s_tmp);
-				}
-				else
-				{
-					ArrayList<String> als = new ArrayList<String>();
-					als.add(s_tmp);
-					hias.put(40000, als);
-				}
-			}
-			else if (ControlerNw.config_log.getFilterPerNode().get(s_tmp) >= 40000)
-			{
-				if (hias.containsKey(50000))
-				{
-					hias.get(50000).add(s_tmp);
-				}
-				else
-				{
-					ArrayList<String> als = new ArrayList<String>();
-					als.add(s_tmp);
-					hias.put(50000, als);
-				}
-			}
 		}
-		
-		wf1.write("Total : " + k + "/" + i+ "\n");
-		wf1.write("Moyen : " + j + "/" + k + " = " + (j/k) + "\n\n");
-		
-		float n = 0;
-
-		int m = hias.get(50) == null ? 0 : hias.get(50).size();
-		n += (float)((float)m/(float)k)*100;
-		wf1.write("    <50 = " + m + " " + (float)((float)m/(float)k)*100 + "%\n");
-		
-		m = hias.get(100) == null ? 0 : hias.get(100).size();
-		n += (float)((float)m/(float)k)*100;
-		wf1.write("   <100 = " + m + " " + (float)((float)m/(float)k)*100 + "%\n");
-		
-		m = hias.get(200) == null ? 0 : hias.get(200).size();
-		n += (float)((float)m/(float)k)*100;
-		wf1.write("   <200 = " + m + " " + (float)((float)m/(float)k)*100 + "%\n");
-		
-		m = hias.get(500) == null ? 0 : hias.get(500).size();
-		n += (float)((float)m/(float)k)*100;
-		wf1.write("   <500 = " + m + " " + (float)((float)m/(float)k)*100 + "%\n");
-		
-		m = hias.get(1000) == null ? 0 : hias.get(1000).size();
-		n += (float)((float)m/(float)k)*100;
-		wf1.write("  <1000 = " + m + " " + (float)((float)m/(float)k)*100 + "%\n");
-		
-		m = hias.get(5000) == null ? 0 : hias.get(5000).size();
-		n += (float)((float)m/(float)k)*100;
-		wf1.write("  <5000 = " + m + " " + (float)((float)m/(float)k)*100 + "%\n");
-		if (m > 0)
-			wf1.write("                     " + hias.get(5000).toString() + "\n");
-		
-		m = hias.get(10000) == null ? 0 : hias.get(10000).size();
-		n += (float)((float)m/(float)k)*100;
-		wf1.write(" <10000 = " + m + "  " + (float)((float)m/(float)k)*100 + "%\n");
-		if (m > 0)
-			wf1.write("                     " + hias.get(10000).toString() + "\n");
-		
-		m = hias.get(15000) == null ? 0 : hias.get(15000).size();
-		n += (float)((float)m/(float)k)*100;
-		wf1.write(" <15000 = " + m + "  " + (float)((float)m/(float)k)*100 + "%\n");
-		if (m > 0)
-			wf1.write("                     " + hias.get(15000).toString() + "\n");
-		
-		m = hias.get(20000) == null ? 0 : hias.get(20000).size();
-		n += (float)((float)m/(float)k)*100;
-		wf1.write(" <20000 = " + m + "   " + (float)((float)m/(float)k)*100 + "%\n");
-		if (m > 0)
-			wf1.write("                     " + hias.get(20000).toString() + "\n");
-		
-		m = hias.get(30000) == null ? 0 : hias.get(30000).size();
-		n += (float)((float)m/(float)k)*100;
-		wf1.write(" <30000 = " + m + "   " + (float)((float)m/(float)k)*100 + "%\n");
-		if (m > 0)
-			wf1.write("                     " + hias.get(30000).toString() + "\n");
-		
-		m = hias.get(40000) == null ? 0 : hias.get(40000).size();
-		n += (float)((float)m/(float)k)*100;
-		wf1.write(" <40000 = " + m + "   " + (float)((float)m/(float)k)*100 + "%\n");
-		if (m > 0)
-			wf1.write("                     " + hias.get(40000).toString() + "\n");
-		
-		m = hias.get(50000) == null ? 0 : hias.get(50000).size();
-		n += (float)((float)m/(float)k)*100;
-		wf1.write(">=40000 = " + m + "   " + (float)((float)m/(float)k)*100 + "%\n");
-		if (m > 0)
-			wf1.write("                     " + hias.get(50000).toString() + "\n");
-		
-		wf1.write("            = " + n + "%\n");
 		
 		wf1.close();
 		
 		recu_OK = true;
 		
 		//*******************
-		WriteFile wf = new WriteFile(Config.peerSimLOG+"_indexHeight", false);
+		WriteFile wf = new WriteFile(Config.peerSimLOG+"_indexHeight.csv", false);
 		Enumeration<Integer> enumeration = ControlerNw.config_log.getIndexHeight().keys();
-		wf.write("Nombre de messages        : " + (ControlerNw.config_log.numberOfMessages - Network.size()*2 - 1*2 - 1) + "\n");
-		wf.write("Nombre de split           : " + ControlerNw.config_log.getSplit() + "\n\n");
+		wf.write("NumberOfMessages;NumberOfSplits;NumberOfFiltersCreated;NumberOfFiltersAdded;SizeOfFilter;SizeOfKey"
+				+ "Gamma;noeudSansSkey;noeudAvecSkey\n");
+		wf.write((ControlerNw.config_log.numberOfMessages - Network.size()*2) + ";");
+		wf.write(ControlerNw.config_log.getSplit() + ";");
+		wf.write(ControlerNw.config_log.numberOfFiltersCreated + ";");
+		wf.write(ControlerNw.config_log.totalFilterAdded + ";"); //j + "\n\n");
+		wf.write(ControlerNw.config_log.sizeOfBF + ";");
+		wf.write(ControlerNw.config_log.sizeOfKey + ";");
+		wf.write(ControlerNw.config_log.gamma + ";");
 
-		wf.write("Nombre de filtres crées   : " + ControlerNw.config_log.numberOfFiltersCreated + "\n");
-		wf.write("Nombre de filtres ajoutés : " + ControlerNw.config_log.totalFilterAdded + "\n\n"); //j + "\n\n");
-		wf.write("Taille du filtre          : " + ControlerNw.config_log.sizeOfBF + "\n");
-		wf.write("Gamma                     : " + ControlerNw.config_log.gamma + "\n\n");
-		
+		int max = 0;
 		while (enumeration.hasMoreElements())
 		{
 			i = enumeration.nextElement();
-			if (i <= 9)
-			{
-				wf.write(i + "  " + ControlerNw.config_log.getIndexHeight().get(i) + "\n");
-			}
-			else
-			{
-				wf.write(i + " " + ControlerNw.config_log.getIndexHeight().get(i) + "\n");
-			}			
+			if (i > max)
+				max = i;		
 		}
-		wf.write("\n");
+		
+		wf.write(ControlerNw.config_log.getIndexHeight().get(max) + ";");
+
 		
 		enumeration = ControlerNw.config_log.getRealIndexHeight().keys();
 		
+		max = 0;
 		while (enumeration.hasMoreElements())
 		{
 			i = enumeration.nextElement();
-			if (i <= 9)
-			{
-				wf.write(i + "  " + ControlerNw.config_log.getRealIndexHeight().get(i) + "\n");
-			}
-			else
-			{
-				wf.write(i + " " + ControlerNw.config_log.getRealIndexHeight().get(i) + "\n");
-			}	
+			if (i > max)
+				max = i;
 		}
 		
+		wf.write(ControlerNw.config_log.getRealIndexHeight().get(max) + "\n");
 		wf.close();		
 		//*******************
 		
 		Config.ObserverNw_OK = true;
 	}
-		
+	
+	private String baslise(String balise, String s)
+	{
+		return "<" + balise + ">\n" 
+					+ s 
+				+ "\n</" + balise + ">"; 
+	}
 	
 }
 

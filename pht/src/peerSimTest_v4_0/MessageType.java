@@ -1,6 +1,6 @@
-package peerSimTest_v4;
+package peerSimTest_v4_0;
 
-public enum Type {
+public enum MessageType {
 	CREATE_INDEX, 
 	REMOVE_INDEX,
 	

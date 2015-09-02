@@ -1,4 +1,4 @@
-package peerSimTest_v4;
+package peerSimTest_v4_0;
 
 import peersim.config.Configuration;
 import peersim.core.Control;
@@ -40,7 +40,7 @@ public class ControlerNw implements Control {
 			
 			Message rep = new Message();
 			
-			rep.setType(Type.CREATE_NODE);
+			rep.setType(MessageType.CREATE_NODE);
 			rep.setPath("/");
 			rep.setOption("/");
 			rep.setDestinataire(serverID);
@@ -53,8 +53,8 @@ public class ControlerNw implements Control {
 			n = Network.get(23);
 			
 			Message message = new Message();
-			message.setType(Type.SIMULATION);
-		//	message.setData(16000000);
+			message.setType(MessageType.INSERT_INIT);
+			message.setData(Config.numberOfFiltersTest);
 			message.setDestinataire(23);
 
 			EDSimulator.add(0, message, n, pid);

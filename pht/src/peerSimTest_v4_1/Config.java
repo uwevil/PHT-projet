@@ -1,6 +1,7 @@
-package peerSimTest_v4;
+package peerSimTest_v4_1;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
 
@@ -19,6 +20,12 @@ public class Config {
 	private Hashtable<Long, Object> listAnswers = new Hashtable<Long, Object>();
 	
 	private Hashtable<Long, Integer> retrieves = new Hashtable<Long, Integer>();
+	
+	private Hashtable<Long, Integer> getStatus = new Hashtable<Long, Integer>();
+	
+	private Hashtable<Long, Integer> nbFiltersRetrieved = new Hashtable<Long, Integer>();
+	
+	public static ArrayList<Long> listRequestID = new ArrayList<Long>();
 	
 	/**
 	 * Nombre de filtres sur chaque nœud dans l'arbre.
@@ -68,16 +75,18 @@ public class Config {
 	 * */
 	public static int gamma = 1000;
 	
+	public static int numberOfFiltersTest = 1600;
+	
 	/**
 	 * Nombre de messages dans le réseau sans compter les messages {@code init}, {@code overview}.
 	 * */
 	public static long numberOfMessages = 0;
 	
-	public static int numberOfFiltersCreated = 3386463;
+	public static int numberOfFiltersCreated = 0;
 		
-	public static int totalFilterAdded = 3073443;
+	public static int totalFilterAdded = 0;
 	
-	private long split = 7109;
+	private long split = 0;
 
 	public static String date = (new SimpleDateFormat("dd-MM-yyyy/HH-mm-ss")).format(new Date());
 	
@@ -238,4 +247,41 @@ public class Config {
 		return this.retrieves.get(requestID);
 	}
 	
+	public synchronized void addGetStatus(long requestID, int i)
+	{
+		if (!this.getStatus.containsKey(requestID))
+		{
+			this.getStatus.put(requestID, i);
+		}
+		else
+		{
+			int tmp = this.getStatus.get(requestID) + i;
+			this.getStatus.remove(requestID);
+			this.getStatus.put(requestID, tmp);
+		}
+	}
+	
+	public int getGetStatus(long requestID)
+	{
+		return this.getStatus.get(requestID);
+	}
+	
+	public synchronized void addNbFiltersRetrieved(long requestID, int i)
+	{
+		if (!this.nbFiltersRetrieved.containsKey(requestID))
+		{
+			this.nbFiltersRetrieved.put(requestID, i);
+		}
+		else
+		{
+			int tmp = this.nbFiltersRetrieved.get(requestID) + i;
+			this.nbFiltersRetrieved.remove(requestID);
+			this.nbFiltersRetrieved.put(requestID, tmp);
+		}
+	}
+	
+	public int getNbFiltersRetrieved(long requestID)
+	{
+		return this.nbFiltersRetrieved.get(requestID);
+	}
 }

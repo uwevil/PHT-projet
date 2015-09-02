@@ -1,9 +1,9 @@
-package peerSimTest_v4;
+package peerSimTest_v4_1;
 
 public class Message {
 	
 	private String indexName;
-	private Type type;
+	private MessageType type;
 	private String path;
 	private Object data = null;
 	private BF key;
@@ -49,12 +49,12 @@ public class Message {
 		this.key = key;
 	}
 	
-	public Type getType()
+	public MessageType getType()
 	{
 		return this.type;
 	}
 	
-	public void setType(Type type)
+	public void setType(MessageType type)
 	{
 		this.type = type;
 	}

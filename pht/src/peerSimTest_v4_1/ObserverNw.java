@@ -1,4 +1,4 @@
-package peerSimTest_v4;
+package peerSimTest_v4_1;
 
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
@@ -41,7 +41,7 @@ public class ObserverNw implements Control {
 			Node n = Network.get(23);
 			
 			Message message = new Message();
-			message.setType(Type.SEARCH_INIT);
+			message.setType(MessageType.SEARCH_INIT);
 			message.setDestinataire(23);
 
 			EDSimulator.add(0, message, n, pid);
@@ -150,6 +150,20 @@ public class ObserverNw implements Control {
 			ControlerNw.config_log.setEnd_OK(false);
 			*/
 //		}
+		
+		/*
+		for (int i = 0; i < ControlerNw.config_log.listRequestID.size(); i++)
+		{
+			long requestID = ControlerNw.config_log.listRequestID.get(i);
+			
+			WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG_resultat + requestID + "_tmp.xml", false);
+			String s = "<nbRetrieve>" + ControlerNw.config_log.getRetrieves(requestID) + "</nbRetrieve>\n";
+			s += "<nbGetStatus>" + ControlerNw.config_log.getGetStatus(requestID) + "</nbGetStatus>\n";
+			s += "<surTotal>" + ControlerNw.config_log.getNbFiltersRetrieved(requestID) + "</surTotal>\n";
+			wf.write(s);
+			wf.close();	
+		}
+		*/
 		
 		return false;
 	}
