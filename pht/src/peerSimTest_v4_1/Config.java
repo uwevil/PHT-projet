@@ -12,7 +12,7 @@ public class Config {
 	/**
 	 * Version.
 	 * */
-	public static String version = "peerSim_v4";
+	public static String version = "peerSim_v4_1";
 
 	/**
 	 * Liste des réponses identifiée par requestID.
@@ -73,7 +73,7 @@ public class Config {
 	/**
 	 * Nombre de filtres maximums sur un nœud dans l'arbre.
 	 * */
-	public static int gamma = 1000;
+	public static int gamma = 1;
 	
 	public static int numberOfFiltersTest = 1600;
 	
@@ -93,14 +93,21 @@ public class Config {
 	/**
 	 * Emplacement pù on stocke les fichiers de log.
 	 * */
-	public static String peerSimLOG = "/Users/dcs/vrac/test/"+ date + "_" + version+ "/" + "_log";
+	
+	public static String currentDir = "/Users/dcs/vrac/test/";
+	
+	public static String inputDir = currentDir + "input/";
+	
+	public static String outputDir = currentDir + "output/";
+	
+	public static String peerSimLOG = currentDir + date + "_" + version+ "/" + "_log";
 	
 	/**
 	 * Emplacement pù on stocke les fichiers temporaires, de résultats, de log.
 	 * */
-	public static String peerSimLOG_resultat = "/Users/dcs/vrac/test/" + date  + "_" + version + "/";
+	public static String peerSimLOG_resultat = currentDir + date  + "_" + version + "/";
 	
-	public static String serializerName = "/Users/dcs/vrac/test/peerSim_v4";
+	public static String serializerName = currentDir + version;
 	
 	/**
 	 * Configuration.

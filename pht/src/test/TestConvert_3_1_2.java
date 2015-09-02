@@ -2,6 +2,7 @@ package test;
 
 import java.util.ArrayList;
 
+import peerSimTest_v4_1.NameToID;
 import pht_v3_1_2.BF;
 import pht_v3_1_2.ErrorException;
 
@@ -280,6 +281,11 @@ public class TestConvert_3_1_2 {
 //		for (int i = 0; i < test.size(); i++)
 //			System.out.println(test.get(i));
  
+		NameToID n = new NameToID(1000);
+		
+		System.out.println(n.translate("01010110"));
+		System.out.println(n.translate("010101"));
+
  
 		/*
 		System.out.println(lpp("0100010111111", "01"));

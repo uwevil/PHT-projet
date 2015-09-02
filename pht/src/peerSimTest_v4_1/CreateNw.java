@@ -25,7 +25,7 @@ public class CreateNw implements Control {
 		for (int i = 0; i < Network.size(); i++)
 		{
 			Node n = (Node) Network.get(i);
-			SystemIndexProtocol s = (SystemIndexProtocol) n.getProtocol(pid);
+			PHT_Protocol s = (PHT_Protocol) n.getProtocol(pid);
 			s.setNodeIndex(i);
 			s.setID(i);
 		}

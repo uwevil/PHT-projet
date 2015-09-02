@@ -22,24 +22,24 @@ protocol.urt UniformRandomTransport
 protocol.urt.mindelay MINDELAY
 protocol.urt.maxdelay MAXDELAY
 
-protocol.link peerSimTest_v4.SystemIndexProtocol
+protocol.link peerSimTest_v4_0.SystemIndexProtocol
 protocol.link.transport urt
 
 ################### initialization ======================
 
-init.initializer peerSimTest_v4.CreateNw
+init.initializer peerSimTest_v4_0.CreateNw
 init.initializer.protocol link
 
 ################ control ==============================
 
-control.0 peerSimTest_v4.ControlerNw
+control.0 peerSimTest_v4_0.ControlerNw
 control.0.protocol link
 control.0.step 100
 
-control.1 peerSimTest_v4.ObserverNw
+control.1 peerSimTest_v4_0.ObserverNw
 control.1.protocol link
 control.1.step 7000
 
-control.2 peerSimTest_v4.ObserverNw_tmp
+control.2 peerSimTest_v4_0.ObserverNw_tmp
 control.2.protocol link
 control.2.step 100000

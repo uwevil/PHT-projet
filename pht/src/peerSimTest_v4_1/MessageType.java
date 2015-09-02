@@ -13,6 +13,9 @@ public enum MessageType {
 	CREATE_NODE,
 	CREATE_NODE_OK,
 	
+	PUT_DATA,
+	PUT_DATA_OK,
+	
 	INSERT,
 	
 	GET_STATUS,

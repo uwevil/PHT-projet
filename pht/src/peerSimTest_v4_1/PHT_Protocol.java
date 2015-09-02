@@ -1,7 +1,6 @@
 package peerSimTest_v4_1;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -17,7 +16,7 @@ import peersim.core.Node;
 import peersim.edsim.EDProtocol;
 import peersim.transport.Transport;
 
-public class SystemIndexProtocol implements EDProtocol{
+public class PHT_Protocol implements EDProtocol{
 
 	public static int init;
 	
@@ -35,9 +34,13 @@ public class SystemIndexProtocol implements EDProtocol{
 	
 	private Hashtable<Long, BF> listRequests = new Hashtable<Long, BF>();
 	
-	private Hashtable<Integer, ArrayList<Message>> splitData = new Hashtable<Integer, ArrayList<Message>>();
+	private Hashtable<Integer, ArrayList<BF>> splitData = new Hashtable<Integer, ArrayList<BF>>();
+	
+	private Hashtable<Integer, String> splitNode = new Hashtable<Integer, String>();
 	
 	private int[] listCreateNode = new int[Network.size()];
+	private int[] listPUTData = new int[Network.size()];
+	private String pathTest;
 
 	private Hashtable<Long, Object> listPUT = new Hashtable<Long, Object>();
 			
@@ -51,7 +54,7 @@ public class SystemIndexProtocol implements EDProtocol{
 	private Hashtable<String, PHT_Node_Central> pht_listNodes;
 	
 
-	public SystemIndexProtocol(String prefix)
+	public PHT_Protocol(String prefix)
 	{
 		this.prefix = prefix;
 		tid = Configuration.getPid(prefix+ "." + PAR_TRANSPORT);
@@ -73,7 +76,7 @@ public class SystemIndexProtocol implements EDProtocol{
 	
 	public Object clone()
 	{
-		SystemIndexProtocol s = new SystemIndexProtocol(prefix);
+		PHT_Protocol s = new PHT_Protocol(prefix);
 		s.tid = this.tid;
 		s.prefix = this.prefix;
 		s.nodeIndex = this.nodeIndex;
@@ -88,11 +91,11 @@ public class SystemIndexProtocol implements EDProtocol{
 	{
 		t = (Transport) Network.get(nodeIndex).getProtocol(tid);
 		Message message = (Message)event;
-/*
+
 		WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG, true);
 		wf.write(message + "\n");
 		wf.close();
-*/	
+	
 		ControlerNw.config_log.numberOfMessages++;
 		
 		switch(message.getType())
@@ -155,6 +158,28 @@ public class SystemIndexProtocol implements EDProtocol{
 			catch (ErrorException e2)
 			{
 				e2.printStackTrace();
+			}
+			break;
+			
+		case PUT_DATA:
+			try
+			{
+				treatPutData(message, pid);
+			}
+			catch (ErrorException e3)
+			{
+				e3.printStackTrace();
+			}
+			break;
+			
+		case PUT_DATA_OK:
+			try
+			{
+				treatPutData_OK(message, pid);
+			}
+			catch (ErrorException e3)
+			{
+				e3.printStackTrace();
 			}
 			break;
 			
@@ -563,11 +588,12 @@ public class SystemIndexProtocol implements EDProtocol{
 	{		
 		ControlerNw.config_log.addSplit(1);
 		
-		
 		DataStore data = n.getDataStore();
 		ArrayList<BF> listKeys = data.getListBFs();
 		
 		n.setDataStore(null);
+		
+		this.splitData.clear();
 		
 		if (n.getPath().equals("/"))
 		{
@@ -575,6 +601,9 @@ public class SystemIndexProtocol implements EDProtocol{
 			int serverID0 = ControlerNw.config_log.getTranslate().translate("0");
 			int serverID1 = ControlerNw.config_log.getTranslate().translate("1");
 			
+			this.splitData.put(serverID0, new ArrayList<BF>());
+			this.splitData.put(serverID1, new ArrayList<BF>());
+
 			BF key_tmp0 = new BF("0");
 			
 			for (int i = 0; i < listKeys.size(); i++)
@@ -584,44 +613,17 @@ public class SystemIndexProtocol implements EDProtocol{
 				
 				if (key.equals(key_tmp0))
 				{
-					Message rep = new Message();
-					rep.setType(MessageType.INSERT);
-					rep.setBF(bf_tmp);
-					rep.setSource(nodeIndex);
-					
-					if (this.splitData.containsKey(serverID0))
-					{
-						this.splitData.get(serverID0).add(rep);
-					}
-					else
-					{
-						ArrayList<Message> arrayList = new ArrayList<Message>();
-						arrayList.add(rep);
-						this.splitData.put(serverID0, arrayList);
-					}
+					this.splitData.get(serverID0).add(bf_tmp);
 				}
 				else
 				{
-					Message rep = new Message();
-					rep.setType(MessageType.INSERT);
-					rep.setBF(bf_tmp);
-					rep.setSource(nodeIndex);
-
-					if (this.splitData.containsKey(serverID1))
-					{
-						this.splitData.get(serverID1).add(rep);
-					}
-					else
-					{
-						ArrayList<Message> arrayList = new ArrayList<Message>();
-						arrayList.add(rep);
-						this.splitData.put(serverID1, arrayList);
-					}
+					this.splitData.get(serverID1).add(bf_tmp);
 				}
 			}
 			
 			if (serverID0 == nodeIndex)
 			{
+				this.splitNode.put(serverID0, "0");
 				PHT_Node n0 = new PHT_Node("0");
 				this.list.put("0", n0);
 			}
@@ -636,12 +638,15 @@ public class SystemIndexProtocol implements EDProtocol{
 				rep.setRequestID(requestID);
 
 				t.send(Network.get(nodeIndex), Network.get(serverID0), rep, pid);
-			
+				
+				this.splitNode.put(serverID0, "0");
+
 				this.listCreateNode[serverID0]++;
 			}
 			
 			if (serverID1 == nodeIndex)
 			{
+				this.splitNode.put(serverID1, "1");
 				PHT_Node n1 = new PHT_Node("1");
 				this.list.put("1", n1);
 			}
@@ -656,7 +661,8 @@ public class SystemIndexProtocol implements EDProtocol{
 				rep.setRequestID(requestID);
 
 				t.send(Network.get(nodeIndex), Network.get(serverID1), rep, pid);
-				
+				this.splitNode.put(serverID1, "1");
+
 				this.listCreateNode[serverID1]++;
 			}
 		}
@@ -671,6 +677,9 @@ public class SystemIndexProtocol implements EDProtocol{
 			int serverID0 = ControlerNw.config_log.getTranslate().translate(path_tmp0);
 			int serverID1 = ControlerNw.config_log.getTranslate().translate(path_tmp1);
 						
+			this.splitData.put(serverID0, new ArrayList<BF>());
+			this.splitData.put(serverID1, new ArrayList<BF>());
+			
 			BF key_tmp0 = new BF(path + "0");
 			
 			for (int i = 0; i < listKeys.size(); i++)
@@ -680,39 +689,11 @@ public class SystemIndexProtocol implements EDProtocol{
 				
 				if (key.equals(key_tmp0))
 				{
-					Message rep = new Message();
-					rep.setType(MessageType.INSERT);
-					rep.setBF(bf_tmp);
-					rep.setSource(nodeIndex);
-
-					if (this.splitData.containsKey(serverID0))
-					{
-						this.splitData.get(serverID0).add(rep);
-					}
-					else
-					{
-						ArrayList<Message> arrayList = new ArrayList<Message>();
-						arrayList.add(rep);
-						this.splitData.put(serverID0, arrayList);
-					}
+					this.splitData.get(serverID0).add(bf_tmp);
 				}
 				else
 				{
-					Message rep = new Message();
-					rep.setType(MessageType.INSERT);
-					rep.setBF(bf_tmp);
-					rep.setSource(nodeIndex);
-
-					if (this.splitData.containsKey(serverID1))
-					{
-						this.splitData.get(serverID1).add(rep);
-					}
-					else
-					{
-						ArrayList<Message> arrayList = new ArrayList<Message>();
-						arrayList.add(rep);
-						this.splitData.put(serverID1, arrayList);
-					}
+					this.splitData.get(serverID1).add(bf_tmp);
 				}
 			}
 			
@@ -725,27 +706,10 @@ public class SystemIndexProtocol implements EDProtocol{
 				
 				this.list.put(path_tmp0, n0);
 				
-				Message rep1 = new Message();
-				rep1.setType(MessageType.CREATE_NODE);
-				rep1.setPath(path_tmp1);
-				rep1.setOption(path + "1");
-				rep1.setSource(nodeIndex);
-				rep1.setDestinataire(serverID1);
-				rep1.setRequestID(requestID);
+				this.splitNode.put(serverID0, path + "0");
 
-				t.send(Network.get(nodeIndex), Network.get(serverID1), rep1, pid);
-								
-				this.listCreateNode[serverID1]++;
-			}
-			else // serverID1 == nodeIndex
+			}else
 			{
-				PHT_Node n1 = new PHT_Node(path + "1");
-				
-				if (this.list.containsKey(path_tmp1))
-					this.list.remove(path_tmp1);
-				
-				this.list.put(path_tmp1, n1);
-				
 				Message rep = new Message();
 				rep.setType(MessageType.CREATE_NODE);
 				rep.setPath(path_tmp0);
@@ -756,8 +720,49 @@ public class SystemIndexProtocol implements EDProtocol{
 
 				t.send(Network.get(nodeIndex), Network.get(serverID0), rep, pid);
 				
+				this.splitNode.put(serverID0, path + "0");
+
 				this.listCreateNode[serverID0]++;
 			}
+			
+			if (serverID1 != nodeIndex)
+			{
+				Message rep1 = new Message();
+				rep1.setType(MessageType.CREATE_NODE);
+				rep1.setPath(path_tmp1);
+				rep1.setOption(path + "1");
+				rep1.setSource(nodeIndex);
+				rep1.setDestinataire(serverID1);
+				rep1.setRequestID(requestID);
+
+				t.send(Network.get(nodeIndex), Network.get(serverID1), rep1, pid);
+				this.splitNode.put(serverID1, path + "1");
+	
+				this.listCreateNode[serverID1]++;
+			}
+			else // serverID1 == nodeIndex
+			{
+				PHT_Node n1 = new PHT_Node(path + "1");
+				
+				if (this.list.containsKey(path_tmp1))
+					this.list.remove(path_tmp1);
+				
+				this.list.put(path_tmp1, n1);
+				this.splitNode.put(serverID1, path + "1");
+			}
+			
+			if (nodeIndex != 847)
+				return;
+			
+			System.out.println(serverID0 + " vs " + serverID1);
+			System.out.println(path_tmp0 + " vs " + path_tmp1);
+			System.out.println(path + "0" + " vs " + path + "1");
+
+			Enumeration<Integer> enumeration = this.splitData.keys();
+			
+			while (enumeration.hasMoreElements())
+				System.out.println(enumeration.nextElement() + " " + nodeIndex);
+			
 		}
 	}
 
@@ -952,7 +957,7 @@ public class SystemIndexProtocol implements EDProtocol{
 	 * Traite le message d'initialisation de l'insertion.
 	 * */
 	
-	@SuppressWarnings({ "static-access", "unchecked" })
+	@SuppressWarnings({ "static-access" })
 	private void treatInsertInit(Message message, int pid) throws ErrorException
 	{
 		System.out.println("Lecture n°1");
@@ -1114,23 +1119,46 @@ public class SystemIndexProtocol implements EDProtocol{
 			if (!this.splitData.isEmpty())
 			{
 				Enumeration<Integer> enumeration = this.splitData.keys();
-								
-				Message tmp = this.messageWaitingForResponse.get(message.getRequestID());
 
 				while (enumeration.hasMoreElements())
 				{
 					Integer serverID = enumeration.nextElement();
-					ArrayList<Message> arrayList = this.splitData.get(serverID);
-										
-					for (int i = 0; i < arrayList.size(); i++)
-					{
-						Message rep = arrayList.get(i);
-						rep.setDestinataire(tmp.getSource());
 					
-						t.send(Network.get(nodeIndex), Network.get(tmp.getSource()), rep, pid);						
+					ArrayList<BF> arrayList = this.splitData.get(serverID);
+
+					if (serverID == nodeIndex)
+					{
+						PHT_Node n = this.list.get(this.skey(this.splitNode.get(nodeIndex)));
+						
+						for (int i = 0; i < arrayList.size(); i++)
+						{
+							n.insert(arrayList.get(i));
+						}
+						
+						if (n.size() > Config.gamma)
+							this.pathTest = this.splitNode.get(nodeIndex);
+						
+						this.splitNode.remove(nodeIndex);
+					}
+					else
+					{						
+						Message rep = new Message();
+						rep.setType(MessageType.PUT_DATA);
+						rep.setPath(this.skey(this.splitNode.get(serverID)));
+						rep.setData(arrayList);
+						rep.setSource(nodeIndex);
+						rep.setDestinataire(serverID);
+						rep.setRequestID(message.getRequestID());
+					
+						t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
+						
+						this.listPUTData[serverID]++;
+						this.splitNode.remove(serverID);
 					}
 				}
 				
+				this.splitData = new Hashtable<Integer, ArrayList<BF>>();
+				/*
 				Message rep = new Message();
 				
 				rep.setType(MessageType.valueOf(tmp.getType() + "_OK"));
@@ -1145,6 +1173,73 @@ public class SystemIndexProtocol implements EDProtocol{
 				this.messageWaitingForResponse.remove(message.getRequestID());			
 				
 				this.splitData = new Hashtable<Integer, ArrayList<Message>>();
+				*/
+			}
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void treatPutData(Message message, int pid) throws ErrorException
+	{		
+		ArrayList<BF> arrayList = (ArrayList<BF>) message.getData();
+		String path = message.getPath();
+		
+		PHT_Node n = this.list.get(path);
+		
+		for (int i = 0; i < arrayList.size(); i++)
+		{
+			n.insert(arrayList.get(i));
+		}
+		
+		if (n.size() > Config.gamma)
+		{
+			this.messageWaitingForResponse.put(message.getRequestID(), message);
+
+			n.setLeafNode(false);
+			this.splitLocal(n, message.getRequestID(), pid);
+			return;
+		}
+		else
+		{
+			Message rep = new Message();
+			
+			rep.setType(MessageType.PUT_DATA_OK);
+			rep.setPath(message.getPath());
+			rep.setSource(nodeIndex);
+			rep.setDestinataire(message.getSource());
+			rep.setRequestID(message.getRequestID());
+			
+			t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
+		}
+	}
+	
+	private void treatPutData_OK(Message message, int pid) throws ErrorException
+	{
+		this.listPUTData[message.getSource()]--;
+		
+		if (this.testOK(this.listPUTData, Network.size()))
+		{
+			if (this.pathTest != null && !this.pathTest.isEmpty())
+			{
+				PHT_Node n = this.list.get(this.skey(this.pathTest));
+				
+				n.setLeafNode(false);
+				this.splitLocal(n, message.getRequestID(), pid);
+
+				this.pathTest = new String();
+			}
+			else
+			{
+				Message tmp = this.messageWaitingForResponse.get(message.getRequestID());
+				
+				Message rep = new Message();
+				
+				rep.setType(MessageType.valueOf(tmp.getType() + "_OK"));
+				rep.setRequestID(tmp.getRequestID());
+				rep.setSource(nodeIndex);
+				rep.setDestinataire(tmp.getSource());
+				
+				t.send(Network.get(nodeIndex), Network.get(tmp.getSource()), rep, pid);
 			}
 		}
 	}
@@ -1210,6 +1305,7 @@ public class SystemIndexProtocol implements EDProtocol{
 	 * Lance une recherche.
 	 * */
 	
+	@SuppressWarnings("static-access")
 	private void launchSearch(int pid) throws ErrorException
 	{		
 		if (search_OK)
@@ -1230,7 +1326,6 @@ public class SystemIndexProtocol implements EDProtocol{
 				long time = Calendar.getInstance().getTimeInMillis();
 				ArrayList<Long> array = new ArrayList<Long>();
 				
-				@SuppressWarnings("static-access")
 				WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG_resultat + requestID + ".xml", true);
 				wf.write("<request id=" + requestID + ", nbkeywords=" + (experience + 5)
 						+ ", time=" + time +">\n");
@@ -1690,31 +1785,27 @@ public class SystemIndexProtocol implements EDProtocol{
 		wf1 = new WriteFile(Config.peerSimLOG + "_filterPerNode.csv", true);
 		
 		wf1.write("index;nombre de filtres;noeud\n");
-
 		
 		Enumeration<String> enumeration4 = ControlerNw.config_log.getFilterPerNode().keys();
 		
 		int i = 0;
-				
+		
+		WriteFile wf2 = new WriteFile(Config.peerSimLOG + "_node.csv", true);
+		ControlerNw.config_log.getTranslate().setRange(Network.size());
+		int serverID = ControlerNw.config_log.getTranslate().translate("/");
+		
+		wf2.write("/;" + serverID + "\n");
+		wf1.write(i++ + ";"+ 0 + ";" + "/" +  "\n");
+		
 		while (enumeration4.hasMoreElements())
 		{
 			String s_tmp = enumeration4.nextElement();
 			
-			WriteFile wf2 = new WriteFile(Config.peerSimLOG + "_node.csv", true);
+			wf2 = new WriteFile(Config.peerSimLOG + "_node.csv", true);
 			ControlerNw.config_log.getTranslate().setRange(Network.size());
-			if (!s_tmp.equals("/"))
-			{
-				wf2.write(s_tmp + ";" + ControlerNw.config_log.getTranslate().translate(s_tmp) + "\n");
-			}
-			else
-			{
-				ControlerNw.config_log.getTranslate().setRange(Network.size());
-				int serverID = ControlerNw.config_log.getTranslate().translate("/");
-				
-				wf2.write(s_tmp + ";" + serverID + "\n");
-			}
+			wf2.write(s_tmp + ";" + ControlerNw.config_log.getTranslate().translate(s_tmp) + "\n");
 			wf2.close();
-			
+
 			wf1.write(i + ";" 
 					+ ControlerNw.config_log.getFilterPerNode().get(s_tmp) + ";" + s_tmp +  "\n");
 			
