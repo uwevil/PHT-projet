@@ -43,10 +43,11 @@ public class PHT_Protocol implements EDProtocol{
 	private int[] listCreateNode = new int[Network.size()];
 	private int[] listPUTData = new int[Network.size()];
 	private String pathTest;
+	private boolean prob = false;
 
 	private Hashtable<Long, Object> listPUT = new Hashtable<Long, Object>();
 			
-	private Hashtable<Long ,Message> messageWaitingForResponse = new Hashtable<Long, Message>();
+	private ArrayDeque<Message> messageWaitingForResponse = new ArrayDeque<Message>();
 		
 	private int[] recu = new int[Network.size()];
 	private boolean recu_OK = false;
@@ -97,7 +98,7 @@ public class PHT_Protocol implements EDProtocol{
 		WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG, true);
 		wf.write(message + "\n");
 		wf.close();
-*/	
+*/
 		ControlerNw.config_log.numberOfMessages++;
 		
 		switch(message.getType())
@@ -673,8 +674,11 @@ public class PHT_Protocol implements EDProtocol{
 			
 			if (serverID0 == serverID1 && serverID0 == nodeIndex)
 			{
-	//			this.problem = true;
 				this.resolveProblem(requestID, pid);
+			}
+			else
+			{
+				this.prob = true;
 			}
 		}
 		else // !n.getPath().equals("/")
@@ -816,7 +820,7 @@ public class PHT_Protocol implements EDProtocol{
 		}
 		else
 		{
-			Message tmp = this.messageWaitingForResponse.get(requestID);
+			Message tmp = this.messageWaitingForResponse.pollLast();
 			
 			Message rep = new Message();
 			
@@ -1117,7 +1121,7 @@ public class PHT_Protocol implements EDProtocol{
 		
 		if (n.size() > ControlerNw.config_log.gamma)
 		{
-			messageWaitingForResponse.put(message.getRequestID(), message);
+			messageWaitingForResponse.add(message);
 
 			n.setLeafNode(false);
 			this.splitLocal(n, message.getRequestID(), pid);
@@ -1269,7 +1273,7 @@ public class PHT_Protocol implements EDProtocol{
 		{
 			if (nodeIndex == 213)
 				System.out.println("xxxxxxxxxxxx " + message.getSource());
-			this.messageWaitingForResponse.put(message.getRequestID(), message);
+			this.messageWaitingForResponse.add(message);
 
 			n.setLeafNode(false);
 			this.splitLocal(n, message.getRequestID(), pid);
@@ -1291,19 +1295,52 @@ public class PHT_Protocol implements EDProtocol{
 	
 	private void treatPutData_OK(Message message, int pid) throws ErrorException
 	{
-		this.listPUTData[message.getSource()]--;
-		if (nodeIndex == 213)
-		{	
-			for (int i = 0; i < 1000; i++)
-				if (this.listPUTData[i] != 0)
-					System.out.println("treatputdataOKaaaa " + i + " : " + this.listPUTData[i]);
-		}
-		if (this.testOK(this.listPUTData, Network.size()))
+		if (this.prob)
 		{
+			this.listPUTData[message.getSource()]--;
 			if (nodeIndex == 213)
 			{	
-				System.out.println("treatputdataOK " + message.getSource());
+				for (int i = 0; i < 1000; i++)
+					if (this.listPUTData[i] != 0)
+						System.out.println("treatputdataOKaaaa " + i + " : " + this.listPUTData[i]);
 			}
+			
+			if (this.testOK(this.listPUTData, Network.size()))
+			{
+				if (nodeIndex == 213)
+				{	
+					System.out.println("treatputdataOK " + message.getSource());
+				}
+				if (this.pathTest != null && !this.pathTest.isEmpty())
+				{
+					PHT_Node n = this.list.get(this.skey(this.pathTest));
+					
+					n.setLeafNode(false);
+					this.splitLocal(n, message.getRequestID(), pid);
+
+					this.pathTest = new String();
+				}
+				else
+				{
+					Message tmp = this.messageWaitingForResponse.pollLast();
+					
+					Message rep = new Message();
+					
+					rep.setType(MessageType.valueOf(tmp.getType() + "_OK"));
+					rep.setRequestID(tmp.getRequestID());
+					rep.setSource(nodeIndex);
+					rep.setDestinataire(tmp.getSource());
+					
+					t.send(Network.get(nodeIndex), Network.get(tmp.getSource()), rep, pid);
+					
+					this.messageWaitingForResponse.remove(message.getRequestID());
+				}
+				
+				this.prob = false;
+			}
+		}
+		else
+		{
 			if (this.pathTest != null && !this.pathTest.isEmpty())
 			{
 				PHT_Node n = this.list.get(this.skey(this.pathTest));
@@ -1315,7 +1352,7 @@ public class PHT_Protocol implements EDProtocol{
 			}
 			else
 			{
-				Message tmp = this.messageWaitingForResponse.get(message.getRequestID());
+				Message tmp = this.messageWaitingForResponse.pollLast();
 				
 				Message rep = new Message();
 				
@@ -1325,8 +1362,11 @@ public class PHT_Protocol implements EDProtocol{
 				rep.setDestinataire(tmp.getSource());
 				
 				t.send(Network.get(nodeIndex), Network.get(tmp.getSource()), rep, pid);
+				
+				this.messageWaitingForResponse.remove(message.getRequestID());
 			}
 		}
+		
 	}
 	
 	/**

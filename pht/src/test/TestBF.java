@@ -1,5 +1,11 @@
 package test;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Calendar;
 
 import pht_v3_1_0_0.BF;
@@ -8,7 +14,7 @@ import pht_v3_1_0_0.ErrorException;
 
 public class TestBF {
 
-	public static void main (String[] args) throws ErrorException
+	public static void main (String[] args) throws ErrorException, IOException
 	{
 		long time = Calendar.getInstance().getTimeInMillis();
 				
@@ -37,5 +43,17 @@ public class TestBF {
 		System.out.println(key.getSubFilter(0, key.getRang(Config.sizeOfElement)));
 
 		System.out.println(Calendar.getInstance().getTimeInMillis() - time + "ms");
+	/*	
+		BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("/Users/dcs/vrac/test/03-09-2015/_all"));
+		
+		BufferedInputStream bis = new BufferedInputStream(new FileInputStream("/Users/dcs/vrac/test/03-09-2015/a.xml"));
+		
+		int b;
+		while ( (b = bis.read()) != -1 )
+			bos.write(b);
+		
+		bos.close();
+		bis.close();
+	*/
 	}
 }

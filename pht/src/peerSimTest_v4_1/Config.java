@@ -12,7 +12,7 @@ public class Config {
 	/**
 	 * Version.
 	 * */
-	public static String version = "peerSim_v4_1_test";
+	public static String version = "peerSim_v4_1";
 
 	/**
 	 * Liste des réponses identifiée par requestID.

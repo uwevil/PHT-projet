@@ -16,6 +16,8 @@ public class ConcateFile {
 		{
 			ReadFile rf = new ReadFile(fileRequests);
 		
+			System.out.println("Begin");
+
 			for (int i = 0; i < rf.size(); i++)
 			{									
 				BF bf = new BF(Config.sizeOfBF);
@@ -27,10 +29,23 @@ public class ConcateFile {
 				String path_tmp = folder + requestID + "_tmp.xml";
 				String path = folder + requestID + ".xml";
 				
-				BufferedReader reader = new BufferedReader(new FileReader(path_tmp));
+				BufferedReader reader = new BufferedReader(new FileReader(path));
+				WriteFile wf = new WriteFile(folder + "_all", true);
 				
-				WriteFile wf = new WriteFile(path, true);
+				while (true)
+				{
+					String s = new String();
+					s = reader.readLine();
+					if (s == null)
+						break;
+					
+					wf.write(s + "\n");
+				}
+
+				reader.close();
 				
+				reader = new BufferedReader(new FileReader(path_tmp));
+								
 				while (true)
 				{
 					String s = new String();
@@ -44,10 +59,17 @@ public class ConcateFile {
 				wf.close();
 				reader.close();
 				
-				File f = new File(path_tmp);
+
+				File f = new File(path);
 				if (f.exists())
-					f.delete();
-			}			
+					f.delete();	
+				
+				f = new File(path_tmp);
+				if (f.exists())
+					f.delete();				
+			}	
+			
+			System.out.println("End");
 		} 
 		catch (IOException e )
 		{
@@ -59,7 +81,7 @@ public class ConcateFile {
 	public static void main (String[] args)
 	{
 		String date = (new SimpleDateFormat("dd-MM-yyyy")).format(new Date());
-		ConcateFile c = new ConcateFile(Config.fileRequests, Config.currentDir + date + "/" + "10-51-51_peerSim_v4_1/");
+		ConcateFile c = new ConcateFile(Config.fileRequests, Config.currentDir + date + "/" + "16-02-46_peerSim_v4_1/");
 	}
 
 }
