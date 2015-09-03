@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class ConcateFile {
+public class Concate {
 
 	public static void ConcateFile(String fileRequests, String folder)
 	{
@@ -79,7 +79,7 @@ public class ConcateFile {
 	
 	public static void main (String[] args)
 	{
-		String s = "17-54-56";
+		String s = "20-23-29";
 		String date = (new SimpleDateFormat("dd-MM-yyyy")).format(new Date());
 		
 		ConcateFile(Config.fileRequests, Config.currentDir + date + "/" + s + "_peerSim_v4_1/");
