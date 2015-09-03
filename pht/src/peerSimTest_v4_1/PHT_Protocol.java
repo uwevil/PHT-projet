@@ -1,6 +1,7 @@
 package peerSimTest_v4_1;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -31,13 +32,14 @@ public class PHT_Protocol implements EDProtocol{
 	private Hashtable<Long, String> listPath = new Hashtable<Long, String>();
 	private ArrayDeque<BF> insertFIFO = new ArrayDeque<BF>();
 	private ArrayDeque<BF> searchFIFO = new ArrayDeque<BF>();
-	
+	private ArrayDeque<String> keywordsFIFO = new ArrayDeque<String>();
+
 	private Hashtable<Long, BF> listRequests = new Hashtable<Long, BF>();
 	
-	private Hashtable<Integer, ArrayList<BF>> splitData = new Hashtable<Integer, ArrayList<BF>>();
+	private Hashtable<String, ArrayList<BF>> splitData = new Hashtable<String, ArrayList<BF>>();
 	
-	private Hashtable<Integer, String> splitNode = new Hashtable<Integer, String>();
-	
+//	private boolean problem = false;
+		
 	private int[] listCreateNode = new int[Network.size()];
 	private int[] listPUTData = new int[Network.size()];
 	private String pathTest;
@@ -91,11 +93,11 @@ public class PHT_Protocol implements EDProtocol{
 	{
 		t = (Transport) Network.get(nodeIndex).getProtocol(tid);
 		Message message = (Message)event;
-
+/*
 		WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG, true);
 		wf.write(message + "\n");
 		wf.close();
-	
+*/	
 		ControlerNw.config_log.numberOfMessages++;
 		
 		switch(message.getType())
@@ -386,48 +388,56 @@ public class PHT_Protocol implements EDProtocol{
 		
 		PHT_Central pht= new PHT_Central("dcs");
 
-		/*
 		int line = 0;
 		int k = 0;
 		
-		try(BufferedReader reader = new BufferedReader(new FileReader("/Users/dcs/vrac/test/wikiDocs<60")))
-		{
-			while (true)
-			{
-				String s = new String();
-				s = reader.readLine();
-				if (s == null)
-					break;
-				String[] tmp = s.split(";");
-				
-				if (tmp.length >= 2 && tmp[1].length() > 2 )
-				{
-					BF bf = new BF(Config.sizeOfBF);
-					bf.addAll(tmp[1]);
-					
-					pht.insert(bf);
-					line++;
-				}
-				k++;
-				System.out.println(line + "/" + k);
-				if (line == 160)
-					break;
-			}
-			reader.close();
-			
-			System.out.println("Fini de lecture " + k + " lignes.");
-			System.out.println("Nombre de filtres réels : " + line + " filtres.");
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		*/
+		File f = new File(ControlerNw.config_log.serializerName + "_path_central_" + Config.numberOfFiltersTest);
 		
-		Serializer serializer = new Serializer();
-	//	serializer.writeObject(pht, ControlerNw.config_log.serializerName + "_path_central");
-		pht = (PHT_Central) serializer.readObject(ControlerNw.config_log.serializerName + "_path_central");
+		if (!f.exists())
+		{
+			try(BufferedReader reader = new BufferedReader(new FileReader(Config.fileWiki)))
+			{
+				while (true)
+				{
+					String s = new String();
+					s = reader.readLine();
+					if (s == null)
+						break;
+					String[] tmp = s.split(";");
+					
+					if (tmp.length >= 2 && tmp[1].length() > 2 )
+					{
+						BF bf = new BF(Config.sizeOfBF);
+						bf.addAll(tmp[1]);
+						
+						pht.insert(bf);
+						line++;
+					}
+					k++;
+					System.out.println(line + "/" + k);
+					if (line == Config.numberOfFiltersTest)
+						break;
+				}
+				reader.close();
 				
+				System.out.println("Fini de lecture " + k + " lignes.");
+				System.out.println("Nombre de filtres réels : " + line + " filtres.");
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+			
+	//		Serializer serializer = new Serializer();
+	//		serializer.writeObject(pht, ControlerNw.config_log.serializerName + "_path_central_" + Config.numberOfFiltersTest);
+		}
+		else
+		{
+	//		Serializer serializer = new Serializer();
+	//		pht = (PHT_Central) serializer
+	//				.readObject(ControlerNw.config_log.serializerName + "_path_central" + Config.numberOfFiltersTest);
+		}
+						
 		pht_listNodes = pht.getListNodes();
 		
 		Enumeration<String> enumeration = pht_listNodes.keys();
@@ -601,8 +611,8 @@ public class PHT_Protocol implements EDProtocol{
 			int serverID0 = ControlerNw.config_log.getTranslate().translate("0");
 			int serverID1 = ControlerNw.config_log.getTranslate().translate("1");
 			
-			this.splitData.put(serverID0, new ArrayList<BF>());
-			this.splitData.put(serverID1, new ArrayList<BF>());
+			this.splitData.put("0", new ArrayList<BF>());
+			this.splitData.put("1", new ArrayList<BF>());
 
 			BF key_tmp0 = new BF("0");
 			
@@ -613,17 +623,16 @@ public class PHT_Protocol implements EDProtocol{
 				
 				if (key.equals(key_tmp0))
 				{
-					this.splitData.get(serverID0).add(bf_tmp);
+					this.splitData.get("0").add(bf_tmp);
 				}
 				else
 				{
-					this.splitData.get(serverID1).add(bf_tmp);
+					this.splitData.get("1").add(bf_tmp);
 				}
 			}
 			
 			if (serverID0 == nodeIndex)
 			{
-				this.splitNode.put(serverID0, "0");
 				PHT_Node n0 = new PHT_Node("0");
 				this.list.put("0", n0);
 			}
@@ -639,14 +648,11 @@ public class PHT_Protocol implements EDProtocol{
 
 				t.send(Network.get(nodeIndex), Network.get(serverID0), rep, pid);
 				
-				this.splitNode.put(serverID0, "0");
-
 				this.listCreateNode[serverID0]++;
 			}
 			
 			if (serverID1 == nodeIndex)
 			{
-				this.splitNode.put(serverID1, "1");
 				PHT_Node n1 = new PHT_Node("1");
 				this.list.put("1", n1);
 			}
@@ -661,9 +667,14 @@ public class PHT_Protocol implements EDProtocol{
 				rep.setRequestID(requestID);
 
 				t.send(Network.get(nodeIndex), Network.get(serverID1), rep, pid);
-				this.splitNode.put(serverID1, "1");
 
 				this.listCreateNode[serverID1]++;
+			}
+			
+			if (serverID0 == serverID1 && serverID0 == nodeIndex)
+			{
+	//			this.problem = true;
+				this.resolveProblem(requestID, pid);
 			}
 		}
 		else // !n.getPath().equals("/")
@@ -677,8 +688,8 @@ public class PHT_Protocol implements EDProtocol{
 			int serverID0 = ControlerNw.config_log.getTranslate().translate(path_tmp0);
 			int serverID1 = ControlerNw.config_log.getTranslate().translate(path_tmp1);
 						
-			this.splitData.put(serverID0, new ArrayList<BF>());
-			this.splitData.put(serverID1, new ArrayList<BF>());
+			this.splitData.put(path + "0", new ArrayList<BF>());
+			this.splitData.put(path + "1", new ArrayList<BF>());
 			
 			BF key_tmp0 = new BF(path + "0");
 			
@@ -689,11 +700,11 @@ public class PHT_Protocol implements EDProtocol{
 				
 				if (key.equals(key_tmp0))
 				{
-					this.splitData.get(serverID0).add(bf_tmp);
+					this.splitData.get(path + "0").add(bf_tmp);
 				}
 				else
 				{
-					this.splitData.get(serverID1).add(bf_tmp);
+					this.splitData.get(path + "1").add(bf_tmp);
 				}
 			}
 			
@@ -705,10 +716,8 @@ public class PHT_Protocol implements EDProtocol{
 					this.list.remove(path_tmp0);
 				
 				this.list.put(path_tmp0, n0);
-				
-				this.splitNode.put(serverID0, path + "0");
-
-			}else
+			}
+			else
 			{
 				Message rep = new Message();
 				rep.setType(MessageType.CREATE_NODE);
@@ -720,8 +729,6 @@ public class PHT_Protocol implements EDProtocol{
 
 				t.send(Network.get(nodeIndex), Network.get(serverID0), rep, pid);
 				
-				this.splitNode.put(serverID0, path + "0");
-
 				this.listCreateNode[serverID0]++;
 			}
 			
@@ -736,7 +743,6 @@ public class PHT_Protocol implements EDProtocol{
 				rep1.setRequestID(requestID);
 
 				t.send(Network.get(nodeIndex), Network.get(serverID1), rep1, pid);
-				this.splitNode.put(serverID1, path + "1");
 	
 				this.listCreateNode[serverID1]++;
 			}
@@ -748,9 +754,15 @@ public class PHT_Protocol implements EDProtocol{
 					this.list.remove(path_tmp1);
 				
 				this.list.put(path_tmp1, n1);
-				this.splitNode.put(serverID1, path + "1");
 			}
 			
+			if (nodeIndex == 213)
+			{	
+				System.out.println("splitLocal " + serverID0 + " " + path_tmp0);
+				System.out.println("splitLocal " + serverID1 + " " + path_tmp1);
+
+			}
+			/*
 			if (nodeIndex != 847)
 				return;
 			
@@ -758,11 +770,62 @@ public class PHT_Protocol implements EDProtocol{
 			System.out.println(path_tmp0 + " vs " + path_tmp1);
 			System.out.println(path + "0" + " vs " + path + "1");
 
-			Enumeration<Integer> enumeration = this.splitData.keys();
+			Enumeration<String> enumeration = this.splitData.keys();
 			
 			while (enumeration.hasMoreElements())
 				System.out.println(enumeration.nextElement() + " " + nodeIndex);
+			*/
 			
+			if (serverID0 == serverID1 && serverID0 == nodeIndex)
+			{
+	//			this.problem = true;
+				this.resolveProblem(requestID, pid);
+			}
+			
+		}
+	}
+
+	private void resolveProblem(long requestID, int pid) throws ErrorException
+	{
+		PHT_Node splitOK = null;
+		
+		Enumeration<String> enumeration = this.splitData.keys();
+		
+		while (enumeration.hasMoreElements())
+		{
+			String path_tmp = enumeration.nextElement();
+			String path = this.skey(path_tmp);
+			
+			PHT_Node n = this.list.get(path);
+			
+			ArrayList<BF> arrayList = this.splitData.get(path_tmp);
+			
+			for (int i = 0; i < arrayList.size(); i++)
+			{
+				n.insert(arrayList.get(i));
+			}
+			
+			if (n.size() > Config.gamma)
+				splitOK = n;
+		}
+		
+		if (splitOK != null)
+		{
+			splitOK.setLeafNode(false);
+			this.splitLocal(splitOK, requestID, pid);
+		}
+		else
+		{
+			Message tmp = this.messageWaitingForResponse.get(requestID);
+			
+			Message rep = new Message();
+			
+			rep.setType(MessageType.valueOf(tmp.getType() + "_OK"));
+			rep.setRequestID(tmp.getRequestID());
+			rep.setSource(nodeIndex);
+			rep.setDestinataire(tmp.getSource());
+			
+			t.send(Network.get(nodeIndex), Network.get(tmp.getSource()), rep, pid);
 		}
 	}
 
@@ -910,9 +973,9 @@ public class PHT_Protocol implements EDProtocol{
 	 * Initialise la liste des filtres pour l'insertion.
 	 * */
 	
-	private void initInsertFIFO(Message message)
+	private void initInsertFIFO()
 	{
-		try(BufferedReader reader = new BufferedReader(new FileReader("/Users/dcs/vrac/test/wikiDocs<60")))
+		try(BufferedReader reader = new BufferedReader(new FileReader(Config.fileWiki)))
 		{
 			int line = 0;
 			while (true)
@@ -933,19 +996,20 @@ public class PHT_Protocol implements EDProtocol{
 				}
 				
 				System.out.println(line);
-				if (line == (int)message.getData())
+				if (line == Config.numberOfFiltersTest)
 					break;
 			}
 			reader.close();
 			System.out.println("Fini de lecture " + line + " lignes");
 			
-			long time = System.currentTimeMillis();
+	//		long time = System.currentTimeMillis();
 			
-			System.out.println("Désérialisation");
+	//		System.out.println("Sérialisation");
 	//		Serializer serializer = new Serializer();
-	//		serializer.writeObject(this.insertFIFO, "/Users/dcs/vrac/test/fifo_" + ControlerNw.config_log.version);
+	//		serializer.writeObject(this.insertFIFO, 
+	//				Config.currentDir + "fifo_"+ Config.numberOfFiltersTest + "_" + ControlerNw.config_log.version);
 			
-			System.out.println("Fin de désérialisation " + (System.currentTimeMillis() - time) + " ms");			
+	//		System.out.println("Fin de sérialisation " + (System.currentTimeMillis() - time) + " ms");			
 		}
 		catch (IOException e)
 		{
@@ -963,20 +1027,23 @@ public class PHT_Protocol implements EDProtocol{
 		System.out.println("Lecture n°1");
 		
 		init = nodeIndex;
-	
-		if (!message.getData().getClass().getName().contains("String"))
+			
+		File f = new File(Config.currentDir + "fifo_" + Config.numberOfFiltersTest+ "_" + ControlerNw.config_log.version);
+		
+		if (!f.exists())
 		{
-			this.initInsertFIFO(message);
+			this.initInsertFIFO();
 		}
 		else
 		{
-			long time = System.currentTimeMillis();
+	//		long time = System.currentTimeMillis();
 
 			System.out.println("Désérialisation");
-		//	Serializer serializer = new Serializer();
-		//	this.insertFIFO = (ArrayDeque<BF>) serializer.readObject("/Users/dcs/vrac/test/fifo_" + ControlerNw.config_log.version);
+	//		Serializer serializer = new Serializer();
+	//		this.insertFIFO = (ArrayDeque<BF>) serializer
+	//				.readObject(Config.currentDir + "fifo_" + Config.numberOfFiltersTest+ "_" + ControlerNw.config_log.version);
 			
-			System.out.println("Fin de désérialisation " + (System.currentTimeMillis() - time) + " ms");
+	//		System.out.println("Fin de désérialisation " + (System.currentTimeMillis() - time) + " ms");
 		}
 		
 		ControlerNw.config_log.numberOfFiltersCreated = insertFIFO.size();
@@ -1111,24 +1178,31 @@ public class PHT_Protocol implements EDProtocol{
 	 * */
 	
 	private void treatCreateNode_OK(Message message, int pid) throws ErrorException
-	{		
+	{	
+		if (message.getPath().equals("/"))
+			return;
+		
 		this.listCreateNode[message.getSource()]--;
 		
 		if (this.testOK(this.listCreateNode, Network.size()))
 		{
 			if (!this.splitData.isEmpty())
 			{
-				Enumeration<Integer> enumeration = this.splitData.keys();
+				Enumeration<String> enumeration = this.splitData.keys();
 
 				while (enumeration.hasMoreElements())
 				{
-					Integer serverID = enumeration.nextElement();
+					String path_tmp = enumeration.nextElement();
+					String path = this.skey(path_tmp);
 					
-					ArrayList<BF> arrayList = this.splitData.get(serverID);
+					ControlerNw.config_log.getTranslate().setRange(Network.size());
+					Integer serverID = ControlerNw.config_log.getTranslate().translate(path);
+					
+					ArrayList<BF> arrayList = this.splitData.get(path_tmp);
 
 					if (serverID == nodeIndex)
 					{
-						PHT_Node n = this.list.get(this.skey(this.splitNode.get(nodeIndex)));
+						PHT_Node n = this.list.get(path);
 						
 						for (int i = 0; i < arrayList.size(); i++)
 						{
@@ -1136,28 +1210,28 @@ public class PHT_Protocol implements EDProtocol{
 						}
 						
 						if (n.size() > Config.gamma)
-							this.pathTest = this.splitNode.get(nodeIndex);
-						
-						this.splitNode.remove(nodeIndex);
+							this.pathTest = path_tmp;						
 					}
 					else
 					{						
 						Message rep = new Message();
 						rep.setType(MessageType.PUT_DATA);
-						rep.setPath(this.skey(this.splitNode.get(serverID)));
+						rep.setPath(path);
 						rep.setData(arrayList);
 						rep.setSource(nodeIndex);
 						rep.setDestinataire(serverID);
 						rep.setRequestID(message.getRequestID());
 					
 						t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
-						
+						if (nodeIndex == 213)
+						{	
+							System.out.println("treatCreateNodeOK " + serverID + " " + path);
+						}
 						this.listPUTData[serverID]++;
-						this.splitNode.remove(serverID);
 					}
 				}
 				
-				this.splitData = new Hashtable<Integer, ArrayList<BF>>();
+				this.splitData = new Hashtable<String, ArrayList<BF>>();
 				/*
 				Message rep = new Message();
 				
@@ -1193,6 +1267,8 @@ public class PHT_Protocol implements EDProtocol{
 		
 		if (n.size() > Config.gamma)
 		{
+			if (nodeIndex == 213)
+				System.out.println("xxxxxxxxxxxx " + message.getSource());
 			this.messageWaitingForResponse.put(message.getRequestID(), message);
 
 			n.setLeafNode(false);
@@ -1216,9 +1292,18 @@ public class PHT_Protocol implements EDProtocol{
 	private void treatPutData_OK(Message message, int pid) throws ErrorException
 	{
 		this.listPUTData[message.getSource()]--;
-		
+		if (nodeIndex == 213)
+		{	
+			for (int i = 0; i < 1000; i++)
+				if (this.listPUTData[i] != 0)
+					System.out.println("treatputdataOKaaaa " + i + " : " + this.listPUTData[i]);
+		}
 		if (this.testOK(this.listPUTData, Network.size()))
 		{
+			if (nodeIndex == 213)
+			{	
+				System.out.println("treatputdataOK " + message.getSource());
+			}
 			if (this.pathTest != null && !this.pathTest.isEmpty())
 			{
 				PHT_Node n = this.list.get(this.skey(this.pathTest));
@@ -1279,7 +1364,7 @@ public class PHT_Protocol implements EDProtocol{
 	{
 		try 
 		{
-			ReadFile rf = new ReadFile("/Users/dcs/vrac/test/wikiDocs<60_500_request");
+			ReadFile rf = new ReadFile(Config.fileRequests);
 		
 			for (int i = 0; i < rf.size(); i++)
 			{									
@@ -1287,6 +1372,7 @@ public class PHT_Protocol implements EDProtocol{
 				bf.addAll(rf.getDescription(i));
 			
 				this.searchFIFO.add(bf);
+				keywordsFIFO.add(rf.getDescription(i));
 			}
 			
 			System.out.println("NOMBRE de requete = " + rf.size());
@@ -1316,12 +1402,15 @@ public class PHT_Protocol implements EDProtocol{
 			while (!searchFIFO.isEmpty())
 			{
 				BF bf = searchFIFO.poll();
+				String keywords = keywordsFIFO.poll();
+				
 				ControlerNw.config_log.getTranslate().setRange(Config.requestRange);
 				long requestID = ControlerNw.config_log.getTranslate().translate(bf.toString());
 				
 				this.listRequests.put(requestID, bf);
 				
 				ControlerNw.config_log.listRequestID.add(requestID);
+				ControlerNw.config_log.addNbFiltersRetrieved(requestID, 0);
 				
 				long time = Calendar.getInstance().getTimeInMillis();
 				ArrayList<Long> array = new ArrayList<Long>();
@@ -1329,6 +1418,7 @@ public class PHT_Protocol implements EDProtocol{
 				WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG_resultat + requestID + ".xml", true);
 				wf.write("<request id=" + requestID + ", nbkeywords=" + (experience + 5)
 						+ ", time=" + time +">\n");
+				wf.write(this.baslise("keywords", keywords) + "\n");
 				wf.close();
 				
 				array.add(time);
@@ -1693,6 +1783,8 @@ public class PHT_Protocol implements EDProtocol{
 		
 		ControlerNw.config_log.addNbFiltersRetrieved(requestID, storedBF.size());
 		
+		ControlerNw.config_log.ObserverNw_tmp_OK = true;
+		
 		for (int i = 0; i < storedBF.size(); i++)
 		{
 			BF bf_tmp = storedBF.get(i);
@@ -1708,7 +1800,7 @@ public class PHT_Protocol implements EDProtocol{
 				String s = this.baslise("path", path) + "\n";
 				s += this.baslise("time", time+"") + "\n";
 				s += this.baslise("retrieveAt", ControlerNw.config_log.getRetrieves(requestID)+"") + "\n";
-				s += this.baslise("filter", bf_tmp.toString() + "\n");
+				s += this.baslise("filter", bf_tmp.toString()) + "\n";
 				wf.write(this.baslise("resultat", s) +"\n");
 				wf.close();				
 			}
@@ -1794,7 +1886,9 @@ public class PHT_Protocol implements EDProtocol{
 		ControlerNw.config_log.getTranslate().setRange(Network.size());
 		int serverID = ControlerNw.config_log.getTranslate().translate("/");
 		
+		wf2.write("noeud;nodeIndex\n");
 		wf2.write("/;" + serverID + "\n");
+		wf2.close();
 		wf1.write(i++ + ";"+ 0 + ";" + "/" +  "\n");
 		
 		while (enumeration4.hasMoreElements())
@@ -1859,9 +1953,9 @@ public class PHT_Protocol implements EDProtocol{
 	
 	private String baslise(String balise, String s)
 	{
-		return "<" + balise + ">\n" 
+		return "<" + balise + ">" 
 					+ s 
-				+ "\n</" + balise + ">"; 
+				+ "</" + balise + ">"; 
 	}
 	
 }

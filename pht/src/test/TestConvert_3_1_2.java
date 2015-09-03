@@ -283,8 +283,8 @@ public class TestConvert_3_1_2 {
  
 		NameToID n = new NameToID(1000);
 		
-		System.out.println(n.translate("01010110"));
-		System.out.println(n.translate("010101"));
+		System.out.println(n.translate("000100001000000000000000101"));
+		System.out.println(n.translate("00010000100000000000000010"));
 
  
 		/*

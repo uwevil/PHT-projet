@@ -25,6 +25,7 @@ public class ControlerNw implements Control {
 	}
 	
 	
+	@SuppressWarnings("static-access")
 	@Override
 	public boolean execute() {
 		// TODO Auto-generated method stub
@@ -53,8 +54,7 @@ public class ControlerNw implements Control {
 			n = Network.get(23);
 			
 			Message message = new Message();
-			message.setType(MessageType.INSERT_INIT);
-			message.setData(Config.numberOfFiltersTest);
+			message.setType(ControlerNw.config_log.typeSimulation);
 			message.setDestinataire(23);
 
 			EDSimulator.add(0, message, n, pid);

@@ -18,14 +18,17 @@ public class ObserverNw_tmp implements Control {
 	@Override
 	public boolean execute() {
 		
+		if (!ControlerNw.config_log.ObserverNw_tmp_OK)
+			return false;
+		
 		for (int i = 0; i < ControlerNw.config_log.listRequestID.size(); i++)
 		{
 			long requestID = ControlerNw.config_log.listRequestID.get(i);
 			
 			WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG_resultat + requestID + "_tmp.xml", false);
-			String s = "<nbRetrieve>" + ControlerNw.config_log.getRetrieves(requestID) + "</nbRetrieve>\n";
+			String s = "<nbRetrieves>" + ControlerNw.config_log.getRetrieves(requestID) + "</nbRetrieves>\n";
 			s += "<nbGetStatus>" + ControlerNw.config_log.getGetStatus(requestID) + "</nbGetStatus>\n";
-			s += "<surTotal>" + ControlerNw.config_log.getNbFiltersRetrieved(requestID) + "</surTotal>\n";
+			s += "<totalFiltersRetrieved>" + ControlerNw.config_log.getNbFiltersRetrieved(requestID) + "</totalFiltersRetrieved>\n";
 			wf.write(s);
 			wf.close();	
 		}

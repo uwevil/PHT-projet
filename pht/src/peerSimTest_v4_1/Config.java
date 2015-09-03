@@ -12,7 +12,7 @@ public class Config {
 	/**
 	 * Version.
 	 * */
-	public static String version = "peerSim_v4_1";
+	public static String version = "peerSim_v4_1_test";
 
 	/**
 	 * Liste des réponses identifiée par requestID.
@@ -60,6 +60,9 @@ public class Config {
 
 	private boolean config_OK = true;
 	
+	public static boolean ObserverNw_tmp_OK = false;
+	
+	//******************************CONFIG***********************************
 	/**
 	 * Taille d'un filtre.
 	 * */
@@ -75,7 +78,14 @@ public class Config {
 	 * */
 	public static int gamma = 1;
 	
-	public static int numberOfFiltersTest = 1600;
+	public static int numberOfFiltersTest = 4000;
+	
+//	public static MessageType typeSimulation = MessageType.SIMULATION;
+	public static MessageType typeSimulation = MessageType.INSERT_INIT;
+
+	
+	//***********************************************************************
+
 	
 	/**
 	 * Nombre de messages dans le réseau sans compter les messages {@code init}, {@code overview}.
@@ -97,6 +107,10 @@ public class Config {
 	public static String currentDir = "/Users/dcs/vrac/test/";
 	
 	public static String inputDir = currentDir + "input/";
+	
+	public static String fileRequests = currentDir + "wikiDocs<60_500_request";
+	
+	public static String fileWiki = currentDir + "wikiDocs<60";
 	
 	public static String outputDir = currentDir + "output/";
 	
