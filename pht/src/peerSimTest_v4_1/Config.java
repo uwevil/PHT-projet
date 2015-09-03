@@ -104,7 +104,7 @@ public class Config {
 	 * Emplacement pù on stocke les fichiers de log.
 	 * */
 	
-	public static String currentDir = "/Users/dcs/vrac/test/";
+	public static String currentDir = "/Users/taysir/Documents/lip6_2e_sejour/simulations/git-doan-files/";
 	
 	public static String inputDir = currentDir + "input/";
 	
