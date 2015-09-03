@@ -56,11 +56,13 @@ public class PHT_Node_Central implements Serializable{
 		this.listKeys = listKeys;
 	}
 	
+	@SuppressWarnings("static-access")
 	public void insert(BF key)
 	{
 		if (this.listKeys.contains(key))
 			return;
 		
+		ControlerNw.config_log.totalFilterAdded++;
 		this.listKeys.add(key);
 	}
 	

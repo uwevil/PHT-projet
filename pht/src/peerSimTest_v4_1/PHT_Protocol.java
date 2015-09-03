@@ -37,9 +37,7 @@ public class PHT_Protocol implements EDProtocol{
 	private Hashtable<Long, BF> listRequests = new Hashtable<Long, BF>();
 	
 	private Hashtable<String, ArrayList<BF>> splitData = new Hashtable<String, ArrayList<BF>>();
-	
-//	private boolean problem = false;
-		
+			
 	private int[] listCreateNode = new int[Network.size()];
 	private int[] listPUTData = new int[Network.size()];
 	private String pathTest;
@@ -423,6 +421,7 @@ public class PHT_Protocol implements EDProtocol{
 				
 				System.out.println("Fini de lecture " + k + " lignes.");
 				System.out.println("Nombre de filtres réels : " + line + " filtres.");
+				ControlerNw.config_log.numberOfFiltersCreated = line;
 			}
 			catch (IOException e)
 			{
@@ -766,23 +765,9 @@ public class PHT_Protocol implements EDProtocol{
 				System.out.println("splitLocal " + serverID1 + " " + path_tmp1);
 
 			}
-			/*
-			if (nodeIndex != 847)
-				return;
-			
-			System.out.println(serverID0 + " vs " + serverID1);
-			System.out.println(path_tmp0 + " vs " + path_tmp1);
-			System.out.println(path + "0" + " vs " + path + "1");
-
-			Enumeration<String> enumeration = this.splitData.keys();
-			
-			while (enumeration.hasMoreElements())
-				System.out.println(enumeration.nextElement() + " " + nodeIndex);
-			*/
 			
 			if (serverID0 == serverID1 && serverID0 == nodeIndex)
 			{
-	//			this.problem = true;
 				this.resolveProblem(requestID, pid);
 			}
 			
@@ -1042,7 +1027,7 @@ public class PHT_Protocol implements EDProtocol{
 		{
 	//		long time = System.currentTimeMillis();
 
-			System.out.println("Désérialisation");
+	//		System.out.println("Désérialisation");
 	//		Serializer serializer = new Serializer();
 	//		this.insertFIFO = (ArrayDeque<BF>) serializer
 	//				.readObject(Config.currentDir + "fifo_" + Config.numberOfFiltersTest+ "_" + ControlerNw.config_log.version);
@@ -1456,9 +1441,11 @@ public class PHT_Protocol implements EDProtocol{
 				ArrayList<Long> array = new ArrayList<Long>();
 				
 				WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG_resultat + requestID + ".xml", true);
-				wf.write("<request id=" + requestID + ", nbkeywords=" + (experience + 5)
-						+ ", time=" + time +">\n");
+				wf.write("<request id=\"" + requestID + "\", nbkeywords=\"" + (experience + 5)
+						+ "\", time=\"" + time +"\">\n");
 				wf.write(this.baslise("keywords", keywords) + "\n");
+				wf.write(this.baslise("requestBF", bf.toString()) + "\n");
+				wf.write(this.baslise("requestKey", bf.getKey(Config.sizeOfKey).toString()) + "\n");
 				wf.close();
 				
 				array.add(time);
@@ -1521,7 +1508,7 @@ public class PHT_Protocol implements EDProtocol{
 		}
 		this.exploreSubtree(sbroot, experience, requestID, pid);
 	}
-
+	
 	private void exploreSubtree(String sbroot, int exprerience, long requestID, int pid) throws ErrorException
 	{
 		String prefix = sbroot + "1";
@@ -1742,7 +1729,7 @@ public class PHT_Protocol implements EDProtocol{
 			}
 		}
 	}
-
+	
 	private void getStoredBF(String path, int exprerience, long requestID, int pid)
 	{
 //		long time = Calendar.getInstance().getTimeInMillis();
@@ -1762,7 +1749,7 @@ public class PHT_Protocol implements EDProtocol{
 		
 		t.send(Network.get(nodeIndex), Network.get(serverID), rep, pid);
 	}
-
+	
 	private void treatGetStoredBF(Message message, int pid)
 	{
 		PHT_Node n = this.list.get(message.getPath());
@@ -1841,6 +1828,7 @@ public class PHT_Protocol implements EDProtocol{
 				s += this.baslise("time", time+"") + "\n";
 				s += this.baslise("retrieveAt", ControlerNw.config_log.getRetrieves(requestID)+"") + "\n";
 				s += this.baslise("filter", bf_tmp.toString()) + "\n";
+				s += this.baslise("keyFilter", bf_tmp.getKey(Config.sizeOfKey).toString()) + "\n";
 				wf.write(this.baslise("resultat", s) +"\n");
 				wf.close();				
 			}
@@ -1879,7 +1867,7 @@ public class PHT_Protocol implements EDProtocol{
 		t.send(Network.get(nodeIndex), Network.get(message.getSource()), rep, pid);
 		
 	}
-
+	
 	@SuppressWarnings("static-access")
 	private void treatOverview_OK(Message message, int pid)
 	{

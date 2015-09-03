@@ -129,6 +129,7 @@ public class PHT_Central implements Serializable{
 	*
 	 * */
 	
+	@SuppressWarnings("static-access")
 	public void insert(BF bf) throws ErrorException
 	{				
 		BF key = bf.getKey(Config.sizeOfKey);
@@ -139,6 +140,7 @@ public class PHT_Central implements Serializable{
 		
 		if (systemNode.size() > Config.gamma)
 		{
+			ControlerNw.config_log.totalFilterAdded -= systemNode.size();
 			systemNode.setLeafNode(false);
 			split(systemNode);
 		}

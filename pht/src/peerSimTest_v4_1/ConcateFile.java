@@ -9,7 +9,7 @@ import java.util.Date;
 
 public class ConcateFile {
 
-	public ConcateFile(String fileRequests, String folder)
+	public static void ConcateFile(String fileRequests, String folder)
 	{
 		Config config = new Config();
 		try 
@@ -18,6 +18,14 @@ public class ConcateFile {
 		
 			System.out.println("Begin");
 
+			File f = new File(folder + "_all.xml");
+			if (f.exists())
+			{
+				System.out.println("_all.xml EXISTED");
+				System.out.println("End");
+				return;
+			}
+			
 			for (int i = 0; i < rf.size(); i++)
 			{									
 				BF bf = new BF(Config.sizeOfBF);
@@ -30,7 +38,8 @@ public class ConcateFile {
 				String path = folder + requestID + ".xml";
 				
 				BufferedReader reader = new BufferedReader(new FileReader(path));
-				WriteFile wf = new WriteFile(folder + "_all", true);
+				
+				WriteFile wf = new WriteFile(folder + "_all.xml", true);
 				
 				while (true)
 				{
@@ -55,18 +64,9 @@ public class ConcateFile {
 					
 					wf.write(s + "\n");
 				}
-				wf.write("</request>\n");
+				wf.write("</request>\n\n");
 				wf.close();
 				reader.close();
-				
-
-				File f = new File(path);
-				if (f.exists())
-					f.delete();	
-				
-				f = new File(path_tmp);
-				if (f.exists())
-					f.delete();				
 			}	
 			
 			System.out.println("End");
@@ -77,11 +77,12 @@ public class ConcateFile {
 		}	
 	}
 	
-	@SuppressWarnings("unused")
 	public static void main (String[] args)
 	{
+		String s = "17-54-56";
 		String date = (new SimpleDateFormat("dd-MM-yyyy")).format(new Date());
-		ConcateFile c = new ConcateFile(Config.fileRequests, Config.currentDir + date + "/" + "16-02-46_peerSim_v4_1/");
+		
+		ConcateFile(Config.fileRequests, Config.currentDir + date + "/" + s + "_peerSim_v4_1/");
 	}
 
 }

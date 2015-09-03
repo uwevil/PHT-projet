@@ -78,10 +78,10 @@ public class Config {
 	 * */
 	public static int gamma = 1;
 	
-	public static int numberOfFiltersTest = 4000;
+	public static int numberOfFiltersTest = 400;
 	
-//	public static MessageType typeSimulation = MessageType.SIMULATION;
-	public static MessageType typeSimulation = MessageType.INSERT_INIT;
+	public static MessageType typeSimulation = MessageType.SIMULATION;
+//	public static MessageType typeSimulation = MessageType.INSERT_INIT;
 
 	
 	//***********************************************************************
