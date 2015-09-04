@@ -34,7 +34,7 @@ init.initializer peerSimTest_v4_1.CreateNw
 {
 	version peerSim_v4_1
 	
-	exp = 0
+	exp 1
 
 	protocol link
 	sizeOfBF 512

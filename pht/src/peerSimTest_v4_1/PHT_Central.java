@@ -132,7 +132,7 @@ public class PHT_Central implements Serializable{
 	@SuppressWarnings("static-access")
 	public void insert(BF bf) throws ErrorException
 	{				
-		BF key = bf.getKey(Config.sizeOfKey);
+		BF key = PHT_Protocol.generateKey(bf, Config.sizeOfKey);
 		String path = this.lookup_insert(key);
 		
 		PHT_Node_Central systemNode = this.listNodes.get(path);
@@ -298,7 +298,7 @@ public class PHT_Central implements Serializable{
 	public ArrayList<BF> supersetSearch(BF bf) throws ErrorException
 	{					
 		ArrayList<BF> bfs = new ArrayList<BF>();
-		BF q = bf.getKey(Config.sizeOfKey);
+		BF q = PHT_Protocol.generateKey(bf, Config.sizeOfKey);
 		String sbroot = "/";
 		int nextZ = this.nextZero(q, 0);
 		int nbOnes = 0;

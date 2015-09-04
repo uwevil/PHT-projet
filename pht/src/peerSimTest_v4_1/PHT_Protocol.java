@@ -604,7 +604,7 @@ public class PHT_Protocol implements EDProtocol{
 			for (int i = 0; i < listKeys.size(); i++)
 			{
 				BF bf_tmp = listKeys.get(i);
-				BF key = bf_tmp.getKey(Config.sizeOfKey);
+				BF key = generateKey(bf_tmp, Config.sizeOfKey);
 				
 				if (key.equals(key_tmp0))
 				{
@@ -684,7 +684,7 @@ public class PHT_Protocol implements EDProtocol{
 			for (int i = 0; i < listKeys.size(); i++)
 			{
 				BF bf_tmp = listKeys.get(i);
-				BF key = bf_tmp.getKey(Config.sizeOfKey);
+				BF key = generateKey(bf_tmp, Config.sizeOfKey);
 				
 				if (key.equals(key_tmp0))
 				{
@@ -923,7 +923,7 @@ public class PHT_Protocol implements EDProtocol{
 			BF bf = new BF(Config.sizeOfBF);
 			bf.addAll(desc);
 			
-			BF key = bf.getKey(Config.sizeOfKey);
+			BF key = generateKey(bf, Config.sizeOfKey);
 			int requestID = insertFIFO.size();
 			
 			System.out.println(requestID);
@@ -1360,7 +1360,7 @@ public class PHT_Protocol implements EDProtocol{
 						+ "\", time=\"" + time +"\">\n");
 				wf.write(this.baslise("keywords", keywords) + "\n");
 				wf.write(this.baslise("requestBF", bf.toString()) + "\n");
-				wf.write(this.baslise("requestKey", bf.getKey(Config.sizeOfKey).toString()) + "\n");
+				wf.write(this.baslise("requestKey", generateKey(bf, Config.sizeOfKey).toString()) + "\n");
 				wf.close();
 				
 				array.add(time);
@@ -1405,7 +1405,7 @@ public class PHT_Protocol implements EDProtocol{
 		
 	private void supersetSearch(BF bf, int experience, long requestID, int pid) throws ErrorException
 	{
-		BF q = bf.getKey(Config.sizeOfKey);
+		BF q = generateKey(bf, Config.sizeOfKey);
 		String sbroot = "/";
 		int nextZ = this.nextZero(q, 0);
 		int nbOnes = 0;
@@ -1478,7 +1478,7 @@ public class PHT_Protocol implements EDProtocol{
 		ControlerNw.config_log.addGetStatus(message.getRequestID(), 1);
 		
 		BF bf = this.listRequests.get(message.getRequestID());
-		BF q = bf.getKey(Config.sizeOfKey);
+		BF q = generateKey(bf, Config.sizeOfKey);
 		int exprerience = (int) message.getOption2();
 		long requestID = message.getRequestID();
 		String sbroot = (String) message.getOption();
@@ -1743,7 +1743,7 @@ public class PHT_Protocol implements EDProtocol{
 				s += this.baslise("time", time+"") + "\n";
 				s += this.baslise("retrieveAt", ControlerNw.config_log.getRetrieves(requestID)+"") + "\n";
 				s += this.baslise("filter", bf_tmp.toString()) + "\n";
-				s += this.baslise("keyFilter", bf_tmp.getKey(Config.sizeOfKey).toString()) + "\n";
+				s += this.baslise("keyFilter", generateKey(bf_tmp, Config.sizeOfKey).toString()) + "\n";
 				wf.write(this.baslise("resultat", s) +"\n");
 				wf.close();				
 			}
@@ -1899,6 +1899,27 @@ public class PHT_Protocol implements EDProtocol{
 		return "<" + balise + ">" 
 					+ s 
 				+ "</" + balise + ">"; 
+	}
+	
+	/**
+	 * Retourne une clé sous forme le filtre de taille {@code sizeOfKey}.
+	 * 
+	 * @return {@link BF}
+	 * @author dcs
+	 * */
+	
+	public static BF generateKey(BF bf, int sizeOfKey)
+	{
+		BF rep = bf.getSubFilter(0, sizeOfKey - 1);
+
+		for (int i = sizeOfKey; i < bf.size(); i++)
+		{
+			if (bf.getBit(i))
+			{
+				rep.setBit(i % sizeOfKey, true);
+			}
+		}
+		return rep;
 	}
 	
 }
