@@ -1356,8 +1356,8 @@ public class PHT_Protocol implements EDProtocol{
 				ArrayList<Long> array = new ArrayList<Long>();
 				
 				WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG_resultat + requestID + ".xml", true);
-				wf.write("<request id=\"" + requestID + "\", nbkeywords=\"" + (experience + 5)
-						+ "\", time=\"" + time +"\">\n");
+				wf.write("<request id='" + requestID + "' nbkeywords='" + (experience + 5)
+						+ "' time='" + time +"'>\n");
 				wf.write(this.baslise("keywords", keywords) + "\n");
 				wf.write(this.baslise("requestBF", bf.toString()) + "\n");
 				wf.write(this.baslise("requestKey", generateKey(bf, Config.sizeOfKey).toString()) + "\n");

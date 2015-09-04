@@ -26,6 +26,11 @@ public class Concate {
 				return;
 			}
 			
+			WriteFile wf = new WriteFile(folder + "_all.xml", true);
+			wf.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+					+ "<?xml-stylesheet type='text/xsl' href='style.xsl'?>\n<zcode>\n");
+			wf.close();
+			
 			for (int i = 0; i < rf.size(); i++)
 			{									
 				BF bf = new BF(512);
@@ -39,7 +44,7 @@ public class Concate {
 				
 				BufferedReader reader = new BufferedReader(new FileReader(path));
 				
-				WriteFile wf = new WriteFile(folder + "_all.xml", true);
+				wf = new WriteFile(folder + "_all.xml", true);
 				
 				while (true)
 				{
@@ -67,7 +72,11 @@ public class Concate {
 				wf.write("</request>\n\n");
 				wf.close();
 				reader.close();
-			}	
+			}
+			
+			wf = new WriteFile(folder + "_all.xml", true);
+			wf.write("</zcode>");
+			wf.close();
 			
 			System.out.println("End");
 		} 
