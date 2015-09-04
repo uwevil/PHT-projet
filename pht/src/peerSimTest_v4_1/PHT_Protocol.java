@@ -1,7 +1,6 @@
 package peerSimTest_v4_1;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -30,7 +29,7 @@ public class PHT_Protocol implements EDProtocol{
 	
 	private Hashtable<String, PHT_Node> list = new Hashtable<String, PHT_Node>();
 	private Hashtable<Long, String> listPath = new Hashtable<Long, String>();
-	private ArrayDeque<BF> insertFIFO = new ArrayDeque<BF>();
+	private ArrayDeque<String> insertFIFO = new ArrayDeque<String>();
 	private ArrayDeque<BF> searchFIFO = new ArrayDeque<BF>();
 	private ArrayDeque<String> keywordsFIFO = new ArrayDeque<String>();
 
@@ -43,9 +42,6 @@ public class PHT_Protocol implements EDProtocol{
 	private String pathTest;
 	private boolean prob = false;
 	
-//	private int nb = 0;
-//	private int ecart = 0;
-
 	private Hashtable<Long, Object> listPUT = new Hashtable<Long, Object>();
 			
 	private ArrayDeque<Message> messageWaitingForResponse = new ArrayDeque<Message>();
@@ -383,7 +379,6 @@ public class PHT_Protocol implements EDProtocol{
 	 * Traite le message de simulation au lancement de la simulation.
 	 * */
 	
-	@SuppressWarnings({ "static-access" })
 	private void treatSimulation(Message message, int pid) throws ErrorException
 	{
 		init = nodeIndex;
@@ -393,51 +388,37 @@ public class PHT_Protocol implements EDProtocol{
 		int line = 0;
 		int k = 0;
 		
-		File f = new File(ControlerNw.config_log.serializerName + "_path_central_" + Config.numberOfFiltersTest);
-		
-		if (!f.exists())
+		try(BufferedReader reader = new BufferedReader(new FileReader(Config.fileWiki)))
 		{
-			try(BufferedReader reader = new BufferedReader(new FileReader(Config.fileWiki)))
+			while (true)
 			{
-				while (true)
-				{
-					String s = new String();
-					s = reader.readLine();
-					if (s == null)
-						break;
-					String[] tmp = s.split(";");
-					
-					if (tmp.length >= 2 && tmp[1].length() > 2 )
-					{
-						BF bf = new BF(Config.sizeOfBF);
-						bf.addAll(tmp[1]);
-						
-						pht.insert(bf);
-						line++;
-					}
-					k++;
-					System.out.println(line + "/" + k);
-					if (line == Config.numberOfFiltersTest)
-						break;
-				}
-				reader.close();
+				String s = new String();
+				s = reader.readLine();
+				if (s == null)
+					break;
+				String[] tmp = s.split(";");
 				
-				System.out.println("Fini de lecture " + k + " lignes.");
-				System.out.println("Nombre de filtres réels : " + line + " filtres.");
+				if (tmp.length >= 2 && tmp[1].length() > 2 )
+				{
+					BF bf = new BF(Config.sizeOfBF);
+					bf.addAll(tmp[1]);
+					
+					pht.insert(bf);
+					line++;
+				}
+				k++;
+				System.out.println(line + "/" + k);
+				if (line == Config.numberOfFiltersTest)
+					break;
 			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
+			reader.close();
 			
-	//		Serializer serializer = new Serializer();
-	//		serializer.writeObject(pht, ControlerNw.config_log.serializerName + "_path_central_" + Config.numberOfFiltersTest);
+			System.out.println("Fini de lecture " + k + " lignes.");
+			System.out.println("Nombre de filtres réels : " + line + " filtres.");
 		}
-		else
+		catch (IOException e)
 		{
-	//		Serializer serializer = new Serializer();
-	//		pht = (PHT_Central) serializer
-	//				.readObject(ControlerNw.config_log.serializerName + "_path_central" + Config.numberOfFiltersTest);
+			e.printStackTrace();
 		}
 						
 		pht_listNodes = pht.getListNodes();
@@ -599,6 +580,8 @@ public class PHT_Protocol implements EDProtocol{
 	private void splitLocal(PHT_Node n, long requestID, int pid) throws ErrorException
 	{		
 		ControlerNw.config_log.addSplit(1);
+		
+		System.out.println(ControlerNw.config_log.getSplit() + " splits : " + n.getPath());
 		
 		DataStore data = n.getDataStore();
 		ArrayList<BF> listKeys = data.getListBFs();
@@ -914,7 +897,7 @@ public class PHT_Protocol implements EDProtocol{
 	 * L'initiateur lance la requête d'insertion.
 	 * */
 	
-	@SuppressWarnings({ "static-access", "unchecked" })
+	@SuppressWarnings({ "static-access" })
 	private void launchInsert(int pid) throws ErrorException
 	{		
 		if (nodeIndex == init && insertFIFO.isEmpty())
@@ -931,15 +914,15 @@ public class PHT_Protocol implements EDProtocol{
 		}
 		
 		if (insert_OK)
-		{
-			Serializer serializer = new Serializer();
-			insertFIFO = (ArrayDeque<BF>) serializer.readObject(ControlerNw.config_log.serializerName);
-			
+		{			
 			insert_OK = false;
 			if (insertFIFO.isEmpty())
 				return;
 			
-			BF bf = insertFIFO.poll();
+			String desc = insertFIFO.poll();
+			BF bf = new BF(Config.sizeOfBF);
+			bf.addAll(desc);
+			
 			BF key = bf.getKey(Config.sizeOfKey);
 			int requestID = insertFIFO.size();
 			
@@ -947,121 +930,7 @@ public class PHT_Protocol implements EDProtocol{
 			System.out.println("Nombre de filtres ajoutés : " + ControlerNw.config_log.totalFilterAdded);
 			
 			this.lookupPath(bf, key, "/", requestID, pid);
-			serializer.writeObject(insertFIFO, ControlerNw.config_log.serializerName);
-
 		}
-				
-		/*
-		if (nodeIndex == init && insertFIFO.isEmpty())
-		{
-			for (int i = 0; i < Network.size(); i++)
-			{	
-				Message rep = new Message();
-				rep.setType(MessageType.OVERVIEW);
-				rep.setSource(nodeIndex);
-				rep.setDestinataire(i);
-				
-				t.send(Network.get(nodeIndex), Network.get(i), rep, pid);
-			}
-		}
-		
-		if (insert_OK)
-		{
-			if (nb + ecart == ControlerNw.config_log.numberOfFiltersTest + ecart)
-			{
-				for (int i = 0; i < Network.size(); i++)
-				{	
-					Message rep = new Message();
-					rep.setType(MessageType.OVERVIEW);
-					rep.setSource(nodeIndex);
-					rep.setDestinataire(i);
-					
-					t.send(Network.get(nodeIndex), Network.get(i), rep, pid);
-				}
-				return;
-			}
-			
-			insert_OK = false;
-			
-			BF bf = insertFIFO.poll();
-			BF key = bf.getKey(Config.sizeOfKey);
-			int requestID = nb;
-			
-			System.out.println(requestID);
-			System.out.println("Nombre de filtres ajoutés : " + ControlerNw.config_log.totalFilterAdded);
-			ControlerNw.config_log.numberOfFiltersCreated++;
-
-			this.lookupPath(bf, key, "/", requestID, pid);
-			
-			try(BufferedReader reader = new BufferedReader(new FileReader(Config.fileWiki)))
-			{
-				int line = 0;
-				String s = new String();
-
-				while (line < nb)
-				{
-					s = reader.readLine();
-					if (s == null)
-					{
-						line = -1;
-						break;
-					}
-					line++;
-				}
-				
-				if (line == nb)
-				{
-					String[] tmp = s.split(";");
-					
-					if (tmp.length >= 2 && tmp[1].length() > 2 )
-					{
-						BF bf_tmp = new BF(Config.sizeOfBF);
-						bf_tmp.addAll(tmp[1]);
-
-						insertFIFO.add(bf_tmp);
-					}
-					else
-					{
-						while (true)
-						{
-							s = reader.readLine();
-							if (s == null)
-								break;
-							ecart++;
-							
-							tmp = s.split(";");
-
-							if (tmp.length >= 2 && tmp[1].length() > 2 )
-							{
-								BF bf_tmp = new BF(Config.sizeOfBF);
-								bf_tmp.addAll(tmp[1]);
-
-								insertFIFO.add(bf_tmp);
-								break;
-							}
-						}
-					}
-				}
-				else
-				{
-					for (int i = 0; i < Network.size(); i++)
-					{	
-						Message rep = new Message();
-						rep.setType(MessageType.OVERVIEW);
-						rep.setSource(nodeIndex);
-						rep.setDestinataire(i);
-						
-						t.send(Network.get(nodeIndex), Network.get(i), rep, pid);
-					}
-				}
-				reader.close();		
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
-		}
-		*/
 	}
 	
 	/**
@@ -1086,21 +955,15 @@ public class PHT_Protocol implements EDProtocol{
 				
 				if (tmp.length >= 2 && tmp[1].length() > 2 )
 				{
-					BF bf_tmp = new BF(Config.sizeOfBF);
-					bf_tmp.addAll(tmp[1]);
-
-					insertFIFO.add(bf_tmp);
+					insertFIFO.add(tmp[1]);
 					line++;
 				}
 				System.out.println(line);
 				if (line == ControlerNw.config_log.numberOfFiltersTest)
 					break;
 			}
-			
-			Serializer serializer = new Serializer();
-			serializer.writeObject(insertFIFO, ControlerNw.config_log.serializerName);
-			
-			insertFIFO.clear();
+			ControlerNw.config_log.numberOfFiltersCreated = line;
+						
 			reader.close();		
 		}
 		catch (IOException e)
@@ -1130,7 +993,7 @@ public class PHT_Protocol implements EDProtocol{
 	{
 		if (this.insertFIFO.isEmpty())
 		{
-			this.insertFIFO.add(message.getBF());
+			this.insertFIFO.add((String) message.getData());
 			
 			if (insert_OK)
 			{
@@ -1140,7 +1003,7 @@ public class PHT_Protocol implements EDProtocol{
 		}
 		else
 		{
-			this.insertFIFO.add(message.getBF());
+			this.insertFIFO.add((String) message.getData());
 		}
 	}
 	
@@ -1966,8 +1829,8 @@ public class PHT_Protocol implements EDProtocol{
 		ControlerNw.config_log.getTranslate().setRange(Network.size());
 		int serverID = ControlerNw.config_log.getTranslate().translate("/");
 		
-		wf2.write("noeud;nodeIndex\n");
-		wf2.write("/;" + serverID + "\n");
+		wf2.write("index;noeud;nodeIndex\n");
+		wf2.write("0;/;" + serverID + "\n");
 		wf2.close();
 		wf1.write(i++ + ";"+ 0 + ";" + "/" +  "\n");
 		
@@ -1977,7 +1840,7 @@ public class PHT_Protocol implements EDProtocol{
 			
 			wf2 = new WriteFile(Config.peerSimLOG + "_node.csv", true);
 			ControlerNw.config_log.getTranslate().setRange(Network.size());
-			wf2.write(s_tmp + ";" + ControlerNw.config_log.getTranslate().translate(s_tmp) + "\n");
+			wf2.write(i + ";" + s_tmp + ";" + ControlerNw.config_log.getTranslate().translate(s_tmp) + "\n");
 			wf2.close();
 
 			wf1.write(i + ";" 
@@ -1994,7 +1857,7 @@ public class PHT_Protocol implements EDProtocol{
 		WriteFile wf = new WriteFile(Config.peerSimLOG+"_indexHeight.csv", false);
 		Enumeration<Integer> enumeration = ControlerNw.config_log.getIndexHeight().keys();
 		wf.write("NumberOfMessages;NumberOfSplits;NumberOfFiltersCreated;NumberOfFiltersAdded;SizeOfFilter;SizeOfKey"
-				+ "Gamma;noeudSansSkey;noeudAvecSkey\n");
+				+ "Gamma;noeudSansSkey;longueurSansSkey;noeudAvecSkey;longueurAvecSkey\n");
 		wf.write((ControlerNw.config_log.numberOfMessages - Network.size()*2) + ";");
 		wf.write(ControlerNw.config_log.getSplit() + ";");
 		wf.write(ControlerNw.config_log.numberOfFiltersCreated + ";");
@@ -2011,7 +1874,7 @@ public class PHT_Protocol implements EDProtocol{
 				max = i;		
 		}
 		
-		wf.write(ControlerNw.config_log.getIndexHeight().get(max) + ";");
+		wf.write(ControlerNw.config_log.getIndexHeight().get(max) + ";" + max + ";");
 
 		
 		enumeration = ControlerNw.config_log.getRealIndexHeight().keys();
@@ -2024,7 +1887,7 @@ public class PHT_Protocol implements EDProtocol{
 				max = i;
 		}
 		
-		wf.write(ControlerNw.config_log.getRealIndexHeight().get(max) + "\n");
+		wf.write(ControlerNw.config_log.getRealIndexHeight().get(max) + ";" + max + "\n");
 		wf.close();		
 		//*******************
 		

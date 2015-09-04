@@ -28,7 +28,7 @@ public class Concate {
 			
 			for (int i = 0; i < rf.size(); i++)
 			{									
-				BF bf = new BF(Config.sizeOfBF);
+				BF bf = new BF(512);
 				bf.addAll(rf.getDescription(i));
 
 				config.getTranslate().setRange(Config.requestRange);
@@ -79,10 +79,12 @@ public class Concate {
 	
 	public static void main (String[] args)
 	{
-		String s = "20-23-29";
+		String s = "0";
 		String date = (new SimpleDateFormat("dd-MM-yyyy")).format(new Date());
 		
-		ConcateFile(Config.fileRequests, Config.currentDir + date + "/" + s + "_peerSim_v4_1/");
+		ConcateFile("/Users/dcs/vrac/test/wikiDocs<60_500_request",
+				"/Users/dcs/vrac/test/"
+				+ date + "/" + s + "_peerSim_v4_1/");
 	}
 
 }

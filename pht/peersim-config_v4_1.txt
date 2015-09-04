@@ -32,7 +32,22 @@ protocol.link peerSimTest_v4_1.PHT_Protocol
 
 init.initializer peerSimTest_v4_1.CreateNw
 {
+	version peerSim_v4_1
+	
+	exp = 0
+
 	protocol link
+	sizeOfBF 512
+	sizeOfKey 256
+	gamma 1
+	numberOfFiltersTest 40000
+	
+	currentDir = /Users/dcs/vrac/test/
+	fileWiki = /Users/dcs/vrac/test/wikiDocs<60
+	fileRequests = /Users/dcs/vrac/test/wikiDocs<60_500_request
+	
+	typeSimulation INSERT_INIT
+#	typeSimulation SIMULATION
 }
 ################ control ==============================
 
