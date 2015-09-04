@@ -12,20 +12,27 @@ indent="yes" />
 <html>
 <body>
     <h2> REQUEST </h2>
+    <p>
+        <b>AtTime</b> est le temps en miliseconde à partir du lancement de la requête qu'on trouve le résultat.
+        Dans le cas qu'il y a plusieurs de réponses, ce temps est toujours calculé à partir du lancement de la requête. Pour trouver le temps entre 2 résultats, il vous faut de faire la soustraction entre 2 temps.
+       <p> 
+           <b>RetrievedAt</b> est le nombre de <i>retrieves</i> pour arriver au résultat. Dans le cas qu'il y plusieurs de réponses trouvées, ce nombre est toujours calculé à partir du lancement de la requêtes.
+        </p>
+    </p>
         <table border="1">
             <tr bgcolor="cyan">
                 <th style="text-align:right">ID</th>
                 <th style="text-align:right">NbKeywords</th>
           <!--      <th style="text-align:right">Keywords</th> -->
                 <th style="text-align:center">Results
-                    <table border="1px" border-spacing="1" >
+                    <table border="1px" >
                         <tr>
                             <td>AtTime</td>
                             <td>RetrievedAt</td>
                         </tr>
                     </table></th>
                 <th style="text-align:right">NbGetStatus</th>
-                <th style="text-align:right">Nbretrieves</th>
+                <th style="text-align:right">NbRetrieves</th>
                 <th style="text-align:right">totalFiltersRetrieved</th>
             </tr>
             <xsl:apply-templates select="*"/>            
@@ -40,7 +47,9 @@ indent="yes" />
    <td style="text-align:right"><xsl:value-of select="@nbkeywords"/></td>
  <!--   <td style="text-align:right"><xsl:value-of select="keywords"/></td>  -->
     <td>
-    <xsl:apply-templates select="resultat"/>
+        <table border="1">
+        <xsl:apply-templates select="resultat"/>
+        </table>
     </td>
     <xsl:apply-templates select="nbRetrieves"/>
     <xsl:apply-templates select="nbGetStatus"/>
@@ -49,12 +58,10 @@ indent="yes" />
 </xsl:template>
 
 <xsl:template match="resultat">
-   <table border="1">
         <tr>
             <td>+<xsl:value-of select="time"/></td>
             <td><xsl:value-of select="retrieveAt"/></td>
         </tr>
-    </table>
 </xsl:template>
 
 
