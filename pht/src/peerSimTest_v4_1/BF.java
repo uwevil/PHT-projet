@@ -320,27 +320,6 @@ public class BF implements Serializable
 	}
 	
 	/**
-	 * Retourne une clé sous forme le filtre de taille {@code sizeOfKey}.
-	 * 
-	 * @return {@link BF}
-	 * @author dcs
-	 * */
-	
-	public BF getKey(int sizeOfKey)
-	{
-		BF rep = this.getSubFilter(0, sizeOfKey - 1);
-
-		for (int i = sizeOfKey; i < this.bitSetSize; i++)
-		{
-			if (this.getBit(i))
-			{
-				rep.setBit(i % sizeOfKey, true);
-			}
-		}
-		return rep;
-	}
-	
-	/**
 	 * Retourne un sous filtre de ce filtre dans l'interval [start, stop].
 	 * 
 	 * @return {@link BF}

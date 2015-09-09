@@ -19,27 +19,54 @@ simulation.logtime tempsLog
 ################### protocols ===========================
 
 protocol.urt UniformRandomTransport
-protocol.urt.mindelay MINDELAY
-protocol.urt.maxdelay MAXDELAY
+{
+	mindelay MINDELAY
+	maxdelay MAXDELAY
+}
 
 protocol.link peerSimTest_v4_1.PHT_Protocol
-protocol.link.transport urt
+{
+	transport urt
+}
 
 ################### initialization ======================
 
 init.initializer peerSimTest_v4_1.CreateNw
-init.initializer.protocol link
+{
+	version peerSim_v4_1
+	
+	exp 0
+
+	protocol link
+	sizeOfBF 512
+	sizeOfKey 256
+	gamma 1
+	numberOfFiltersTest 4000
+	
+	currentDir = /Users/dcs/vrac/test/
+	fileWiki = /Users/dcs/vrac/test/wikiDocs<60
+	fileRequests = /Users/dcs/vrac/test/wikiDocs<60_500_request
+	
+	typeSimulation INSERT_INIT
+#	typeSimulation SIMULATION
+}
 
 ################ control ==============================
 
 control.0 peerSimTest_v4_1.ControlerNw
-control.0.protocol link
-control.0.step 100
+{
+	protocol link
+	step 100
+}
 
 control.1 peerSimTest_v4_1.ObserverNw
-control.1.protocol link
-control.1.step 7000
+{
+	protocol link
+	step 7000
+}
 
 control.2 peerSimTest_v4_1.ObserverNw_tmp
-control.2.protocol link
-control.2.step 100000
+{
+	protocol link
+	step 100000
+}

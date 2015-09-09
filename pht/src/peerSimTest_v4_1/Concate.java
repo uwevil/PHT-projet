@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class ConcateFile {
+public class Concate {
 
-	public ConcateFile(String fileRequests, String folder)
+	public static void ConcateFile(String fileRequests, String folder)
 	{
 		Config config = new Config();
 		try 
@@ -18,9 +18,22 @@ public class ConcateFile {
 		
 			System.out.println("Begin");
 
+			File f = new File(folder + "_all.xml");
+			if (f.exists())
+			{
+				System.out.println("_all.xml EXISTED");
+				System.out.println("End");
+				return;
+			}
+			
+			WriteFile wf = new WriteFile(folder + "_all.xml", true);
+			wf.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+					+ "<?xml-stylesheet type='text/xsl' href='style.xsl'?>\n<zcode>\n");
+			wf.close();
+			
 			for (int i = 0; i < rf.size(); i++)
 			{									
-				BF bf = new BF(Config.sizeOfBF);
+				BF bf = new BF(512);
 				bf.addAll(rf.getDescription(i));
 
 				config.getTranslate().setRange(Config.requestRange);
@@ -30,7 +43,8 @@ public class ConcateFile {
 				String path = folder + requestID + ".xml";
 				
 				BufferedReader reader = new BufferedReader(new FileReader(path));
-				WriteFile wf = new WriteFile(folder + "_all", true);
+				
+				wf = new WriteFile(folder + "_all.xml", true);
 				
 				while (true)
 				{
@@ -55,19 +69,14 @@ public class ConcateFile {
 					
 					wf.write(s + "\n");
 				}
-				wf.write("</request>\n");
+				wf.write("</request>\n\n");
 				wf.close();
 				reader.close();
-				
-
-				File f = new File(path);
-				if (f.exists())
-					f.delete();	
-				
-				f = new File(path_tmp);
-				if (f.exists())
-					f.delete();				
-			}	
+			}
+			
+			wf = new WriteFile(folder + "_all.xml", true);
+			wf.write("</zcode>");
+			wf.close();
 			
 			System.out.println("End");
 		} 
@@ -77,11 +86,14 @@ public class ConcateFile {
 		}	
 	}
 	
-	@SuppressWarnings("unused")
 	public static void main (String[] args)
 	{
+		String s = "0";
 		String date = (new SimpleDateFormat("dd-MM-yyyy")).format(new Date());
-		ConcateFile c = new ConcateFile(Config.fileRequests, Config.currentDir + date + "/" + "16-02-46_peerSim_v4_1/");
+		
+		ConcateFile("/Users/dcs/vrac/test/wikiDocs<60_500_request",
+				"/Users/dcs/vrac/test/"
+				+ date + "/" + s + "_peerSim_v4_1/");
 	}
 
 }

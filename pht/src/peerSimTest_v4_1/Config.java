@@ -1,18 +1,17 @@
 package peerSimTest_v4_1;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Hashtable;
 
 import peersim.core.Network;
 
-public class Config {
+public class Config
+{
 	
 	/**
 	 * Version.
 	 * */
-	public static String version = "peerSim_v4_1";
+	public static String version;
 
 	/**
 	 * Liste des réponses identifiée par requestID.
@@ -66,30 +65,26 @@ public class Config {
 	/**
 	 * Taille d'un filtre.
 	 * */
-	public static int sizeOfBF = 512;
+	public static int sizeOfBF;
 	
 	/**
 	 * Taille d'une clé.
 	 * */
-	public static int sizeOfKey = 256;
+	public static int sizeOfKey;
 	
 	/**
 	 * Nombre de filtres maximums sur un nœud dans l'arbre.
 	 * */
-	public static int gamma = 1;
+	public static int gamma;
 	
-	public static int numberOfFiltersTest = 4000;
+	public static int numberOfFiltersTest;
 	
-//	public static MessageType typeSimulation = MessageType.SIMULATION;
-	public static MessageType typeSimulation = MessageType.INSERT_INIT;
+	public static MessageType typeSimulation;
 
+	public static int exp;
 	
 	//***********************************************************************
-
 	
-	/**
-	 * Nombre de messages dans le réseau sans compter les messages {@code init}, {@code overview}.
-	 * */
 	public static long numberOfMessages = 0;
 	
 	public static int numberOfFiltersCreated = 0;
@@ -97,31 +92,27 @@ public class Config {
 	public static int totalFilterAdded = 0;
 	
 	private long split = 0;
-
-	public static String date = (new SimpleDateFormat("dd-MM-yyyy/HH-mm-ss")).format(new Date());
 	
-	/**
-	 * Emplacement pù on stocke les fichiers de log.
-	 * */
 	
+<<<<<<< HEAD
 	public static String currentDir = "/Users/taysir/Documents/lip6_2e_sejour/simulations/git-doan-files/";
+=======
+	public static String currentDir;
+>>>>>>> 9cbe7e86948b8be50386f2f515193ec364edd7fb
 	
-	public static String inputDir = currentDir + "input/";
+	public static String inputDir;
 	
-	public static String fileRequests = currentDir + "wikiDocs<60_500_request";
+	public static String fileRequests;
 	
-	public static String fileWiki = currentDir + "wikiDocs<60";
+	public static String fileWiki;
 	
-	public static String outputDir = currentDir + "output/";
+	public static String outputDir;
 	
-	public static String peerSimLOG = currentDir + date + "_" + version+ "/" + "_log";
+	public static String peerSimLOG;
 	
-	/**
-	 * Emplacement pù on stocke les fichiers temporaires, de résultats, de log.
-	 * */
-	public static String peerSimLOG_resultat = currentDir + date  + "_" + version + "/";
+	public static String peerSimLOG_resultat;
 	
-	public static String serializerName = currentDir + version;
+	public static String serializerName;
 	
 	/**
 	 * Configuration.
@@ -139,7 +130,6 @@ public class Config {
 		indexHeight = new Hashtable<Integer, String>();
 		retrieves = new Hashtable<Long, Integer>();
 				
-		date = (new SimpleDateFormat("dd/MM/yyyy/HH-mm-ss")).format(new Date());
 		nodePerServer = new int[Network.size()];
 		
 		for (int i = 0; i < Network.size(); i++)
@@ -305,4 +295,5 @@ public class Config {
 	{
 		return this.nbFiltersRetrieved.get(requestID);
 	}
+	
 }

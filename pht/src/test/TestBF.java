@@ -12,6 +12,7 @@ import pht_v3_1_0_0.BF;
 import pht_v3_1_0_0.Config;
 import pht_v3_1_0_0.ErrorException;
 
+@SuppressWarnings("unused")
 public class TestBF {
 
 	public static void main (String[] args) throws ErrorException, IOException

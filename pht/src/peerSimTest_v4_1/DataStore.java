@@ -44,12 +44,8 @@ public class DataStore implements Serializable{
 	{
 		if (this.listBFs.contains(bf))
 			return;
+		
 		ControlerNw.config_log.totalFilterAdded++;
-		/*
-		WriteFile wf = new WriteFile(ControlerNw.config_log.peerSimLOG + "_tmp", true);
- 		wf.write("Total filters added : " + ControlerNw.config_log.totalFilterAdded + "\n");
- 		wf.close();
- 		*/
 		this.listBFs.add(bf);
 	}
 	
